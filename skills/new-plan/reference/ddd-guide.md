@@ -5,6 +5,7 @@ A practical, step-by-step guide for creating DDD-based implementation plans.
 ## Step 1: Read the Originating Proposal
 
 Before decomposing, understand:
+
 - What problem does the proposal solve?
 - What is the proposed solution's scope?
 - What systems, components, or modules are affected?
@@ -26,8 +27,8 @@ Ask these questions about the proposal's scope:
 **Format for the plan:**
 
 ```markdown
-| # | Bounded Context | Responsibility | Key Artifacts |
-|---|---|---|---|
+| #    | Bounded Context  | Responsibility                       | Key Artifacts             |
+| ---- | ---------------- | ------------------------------------ | ------------------------- |
 | BC-1 | **Context Name** | What this context is responsible for | Files/modules it produces |
 ```
 
@@ -44,8 +45,8 @@ For each bounded context:
 ```markdown
 #### BC-N: Context Name
 
-| Aggregate | Root Entity | Description |
-|---|---|---|
+| Aggregate         | Root Entity        | Description                    |
+| ----------------- | ------------------ | ------------------------------ |
 | **AggregateName** | `root-file-or-dir` | What this aggregate represents |
 ```
 
@@ -60,9 +61,9 @@ Domain events connect bounded contexts:
 **Format for the plan:**
 
 ```markdown
-| Event | Source Context | Target Context(s) | Description |
-|---|---|---|---|
-| **EventName** | BC-N | BC-M, BC-P | What happened and what it enables |
+| Event         | Source Context | Target Context(s) | Description                       |
+| ------------- | -------------- | ----------------- | --------------------------------- |
+| **EventName** | BC-N           | BC-M, BC-P        | What happened and what it enables |
 ```
 
 ## Step 5: Derive Implementation Tasks
@@ -89,6 +90,7 @@ Now turn the domain analysis into concrete work:
 ### Task Quality Checklist
 
 Each task should be:
+
 - [ ] **Specific:** Names exact files, flags, behaviors
 - [ ] **Verifiable:** Someone can check if it's done
 - [ ] **Scoped:** Maps to one or more aggregates
@@ -116,10 +118,10 @@ How do you know the plan is complete?
 
 ## Common Pitfalls
 
-| Pitfall | Fix |
-|---|---|
-| Too few contexts (everything in one) | If a context has more than 5-6 aggregates, split it |
-| Too many contexts (one per file) | Merge contexts that always change together |
-| Tasks too vague ("implement X") | Name specific files, flags, and behaviors |
-| Missing dependencies between phases | Trace domain events — if phase 2 needs output from phase 1, say so |
-| No acceptance criteria | Every plan must define how "done" is measured |
+| Pitfall                              | Fix                                                                |
+| ------------------------------------ | ------------------------------------------------------------------ |
+| Too few contexts (everything in one) | If a context has more than 5-6 aggregates, split it                |
+| Too many contexts (one per file)     | Merge contexts that always change together                         |
+| Tasks too vague ("implement X")      | Name specific files, flags, and behaviors                          |
+| Missing dependencies between phases  | Trace domain events — if phase 2 needs output from phase 1, say so |
+| No acceptance criteria               | Every plan must define how "done" is measured                      |

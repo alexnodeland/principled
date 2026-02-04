@@ -24,68 +24,68 @@ Deliver the complete developer setup and DX infrastructure for principled-docs: 
 
 This implementation decomposes into **5 bounded contexts**, each representing a distinct area of responsibility:
 
-| # | Bounded Context | Responsibility | Key Artifacts |
-|---|---|---|---|
-| BC-1 | **Project Governance** | Legal and contribution framework — license, contribution guide, code of conduct expectations | `LICENSE`, `CONTRIBUTING.md` |
-| BC-2 | **Shell Quality** | Shell script linting and formatting infrastructure — tooling config, standards enforcement | `.shellcheckrc`, `.editorconfig`, shfmt config |
-| BC-3 | **Markdown Quality** | Markdown linting and formatting infrastructure — tooling config, Node.js dev dependencies | `.markdownlint.jsonc`, `.prettierrc`, `.prettierignore`, `package.json` |
-| BC-4 | **Automation** | Pre-commit hooks and CI pipeline — local and remote enforcement of quality gates | `.pre-commit-config.yaml`, `.github/workflows/ci.yml` |
-| BC-5 | **Claude Code DX** | `.claude/` directory setup — settings, project commands, dogfooding plugin installation | `.claude/settings.json`, `.claude/commands/*.md`, `.claude/CLAUDE.md` |
+| #    | Bounded Context        | Responsibility                                                                               | Key Artifacts                                                           |
+| ---- | ---------------------- | -------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------- |
+| BC-1 | **Project Governance** | Legal and contribution framework — license, contribution guide, code of conduct expectations | `LICENSE`, `CONTRIBUTING.md`                                            |
+| BC-2 | **Shell Quality**      | Shell script linting and formatting infrastructure — tooling config, standards enforcement   | `.shellcheckrc`, `.editorconfig`, shfmt config                          |
+| BC-3 | **Markdown Quality**   | Markdown linting and formatting infrastructure — tooling config, Node.js dev dependencies    | `.markdownlint.jsonc`, `.prettierrc`, `.prettierignore`, `package.json` |
+| BC-4 | **Automation**         | Pre-commit hooks and CI pipeline — local and remote enforcement of quality gates             | `.pre-commit-config.yaml`, `.github/workflows/ci.yml`                   |
+| BC-5 | **Claude Code DX**     | `.claude/` directory setup — settings, project commands, dogfooding plugin installation      | `.claude/settings.json`, `.claude/commands/*.md`, `.claude/CLAUDE.md`   |
 
 ### Aggregates
 
 #### BC-1: Project Governance
 
-| Aggregate | Root Entity | Description |
-|---|---|---|
-| **LicenseFile** | `LICENSE` | MIT license text with correct year and copyright holder. Removes legal ambiguity for adoption. |
+| Aggregate             | Root Entity       | Description                                                                                                                                                         |
+| --------------------- | ----------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **LicenseFile**       | `LICENSE`         | MIT license text with correct year and copyright holder. Removes legal ambiguity for adoption.                                                                      |
 | **ContributionGuide** | `CONTRIBUTING.md` | Comprehensive onboarding document covering prerequisites, workflow, architecture orientation, skill/hook development, template management, testing, and code style. |
 
 #### BC-2: Shell Quality
 
-| Aggregate | Root Entity | Description |
-|---|---|---|
-| **ShellCheckConfig** | `.shellcheckrc` | Project-wide ShellCheck configuration. Shell directive set to `bash`. All rules enabled by default. |
-| **EditorConfig** | `.editorconfig` | Editor-agnostic formatting defaults: 2-space indent, LF line endings, UTF-8, trailing whitespace trimming. Applies to `.sh`, `.md`, `.json`, `.yaml` files. |
+| Aggregate            | Root Entity     | Description                                                                                                                                                 |
+| -------------------- | --------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **ShellCheckConfig** | `.shellcheckrc` | Project-wide ShellCheck configuration. Shell directive set to `bash`. All rules enabled by default.                                                         |
+| **EditorConfig**     | `.editorconfig` | Editor-agnostic formatting defaults: 2-space indent, LF line endings, UTF-8, trailing whitespace trimming. Applies to `.sh`, `.md`, `.json`, `.yaml` files. |
 
 #### BC-3: Markdown Quality
 
-| Aggregate | Root Entity | Description |
-|---|---|---|
+| Aggregate              | Root Entity           | Description                                                                                                                                                 |
+| ---------------------- | --------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | **MarkdownLintConfig** | `.markdownlint.jsonc` | markdownlint rule configuration. MD013 (line length) relaxed for tables/URLs. MD033 (inline HTML) disabled for Mermaid containers. All other rules enabled. |
-| **PrettierConfig** | `.prettierrc` | Prettier configuration scoped to Markdown: prose wrap `preserve`, 2-space tab width. |
-| **PrettierIgnore** | `.prettierignore` | Exclusion patterns for generated or vendored content. |
-| **NodeDevDeps** | `package.json` | Dev-only Node.js dependencies (`markdownlint-cli2`, `prettier`). Does not affect plugin runtime. |
+| **PrettierConfig**     | `.prettierrc`         | Prettier configuration scoped to Markdown: prose wrap `preserve`, 2-space tab width.                                                                        |
+| **PrettierIgnore**     | `.prettierignore`     | Exclusion patterns for generated or vendored content.                                                                                                       |
+| **NodeDevDeps**        | `package.json`        | Dev-only Node.js dependencies (`markdownlint-cli2`, `prettier`). Does not affect plugin runtime.                                                            |
 
 #### BC-4: Automation
 
-| Aggregate | Root Entity | Description |
-|---|---|---|
-| **PreCommitConfig** | `.pre-commit-config.yaml` | pre-commit framework configuration declaring all hooks: shfmt, ShellCheck, markdownlint-cli2, Prettier, template drift check. |
-| **CIPipeline** | `.github/workflows/ci.yml` | GitHub Actions workflow with three jobs: `lint-shell`, `lint-markdown`, `validate`. Runs on PR and push to main. |
+| Aggregate           | Root Entity                | Description                                                                                                                   |
+| ------------------- | -------------------------- | ----------------------------------------------------------------------------------------------------------------------------- |
+| **PreCommitConfig** | `.pre-commit-config.yaml`  | pre-commit framework configuration declaring all hooks: shfmt, ShellCheck, markdownlint-cli2, Prettier, template drift check. |
+| **CIPipeline**      | `.github/workflows/ci.yml` | GitHub Actions workflow with three jobs: `lint-shell`, `lint-markdown`, `validate`. Runs on PR and push to main.              |
 
 #### BC-5: Claude Code DX
 
-| Aggregate | Root Entity | Description |
-|---|---|---|
-| **ProjectSettings** | `.claude/settings.json` | Claude Code project settings: tool permissions, environment variables, dogfooding plugin reference (`"path": "."`). Committed to repo. |
-| **LintCommand** | `.claude/commands/lint.md` | Prompt-based skill that runs the full lint suite and reports results. |
-| **ValidateCommand** | `.claude/commands/validate.md` | Prompt-based skill that runs template drift check and full structure validation (`--root`). |
-| **TestHooksCommand** | `.claude/commands/test-hooks.md` | Prompt-based skill that smoke-tests enforcement hooks with known good/bad inputs. |
-| **PropagateTemplatesCommand** | `.claude/commands/propagate-templates.md` | Prompt-based skill that copies canonical templates to consuming skills and verifies drift-free. |
-| **CheckCICommand** | `.claude/commands/check-ci.md` | Prompt-based skill that runs the full CI pipeline locally. |
-| **DevClaude** | `.claude/CLAUDE.md` | Development-specific context: pitfalls, template propagation reminders, lint/validate pointers. |
+| Aggregate                     | Root Entity                               | Description                                                                                                                            |
+| ----------------------------- | ----------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------- |
+| **ProjectSettings**           | `.claude/settings.json`                   | Claude Code project settings: tool permissions, environment variables, dogfooding plugin reference (`"path": "."`). Committed to repo. |
+| **LintCommand**               | `.claude/commands/lint.md`                | Prompt-based skill that runs the full lint suite and reports results.                                                                  |
+| **ValidateCommand**           | `.claude/commands/validate.md`            | Prompt-based skill that runs template drift check and full structure validation (`--root`).                                            |
+| **TestHooksCommand**          | `.claude/commands/test-hooks.md`          | Prompt-based skill that smoke-tests enforcement hooks with known good/bad inputs.                                                      |
+| **PropagateTemplatesCommand** | `.claude/commands/propagate-templates.md` | Prompt-based skill that copies canonical templates to consuming skills and verifies drift-free.                                        |
+| **CheckCICommand**            | `.claude/commands/check-ci.md`            | Prompt-based skill that runs the full CI pipeline locally.                                                                             |
+| **DevClaude**                 | `.claude/CLAUDE.md`                       | Development-specific context: pitfalls, template propagation reminders, lint/validate pointers.                                        |
 
 ### Domain Events
 
-| Event | Source Context | Target Context(s) | Description |
-|---|---|---|---|
-| **GovernanceEstablished** | BC-1 (Governance) | BC-4 (Automation) | LICENSE and CONTRIBUTING.md exist; CONTRIBUTING.md can reference lint/CI setup once those are ready. |
-| **ShellLintConfigured** | BC-2 (Shell Quality) | BC-4 (Automation) | `.shellcheckrc` and `.editorconfig` exist; pre-commit and CI can wire up ShellCheck/shfmt hooks. |
-| **MarkdownLintConfigured** | BC-3 (Markdown Quality) | BC-4 (Automation) | markdownlint and Prettier configs exist with `package.json`; pre-commit and CI can wire up Markdown hooks. |
-| **AutomationReady** | BC-4 (Automation) | BC-5 (Claude Code DX) | Pre-commit and CI are functional; project commands can reference them (e.g., `/project:check-ci` runs the pipeline locally). |
-| **InitialFormatPass** | BC-4 (Automation) | BC-1 (Governance) | After linting is configured, run formatters on existing files. Results feed back into CONTRIBUTING.md code style section. |
-| **DogfoodingActive** | BC-5 (Claude Code DX) | All Contexts | Plugin is self-installed; all enforcement hooks and skills are active during development, validating the full DX. |
+| Event                      | Source Context          | Target Context(s)     | Description                                                                                                                  |
+| -------------------------- | ----------------------- | --------------------- | ---------------------------------------------------------------------------------------------------------------------------- |
+| **GovernanceEstablished**  | BC-1 (Governance)       | BC-4 (Automation)     | LICENSE and CONTRIBUTING.md exist; CONTRIBUTING.md can reference lint/CI setup once those are ready.                         |
+| **ShellLintConfigured**    | BC-2 (Shell Quality)    | BC-4 (Automation)     | `.shellcheckrc` and `.editorconfig` exist; pre-commit and CI can wire up ShellCheck/shfmt hooks.                             |
+| **MarkdownLintConfigured** | BC-3 (Markdown Quality) | BC-4 (Automation)     | markdownlint and Prettier configs exist with `package.json`; pre-commit and CI can wire up Markdown hooks.                   |
+| **AutomationReady**        | BC-4 (Automation)       | BC-5 (Claude Code DX) | Pre-commit and CI are functional; project commands can reference them (e.g., `/project:check-ci` runs the pipeline locally). |
+| **InitialFormatPass**      | BC-4 (Automation)       | BC-1 (Governance)     | After linting is configured, run formatters on existing files. Results feed back into CONTRIBUTING.md code style section.    |
+| **DogfoodingActive**       | BC-5 (Claude Code DX)   | All Contexts          | Plugin is self-installed; all enforcement hooks and skills are active during development, validating the full DX.            |
 
 ---
 
@@ -269,18 +269,18 @@ Architectural decisions that may need to become ADRs during implementation:
 
 ## Dependencies
 
-| Dependency | Required By | Status |
-|---|---|---|
-| RFC-001 accepted | This plan | Draft (requires acceptance to proceed) |
-| Bash 4+ | Phases 2, 4 (shfmt, ShellCheck, existing scripts) | Assumed available |
-| Git | All phases | Assumed available |
-| Node.js + npm | Phase 3 (markdownlint-cli2, Prettier) | Must be available; version ≥ 18 recommended |
-| Python 3 | Phase 4 (pre-commit framework) | Must be available if Option A chosen |
-| ShellCheck | Phases 2, 4 | Must be installed |
-| shfmt | Phases 2, 4 | Must be installed |
-| GitHub Actions | Phase 4 | Repo must be hosted on GitHub |
-| Claude Code v2.1.3+ | Phase 5 | Assumed available |
-| Existing plugin (skills, hooks, scripts) | Phase 5 (dogfooding) | Complete (v0.3.1) |
+| Dependency                               | Required By                                       | Status                                      |
+| ---------------------------------------- | ------------------------------------------------- | ------------------------------------------- |
+| RFC-001 accepted                         | This plan                                         | Draft (requires acceptance to proceed)      |
+| Bash 4+                                  | Phases 2, 4 (shfmt, ShellCheck, existing scripts) | Assumed available                           |
+| Git                                      | All phases                                        | Assumed available                           |
+| Node.js + npm                            | Phase 3 (markdownlint-cli2, Prettier)             | Must be available; version ≥ 18 recommended |
+| Python 3                                 | Phase 4 (pre-commit framework)                    | Must be available if Option A chosen        |
+| ShellCheck                               | Phases 2, 4                                       | Must be installed                           |
+| shfmt                                    | Phases 2, 4                                       | Must be installed                           |
+| GitHub Actions                           | Phase 4                                           | Repo must be hosted on GitHub               |
+| Claude Code v2.1.3+                      | Phase 5                                           | Assumed available                           |
+| Existing plugin (skills, hooks, scripts) | Phase 5 (dogfooding)                              | Complete (v0.3.1)                           |
 
 ---
 
@@ -313,17 +313,17 @@ Architectural decisions that may need to become ADRs during implementation:
 
 ## Cross-Reference Map
 
-| RFC-001 Section | Plan Phase | Key Tasks |
-|---|---|---|
-| §1 CONTRIBUTING.md | Phase 1 | 1.2 |
-| §2 MIT License | Phase 1 | 1.1 |
-| §3 Shell: ShellCheck + shfmt | Phase 2 | 2.1, 2.2 |
-| §3 Markdown: markdownlint + Prettier | Phase 3 | 3.1–3.5 |
-| §3 General Configuration | Phase 2 | 2.2 |
-| §3 Pre-commit Hook | Phase 4 | 4.1 |
-| §3 Shell Formatting Standards | Phase 2, 4 | 2.1, 4.3 |
-| §3 Markdown Formatting Standards | Phase 3, 4 | 3.2, 3.3, 4.3 |
-| §4 CI Pipeline | Phase 4 | 4.2 |
-| §5 `.claude/` Directory Setup | Phase 5 | 5.1–5.7 |
-| §6 Dogfooding | Phase 5 | 5.1, 5.8 |
-| Decisions | Phase 4, 5 | Pre-commit choice, Node.js boundary |
+| RFC-001 Section                      | Plan Phase | Key Tasks                           |
+| ------------------------------------ | ---------- | ----------------------------------- |
+| §1 CONTRIBUTING.md                   | Phase 1    | 1.2                                 |
+| §2 MIT License                       | Phase 1    | 1.1                                 |
+| §3 Shell: ShellCheck + shfmt         | Phase 2    | 2.1, 2.2                            |
+| §3 Markdown: markdownlint + Prettier | Phase 3    | 3.1–3.5                             |
+| §3 General Configuration             | Phase 2    | 2.2                                 |
+| §3 Pre-commit Hook                   | Phase 4    | 4.1                                 |
+| §3 Shell Formatting Standards        | Phase 2, 4 | 2.1, 4.3                            |
+| §3 Markdown Formatting Standards     | Phase 3, 4 | 3.2, 3.3, 4.3                       |
+| §4 CI Pipeline                       | Phase 4    | 4.2                                 |
+| §5 `.claude/` Directory Setup        | Phase 5    | 5.1–5.7                             |
+| §6 Dogfooding                        | Phase 5    | 5.1, 5.8                            |
+| Decisions                            | Phase 4, 5 | Pre-commit choice, Node.js boundary |

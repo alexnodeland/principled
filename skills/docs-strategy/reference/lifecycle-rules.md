@@ -10,21 +10,21 @@ draft ──→ in-review ──→ accepted
 
 ### States
 
-| State | Mutable? | Description |
-|---|---|---|
-| `draft` | Yes | Initial state. Author is actively writing the proposal. |
-| `in-review` | Yes | Proposal is complete and under team review. |
-| `accepted` | **No** (terminal) | Proposal was approved. Triggers plan creation. |
-| `rejected` | **No** (terminal) | Proposal was declined with rationale. |
+| State        | Mutable?          | Description                                                                         |
+| ------------ | ----------------- | ----------------------------------------------------------------------------------- |
+| `draft`      | Yes               | Initial state. Author is actively writing the proposal.                             |
+| `in-review`  | Yes               | Proposal is complete and under team review.                                         |
+| `accepted`   | **No** (terminal) | Proposal was approved. Triggers plan creation.                                      |
+| `rejected`   | **No** (terminal) | Proposal was declined with rationale.                                               |
 | `superseded` | **No** (terminal) | Replaced by a newer proposal. The `superseded_by` field identifies the replacement. |
 
 ### Valid Transitions
 
-| From | To | Conditions |
-|---|---|---|
-| `draft` | `in-review` | Author considers the proposal ready for review |
-| `in-review` | `accepted` | Reviewers approve the proposal |
-| `in-review` | `rejected` | Reviewers decline the proposal |
+| From        | To           | Conditions                                                    |
+| ----------- | ------------ | ------------------------------------------------------------- |
+| `draft`     | `in-review`  | Author considers the proposal ready for review                |
+| `in-review` | `accepted`   | Reviewers approve the proposal                                |
+| `in-review` | `rejected`   | Reviewers decline the proposal                                |
 | `in-review` | `superseded` | A newer proposal replaces this one (must set `superseded_by`) |
 
 ### Rules
@@ -44,11 +44,11 @@ active ──→ complete
 
 ### States
 
-| State | Mutable? | Description |
-|---|---|---|
-| `active` | Yes | Implementation is in progress. Tasks are being completed. |
-| `complete` | No | All tasks are done. Related ADRs have been created. |
-| `abandoned` | No | Plan was abandoned. The originating proposal may still stand. |
+| State       | Mutable? | Description                                                   |
+| ----------- | -------- | ------------------------------------------------------------- |
+| `active`    | Yes      | Implementation is in progress. Tasks are being completed.     |
+| `complete`  | No       | All tasks are done. Related ADRs have been created.           |
+| `abandoned` | No       | Plan was abandoned. The originating proposal may still stand. |
 
 ### Rules
 
@@ -65,11 +65,11 @@ proposed ──→ accepted ──→ deprecated
 
 ### States
 
-| State | Mutable? | Description |
-|---|---|---|
-| `proposed` | Yes | Decision is being drafted or under discussion. |
-| `accepted` | **No** (immutable) | Decision has been approved and is in effect. |
-| `deprecated` | **No** (immutable) | Decision is no longer relevant but was not replaced. |
+| State        | Mutable?           | Description                                                                    |
+| ------------ | ------------------ | ------------------------------------------------------------------------------ |
+| `proposed`   | Yes                | Decision is being drafted or under discussion.                                 |
+| `accepted`   | **No** (immutable) | Decision has been approved and is in effect.                                   |
+| `deprecated` | **No** (immutable) | Decision is no longer relevant but was not replaced.                           |
 | `superseded` | **No** (immutable) | Replaced by a newer ADR. The `superseded_by` field identifies the replacement. |
 
 ### The Immutability Contract

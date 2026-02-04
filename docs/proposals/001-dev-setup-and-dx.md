@@ -25,7 +25,7 @@ principled-docs is a working Claude Code plugin (v0.3.1) with a well-defined arc
 2. **No license file.** The repo has no explicit license, which creates legal ambiguity for adoption and contribution.
 3. **No linting or formatting standards.** Shell scripts (the entire codebase) have no automated style enforcement. Inconsistencies can creep in across 9 skill directories, hook scripts, and utility scripts. Markdown files — the primary output artifact of this plugin — also have no lint or format enforcement.
 4. **No dogfooding.** principled-docs is a Claude Code plugin for enforcing documentation structure, yet the repo does not install itself as a plugin. We should eat our own cooking.
-5. **No pre-commit hooks for code quality.** The existing hooks system enforces *document* integrity (ADR immutability, proposal lifecycle), but nothing enforces *code* quality on commit.
+5. **No pre-commit hooks for code quality.** The existing hooks system enforces _document_ integrity (ADR immutability, proposal lifecycle), but nothing enforces _code_ quality on commit.
 6. **No CI pipeline.** Template drift checks and structure validation exist as scripts but are not wired into a PR-gated pipeline.
 7. **No `.claude/` directory.** The repo lacks Claude Code local configuration (settings, skills, hooks, commands) that would improve the development experience for contributors using Claude Code.
 
@@ -151,13 +151,13 @@ Create a `.claude/` directory with project-level Claude Code configuration to gi
 
 Custom slash commands (as `.md` prompt files) for common developer workflows in this repo. Each file in `.claude/commands/` becomes a user-invocable `/project:<name>` command — the same mechanism as plugin skills, but scoped to this repo's development needs rather than the plugin's consumer-facing features.
 
-| Command | File | Purpose |
-|---|---|---|
-| `/project:lint` | `commands/lint.md` | Run the full lint suite (ShellCheck + shfmt + markdownlint + Prettier) and report results |
-| `/project:validate` | `commands/validate.md` | Run template drift check and full structure validation (`--root`) |
-| `/project:test-hooks` | `commands/test-hooks.md` | Smoke-test enforcement hooks by feeding known good/bad inputs and asserting exit codes |
-| `/project:propagate-templates` | `commands/propagate-templates.md` | Copy canonical templates to all consuming skills and verify drift-free |
-| `/project:check-ci` | `commands/check-ci.md` | Run the full CI pipeline locally (all lint + validate steps) |
+| Command                        | File                              | Purpose                                                                                   |
+| ------------------------------ | --------------------------------- | ----------------------------------------------------------------------------------------- |
+| `/project:lint`                | `commands/lint.md`                | Run the full lint suite (ShellCheck + shfmt + markdownlint + Prettier) and report results |
+| `/project:validate`            | `commands/validate.md`            | Run template drift check and full structure validation (`--root`)                         |
+| `/project:test-hooks`          | `commands/test-hooks.md`          | Smoke-test enforcement hooks by feeding known good/bad inputs and asserting exit codes    |
+| `/project:propagate-templates` | `commands/propagate-templates.md` | Copy canonical templates to all consuming skills and verify drift-free                    |
+| `/project:check-ci`            | `commands/check-ci.md`            | Run the full CI pipeline locally (all lint + validate steps)                              |
 
 Each command file contains a prompt with workflow instructions — the same pattern used by plugin skills in their `SKILL.md` files. This encodes tribal knowledge about "how do I check my work" into discoverable, one-step operations.
 

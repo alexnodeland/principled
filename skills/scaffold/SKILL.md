@@ -22,11 +22,11 @@ Generate the complete documentation structure for a new module or the repo root.
 
 ## Arguments
 
-| Argument | Required | Description |
-|---|---|---|
-| `<module-path>` | Yes (unless `--root`) | Path to the module root (e.g., `packages/payment-gateway`) |
-| `--type` | Yes (unless `--root`) | Module type: `core`, `lib`, or `app`. Determines which directories and files are created. |
-| `--root` | No | Scaffold the repo-level `docs/` structure instead of a module |
+| Argument        | Required              | Description                                                                               |
+| --------------- | --------------------- | ----------------------------------------------------------------------------------------- |
+| `<module-path>` | Yes (unless `--root`) | Path to the module root (e.g., `packages/payment-gateway`)                                |
+| `--type`        | Yes (unless `--root`) | Module type: `core`, `lib`, or `app`. Determines which directories and files are created. |
+| `--root`        | No                    | Scaffold the repo-level `docs/` structure instead of a module                             |
 
 ## Workflow
 
@@ -35,6 +35,7 @@ Generate the complete documentation structure for a new module or the repo root.
 1. **Parse arguments.** Extract `<module-path>` and `--type` from `$ARGUMENTS`. Type is required — do not guess or auto-detect.
 
 2. **Create core directories:**
+
    ```
    <module-path>/docs/proposals/
    <module-path>/docs/plans/
@@ -50,12 +51,12 @@ Generate the complete documentation structure for a new module or the repo root.
    - Read each template file from this skill's `templates/core/` directory
    - Replace placeholders with actual values:
 
-     | Placeholder | Value |
-     |---|---|
+     | Placeholder       | Value                                                   |
+     | ----------------- | ------------------------------------------------------- |
      | `{{MODULE_NAME}}` | Name derived from module path (e.g., `payment-gateway`) |
-     | `{{MODULE_TYPE}}` | The `--type` value: `core`, `lib`, or `app` |
-     | `{{DATE}}` | Today's date in `YYYY-MM-DD` format |
-     | `{{AUTHOR}}` | Git user name (`git config user.name`) or "TODO" |
+     | `{{MODULE_TYPE}}` | The `--type` value: `core`, `lib`, or `app`             |
+     | `{{DATE}}`        | Today's date in `YYYY-MM-DD` format                     |
+     | `{{AUTHOR}}`      | Git user name (`git config user.name`) or "TODO"        |
 
    - Write populated files:
      - `<module-path>/README.md`
@@ -67,6 +68,7 @@ Generate the complete documentation structure for a new module or the repo root.
    - **app:** (No additional root files — app extensions are directories with template docs)
 
 6. **Run validation** using `scripts/validate-structure.sh`:
+
    ```bash
    bash scripts/validate-structure.sh --module-path <module-path> --type <type>
    ```
@@ -76,6 +78,7 @@ Generate the complete documentation structure for a new module or the repo root.
 ### Root Scaffolding (`/scaffold --root`)
 
 1. Create repo-root directories:
+
    ```
    docs/proposals/
    docs/plans/
@@ -84,6 +87,7 @@ Generate the complete documentation structure for a new module or the repo root.
    ```
 
 2. Run root validation:
+
    ```bash
    bash scripts/validate-structure.sh --root
    ```

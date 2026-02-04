@@ -93,26 +93,27 @@ The root result is included in the aggregate statistics.
 
 ## Report Components
 
-| Component | Description |
-|---|---|
-| **Module header** | Module path and type |
-| **Component list** | Each required directory/file with status marker |
-| **Per-module result** | PASS or FAIL with counts |
-| **Summary** | Aggregate statistics across all modules |
-| **Common gaps** | Most frequently missing components (summary mode) |
-| **Failing modules** | List of non-compliant modules (summary mode) |
+| Component             | Description                                       |
+| --------------------- | ------------------------------------------------- |
+| **Module header**     | Module path and type                              |
+| **Component list**    | Each required directory/file with status marker   |
+| **Per-module result** | PASS or FAIL with counts                          |
+| **Summary**           | Aggregate statistics across all modules           |
+| **Common gaps**       | Most frequently missing components (summary mode) |
+| **Failing modules**   | List of non-compliant modules (summary mode)      |
 
 ## Status Markers
 
-| Marker | Meaning |
-|---|---|
-| `✓` | Present with content |
-| `✗` | Missing (always a failure) |
-| `~` | Present but placeholder only (failure in strict mode) |
+| Marker | Meaning                                               |
+| ------ | ----------------------------------------------------- |
+| `✓`    | Present with content                                  |
+| `✗`    | Missing (always a failure)                            |
+| `~`    | Present but placeholder only (failure in strict mode) |
 
 ## Module Type Detection
 
 The audit skill determines module type by:
+
 1. Reading the module's `CLAUDE.md` file, looking for the `## Module Type` section
 2. If not found, falling back to the project configuration (`principled-docs.defaultModuleType`)
 3. If neither available, reporting an error for that module

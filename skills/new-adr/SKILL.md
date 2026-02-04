@@ -21,12 +21,12 @@ Create a new ADR, either standalone or linked to an accepted proposal.
 
 ## Arguments
 
-| Argument | Required | Description |
-|---|---|---|
-| `<short-title>` | Yes | Short, hyphenated title for the decision |
-| `--from-proposal NNN` | No | Link to an originating proposal (must be `accepted`) |
-| `--module <path>` | No | Target module path |
-| `--root` | No | Create at repo root level |
+| Argument              | Required | Description                                          |
+| --------------------- | -------- | ---------------------------------------------------- |
+| `<short-title>`       | Yes      | Short, hyphenated title for the decision             |
+| `--from-proposal NNN` | No       | Link to an originating proposal (must be `accepted`) |
+| `--module <path>`     | No       | Target module path                                   |
+| `--root`              | No       | Create at repo root level                            |
 
 ## Workflow
 
@@ -34,9 +34,10 @@ Create a new ADR, either standalone or linked to an accepted proposal.
 
 1. **Parse arguments.** Extract title, proposal number, and target.
 
-2. **Locate and verify the proposal.** Find proposal NNN and verify its status is `accepted`. If not accepted, report: *"Cannot link ADR to proposal NNN: proposal has status '<status>'. Only accepted proposals can be linked."*
+2. **Locate and verify the proposal.** Find proposal NNN and verify its status is `accepted`. If not accepted, report: _"Cannot link ADR to proposal NNN: proposal has status '\<status\>'. Only accepted proposals can be linked."_
 
 3. **Get next sequence number.** Run:
+
    ```bash
    bash scripts/next-number.sh --dir <target-decisions-dir>
    ```
@@ -45,15 +46,15 @@ Create a new ADR, either standalone or linked to an accepted proposal.
 
 5. **Populate frontmatter:**
 
-   | Field | Value |
-   |---|---|
-   | `title` | Derived from short title |
-   | `number` | NNN from step 3 |
-   | `status` | `proposed` |
-   | `author` | Git user name or prompt |
-   | `created` | Today's date |
-   | `originating_proposal` | The proposal number |
-   | `superseded_by` | `null` |
+   | Field                  | Value                    |
+   | ---------------------- | ------------------------ |
+   | `title`                | Derived from short title |
+   | `number`               | NNN from step 3          |
+   | `status`               | `proposed`               |
+   | `author`               | Git user name or prompt  |
+   | `created`              | Today's date             |
+   | `originating_proposal` | The proposal number      |
+   | `superseded_by`        | `null`                   |
 
 6. **Pre-populate from proposal.** Copy relevant context from the proposal to seed the ADR's Context section.
 
@@ -70,9 +71,10 @@ Create a new ADR, either standalone or linked to an accepted proposal.
 
 After creating a new ADR, prompt the user:
 
-> *"Does this ADR supersede an existing ADR? (enter number or skip)"*
+> _"Does this ADR supersede an existing ADR? (enter number or skip)"_
 
 If the user provides a number:
+
 1. Locate the existing ADR.
 2. Update its `superseded_by` frontmatter field to the new ADR's number. (This is the one permitted mutation on an accepted ADR.)
 3. Set the new ADR's references to mention the superseded record.

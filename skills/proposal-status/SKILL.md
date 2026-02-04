@@ -20,12 +20,12 @@ Transition a proposal through its lifecycle states with validation and side-effe
 
 ## Arguments
 
-| Argument | Required | Description |
-|---|---|---|
-| `<number-or-path>` | Yes | Proposal number (e.g., `001`) or full file path |
-| `<new-status>` | Yes | Target status: `in-review`, `accepted`, `rejected`, `superseded` |
-| `--module <path>` | No | Module containing the proposal |
-| `--root` | No | Proposal is at repo root level |
+| Argument           | Required | Description                                                      |
+| ------------------ | -------- | ---------------------------------------------------------------- |
+| `<number-or-path>` | Yes      | Proposal number (e.g., `001`) or full file path                  |
+| `<new-status>`     | Yes      | Target status: `in-review`, `accepted`, `rejected`, `superseded` |
+| `--module <path>`  | No       | Module containing the proposal                                   |
+| `--root`           | No       | Proposal is at repo root level                                   |
 
 ## Workflow
 
@@ -43,8 +43,8 @@ Transition a proposal through its lifecycle states with validation and side-effe
                        ──→ superseded
    ```
 
-   - If the transition is **invalid**, report an error with the legal transitions from the current state. Example: *"Cannot transition proposal 001 from 'draft' to 'accepted'. Valid transitions from 'draft': in-review."*
-   - If the current status is **terminal** (`accepted`, `rejected`, `superseded`), report: *"Proposal 001 has reached terminal status '<status>' and cannot be transitioned."*
+   - If the transition is **invalid**, report an error with the legal transitions from the current state. Example: _"Cannot transition proposal 001 from 'draft' to 'accepted'. Valid transitions from 'draft': in-review."_
+   - If the current status is **terminal** (`accepted`, `rejected`, `superseded`), report: _"Proposal 001 has reached terminal status '\<status\>' and cannot be transitioned."_
 
 5. **Update the proposal.** If valid:
    - Update the `status` field in frontmatter
@@ -53,7 +53,7 @@ Transition a proposal through its lifecycle states with validation and side-effe
 6. **Handle side-effects:**
 
    **On `accepted`:**
-   - Prompt the user: *"Proposal NNN has been accepted. Create an implementation plan? Use `/new-plan <title> --from-proposal NNN`."*
+   - Prompt the user: _"Proposal NNN has been accepted. Create an implementation plan? Use `/new-plan <title> --from-proposal NNN`."_
 
    **On `superseded`:**
    - Prompt for the superseding proposal number

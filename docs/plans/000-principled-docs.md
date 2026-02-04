@@ -24,105 +24,105 @@ Build the `principled-docs` Claude Code plugin end-to-end: plugin infrastructure
 
 This implementation decomposes into **8 bounded contexts**, each representing a distinct area of domain responsibility within the plugin:
 
-| # | Bounded Context | Responsibility | Key Artifacts |
-|---|---|---|---|
-| BC-1 | **Plugin Infrastructure** | Plugin manifest, top-level directory skeleton, configuration schema | `plugin.json`, directory tree |
-| BC-2 | **Template Management** | Canonical template authoring, template duplication to consuming skills, drift detection | `scaffold/templates/`, `check-template-drift.sh` |
-| BC-3 | **Knowledge System** | Background knowledge for Claude Code: structure specs, naming conventions, lifecycle rules, DDD guide, pipeline diagrams | `docs-strategy/` skill with all reference files |
-| BC-4 | **Scaffolding & Validation** | Module/root scaffolding, structural validation engine, post-scaffold verification | `scaffold/` skill, `validate/` skill, `validate-structure.sh` |
-| BC-5 | **Authoring Workflows** | Creating proposals, plans, ADRs, and architecture docs with correct numbering, linking, and template population | `new-proposal/`, `new-plan/`, `new-adr/`, `new-architecture-doc/` skills |
-| BC-6 | **Lifecycle Management** | Proposal state machine, status transitions, side-effects (plan creation prompts, supersession) | `proposal-status/` skill, `valid-transitions.md` |
-| BC-7 | **Enforcement Layer** | Deterministic guardrails: ADR immutability, proposal lifecycle freeze, post-write structural nudges | `hooks/hooks.json`, all hook scripts |
-| BC-8 | **Audit System** | Multi-module discovery, per-module validation, aggregate compliance reporting | `docs-audit/` skill, `report-format.md` |
+| #    | Bounded Context              | Responsibility                                                                                                           | Key Artifacts                                                            |
+| ---- | ---------------------------- | ------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------ |
+| BC-1 | **Plugin Infrastructure**    | Plugin manifest, top-level directory skeleton, configuration schema                                                      | `plugin.json`, directory tree                                            |
+| BC-2 | **Template Management**      | Canonical template authoring, template duplication to consuming skills, drift detection                                  | `scaffold/templates/`, `check-template-drift.sh`                         |
+| BC-3 | **Knowledge System**         | Background knowledge for Claude Code: structure specs, naming conventions, lifecycle rules, DDD guide, pipeline diagrams | `docs-strategy/` skill with all reference files                          |
+| BC-4 | **Scaffolding & Validation** | Module/root scaffolding, structural validation engine, post-scaffold verification                                        | `scaffold/` skill, `validate/` skill, `validate-structure.sh`            |
+| BC-5 | **Authoring Workflows**      | Creating proposals, plans, ADRs, and architecture docs with correct numbering, linking, and template population          | `new-proposal/`, `new-plan/`, `new-adr/`, `new-architecture-doc/` skills |
+| BC-6 | **Lifecycle Management**     | Proposal state machine, status transitions, side-effects (plan creation prompts, supersession)                           | `proposal-status/` skill, `valid-transitions.md`                         |
+| BC-7 | **Enforcement Layer**        | Deterministic guardrails: ADR immutability, proposal lifecycle freeze, post-write structural nudges                      | `hooks/hooks.json`, all hook scripts                                     |
+| BC-8 | **Audit System**             | Multi-module discovery, per-module validation, aggregate compliance reporting                                            | `docs-audit/` skill, `report-format.md`                                  |
 
 ### Aggregates
 
 #### BC-1: Plugin Infrastructure
 
-| Aggregate | Root Entity | Description |
-|---|---|---|
-| **PluginManifest** | `plugin.json` | The plugin's identity, version, and metadata. Governs how Claude Code discovers and loads the plugin. |
-| **DirectoryTree** | Plugin root | The complete file/directory skeleton that all other contexts populate. Must be created before any content is written. |
+| Aggregate          | Root Entity   | Description                                                                                                           |
+| ------------------ | ------------- | --------------------------------------------------------------------------------------------------------------------- |
+| **PluginManifest** | `plugin.json` | The plugin's identity, version, and metadata. Governs how Claude Code discovers and loads the plugin.                 |
+| **DirectoryTree**  | Plugin root   | The complete file/directory skeleton that all other contexts populate. Must be created before any content is written. |
 
 #### BC-2: Template Management
 
-| Aggregate | Root Entity | Description |
-|---|---|---|
-| **CanonicalTemplateSet** | `scaffold/templates/` | The single source of truth for every document template. Three sub-groups: `core/` (7 templates), `lib/` (2 templates), `app/` (3 templates). |
-| **TemplateCopy** | Per-skill `templates/` dir | A derived copy of a canonical template placed inside a consuming skill for self-containment. Must be byte-identical to canonical. |
-| **DriftChecker** | `check-template-drift.sh` | CI-facing script that compares every TemplateCopy against its CanonicalTemplate and fails on divergence. |
+| Aggregate                | Root Entity                | Description                                                                                                                                  |
+| ------------------------ | -------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------- |
+| **CanonicalTemplateSet** | `scaffold/templates/`      | The single source of truth for every document template. Three sub-groups: `core/` (7 templates), `lib/` (2 templates), `app/` (3 templates). |
+| **TemplateCopy**         | Per-skill `templates/` dir | A derived copy of a canonical template placed inside a consuming skill for self-containment. Must be byte-identical to canonical.            |
+| **DriftChecker**         | `check-template-drift.sh`  | CI-facing script that compares every TemplateCopy against its CanonicalTemplate and fails on divergence.                                     |
 
 #### BC-3: Knowledge System
 
-| Aggregate | Root Entity | Description |
-|---|---|---|
-| **StructureSpec** | `reference/structure-spec.md` | Defines required directories and files per module type (core, lib, app) plus root-level structure. |
-| **ComponentGuide** | `reference/component-guide.md` | Purpose, audience, and content expectations for every documentation component. |
-| **NamingConventions** | `reference/naming-conventions.md` | `NNN-short-title.md` patterns, slug rules, zero-padding, sequence numbering. |
-| **LifecycleRules** | `reference/lifecycle-rules.md` | Proposal state machine, plan lifecycle, ADR immutability contract with superseded_by exception. |
-| **DDDGuide** | `reference/ddd-decomposition.md` | How to identify bounded contexts, define aggregates, map domain events, and derive tasks for implementation plans. |
-| **PipelineDiagram** | `diagrams/pipeline-overview.md` | Visual representation of the Proposals → Plans → Decisions pipeline. |
+| Aggregate             | Root Entity                       | Description                                                                                                        |
+| --------------------- | --------------------------------- | ------------------------------------------------------------------------------------------------------------------ |
+| **StructureSpec**     | `reference/structure-spec.md`     | Defines required directories and files per module type (core, lib, app) plus root-level structure.                 |
+| **ComponentGuide**    | `reference/component-guide.md`    | Purpose, audience, and content expectations for every documentation component.                                     |
+| **NamingConventions** | `reference/naming-conventions.md` | `NNN-short-title.md` patterns, slug rules, zero-padding, sequence numbering.                                       |
+| **LifecycleRules**    | `reference/lifecycle-rules.md`    | Proposal state machine, plan lifecycle, ADR immutability contract with superseded_by exception.                    |
+| **DDDGuide**          | `reference/ddd-decomposition.md`  | How to identify bounded contexts, define aggregates, map domain events, and derive tasks for implementation plans. |
+| **PipelineDiagram**   | `diagrams/pipeline-overview.md`   | Visual representation of the Proposals → Plans → Decisions pipeline.                                               |
 
 #### BC-4: Scaffolding & Validation
 
-| Aggregate | Root Entity | Description |
-|---|---|---|
-| **ScaffoldSkill** | `scaffold/SKILL.md` | Orchestrates module creation: reads type, creates directories, populates templates, runs validation. Supports `--root` for repo-level structure. |
+| Aggregate            | Root Entity             | Description                                                                                                                                             |
+| -------------------- | ----------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **ScaffoldSkill**    | `scaffold/SKILL.md`     | Orchestrates module creation: reads type, creates directories, populates templates, runs validation. Supports `--root` for repo-level structure.        |
 | **ValidationEngine** | `validate-structure.sh` | Checks that a module's documentation structure matches the expected standard for its type. Supports `--json`, `--strict`, `--root`, `--on-write` modes. |
-| **ValidateSkill** | `validate/SKILL.md` | User-facing validation interface that invokes the validation engine and formats output. |
+| **ValidateSkill**    | `validate/SKILL.md`     | User-facing validation interface that invokes the validation engine and formats output.                                                                 |
 
 #### BC-5: Authoring Workflows
 
-| Aggregate | Root Entity | Description |
-|---|---|---|
-| **SequenceNumberer** | `next-number.sh` | Scans a target directory for `NNN-*.md` files and returns the next zero-padded sequence number. Shared via copy across proposal/plan/ADR skills. |
-| **ProposalAuthoring** | `new-proposal/SKILL.md` | Creates new RFC documents with correct numbering, frontmatter, and template population. Supports `--module` and `--root`. |
-| **PlanAuthoring** | `new-plan/SKILL.md` | Creates DDD implementation plans linked to accepted proposals. Reads DDD guide, pre-populates bounded contexts. Requires `--from-proposal`. |
-| **ADRAuthoring** | `new-adr/SKILL.md` | Creates ADRs either standalone or linked to proposals. Handles supersession cross-referencing. |
-| **ArchitectureDocAuthoring** | `new-architecture-doc/SKILL.md` | Creates architecture docs with auto-detected ADR cross-references. |
+| Aggregate                    | Root Entity                     | Description                                                                                                                                      |
+| ---------------------------- | ------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
+| **SequenceNumberer**         | `next-number.sh`                | Scans a target directory for `NNN-*.md` files and returns the next zero-padded sequence number. Shared via copy across proposal/plan/ADR skills. |
+| **ProposalAuthoring**        | `new-proposal/SKILL.md`         | Creates new RFC documents with correct numbering, frontmatter, and template population. Supports `--module` and `--root`.                        |
+| **PlanAuthoring**            | `new-plan/SKILL.md`             | Creates DDD implementation plans linked to accepted proposals. Reads DDD guide, pre-populates bounded contexts. Requires `--from-proposal`.      |
+| **ADRAuthoring**             | `new-adr/SKILL.md`              | Creates ADRs either standalone or linked to proposals. Handles supersession cross-referencing.                                                   |
+| **ArchitectureDocAuthoring** | `new-architecture-doc/SKILL.md` | Creates architecture docs with auto-detected ADR cross-references.                                                                               |
 
 #### BC-6: Lifecycle Management
 
-| Aggregate | Root Entity | Description |
-|---|---|---|
-| **ProposalStateMachine** | `valid-transitions.md` | Defines legal state transitions: `draft → in-review → accepted|rejected|superseded`. No transitions from terminal states. |
+| Aggregate                 | Root Entity                | Description                                                                                                                                            |
+| ------------------------- | -------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------ | -------- | ------------------------------------------------- |
+| **ProposalStateMachine**  | `valid-transitions.md`     | Defines legal state transitions: `draft → in-review → accepted                                                                                         | rejected | superseded`. No transitions from terminal states. |
 | **StatusTransitionSkill** | `proposal-status/SKILL.md` | Validates requested transition, updates frontmatter, triggers side-effects (plan creation prompt on acceptance, superseded_by prompt on supersession). |
 
 #### BC-7: Enforcement Layer
 
-| Aggregate | Root Entity | Description |
-|---|---|---|
-| **HookConfiguration** | `hooks.json` | Declares all PreToolUse and PostToolUse hooks with matchers, commands, and timeouts. |
-| **FrontmatterParser** | `parse-frontmatter.sh` | Utility that extracts a named field from YAML frontmatter. Used by all guard scripts. |
-| **ADRImmutabilityGuard** | `check-adr-immutability.sh` | Blocks edits to accepted/deprecated/superseded ADRs, except updates to the `superseded_by` field. |
-| **ProposalLifecycleGuard** | `check-proposal-lifecycle.sh` | Blocks edits to proposals in terminal states (accepted, rejected, superseded). |
+| Aggregate                  | Root Entity                   | Description                                                                                       |
+| -------------------------- | ----------------------------- | ------------------------------------------------------------------------------------------------- |
+| **HookConfiguration**      | `hooks.json`                  | Declares all PreToolUse and PostToolUse hooks with matchers, commands, and timeouts.              |
+| **FrontmatterParser**      | `parse-frontmatter.sh`        | Utility that extracts a named field from YAML frontmatter. Used by all guard scripts.             |
+| **ADRImmutabilityGuard**   | `check-adr-immutability.sh`   | Blocks edits to accepted/deprecated/superseded ADRs, except updates to the `superseded_by` field. |
+| **ProposalLifecycleGuard** | `check-proposal-lifecycle.sh` | Blocks edits to proposals in terminal states (accepted, rejected, superseded).                    |
 
 #### BC-8: Audit System
 
-| Aggregate | Root Entity | Description |
-|---|---|---|
-| **ModuleDiscovery** | Audit skill logic | Finds all modules under `modulesDirectory`, determines types, filters by `ignoredModules`. |
-| **AuditSkill** | `docs-audit/SKILL.md` | Orchestrates discovery, per-module validation, and aggregate reporting. Supports `--include-root`, `--format summary|detailed`. |
-| **ReportFormat** | `report-format.md` | Specifies the audit output structure: per-module results, aggregate statistics, common gaps. |
+| Aggregate           | Root Entity           | Description                                                                                                          |
+| ------------------- | --------------------- | -------------------------------------------------------------------------------------------------------------------- | ---------- |
+| **ModuleDiscovery** | Audit skill logic     | Finds all modules under `modulesDirectory`, determines types, filters by `ignoredModules`.                           |
+| **AuditSkill**      | `docs-audit/SKILL.md` | Orchestrates discovery, per-module validation, and aggregate reporting. Supports `--include-root`, `--format summary | detailed`. |
+| **ReportFormat**    | `report-format.md`    | Specifies the audit output structure: per-module results, aggregate statistics, common gaps.                         |
 
 ### Domain Events
 
 Events that flow between bounded contexts and trigger cross-context side-effects:
 
-| Event | Source Context | Target Context(s) | Description |
-|---|---|---|---|
-| **PluginSkeletonCreated** | BC-1 (Infrastructure) | BC-2, BC-3, BC-4, BC-5, BC-6, BC-7, BC-8 | Directory tree exists; all contexts can begin populating their artifacts. |
-| **CanonicalTemplatesWritten** | BC-2 (Templates) | BC-4, BC-5 | Canonical templates are ready; copies can be distributed to consuming skills. |
-| **TemplateCopiesDistributed** | BC-2 (Templates) | BC-2 (DriftChecker) | All copies in place; drift checker can be implemented and verified. |
-| **KnowledgeBaseComplete** | BC-3 (Knowledge) | BC-4, BC-5, BC-6 | Reference documentation is available for skills that need to read it during execution. |
-| **ValidationEngineReady** | BC-4 (Scaffolding) | BC-7 (Enforcement), BC-8 (Audit) | `validate-structure.sh` is functional; hooks and audit can invoke it. |
-| **ScaffoldSkillReady** | BC-4 (Scaffolding) | BC-5 (Authoring) | Scaffolding works; authoring skills can assume valid module structures exist. |
-| **NextNumberScriptReady** | BC-5 (Authoring) | BC-5 (all authoring skills) | Sequence numbering works; proposal/plan/ADR creation can assign numbers. |
-| **AuthoringSkillsReady** | BC-5 (Authoring) | BC-6 (Lifecycle) | Authoring is functional; lifecycle transitions can prompt for follow-up creation. |
-| **FrontmatterParserReady** | BC-7 (Enforcement) | BC-7 (Guards) | Frontmatter extraction works; guard scripts can read document status. |
-| **ProposalAccepted** | BC-6 (Lifecycle) | BC-5 (PlanAuthoring) | Triggers prompt to create implementation plan. |
-| **ProposalSuperseded** | BC-6 (Lifecycle) | BC-5 (ProposalAuthoring) | Triggers cross-reference update on superseding proposal. |
-| **ADRSuperseded** | BC-5 (ADRAuthoring) | BC-7 (Enforcement) | Existing ADR's `superseded_by` is updated — the one allowed mutation on an accepted ADR. |
+| Event                         | Source Context        | Target Context(s)                        | Description                                                                              |
+| ----------------------------- | --------------------- | ---------------------------------------- | ---------------------------------------------------------------------------------------- |
+| **PluginSkeletonCreated**     | BC-1 (Infrastructure) | BC-2, BC-3, BC-4, BC-5, BC-6, BC-7, BC-8 | Directory tree exists; all contexts can begin populating their artifacts.                |
+| **CanonicalTemplatesWritten** | BC-2 (Templates)      | BC-4, BC-5                               | Canonical templates are ready; copies can be distributed to consuming skills.            |
+| **TemplateCopiesDistributed** | BC-2 (Templates)      | BC-2 (DriftChecker)                      | All copies in place; drift checker can be implemented and verified.                      |
+| **KnowledgeBaseComplete**     | BC-3 (Knowledge)      | BC-4, BC-5, BC-6                         | Reference documentation is available for skills that need to read it during execution.   |
+| **ValidationEngineReady**     | BC-4 (Scaffolding)    | BC-7 (Enforcement), BC-8 (Audit)         | `validate-structure.sh` is functional; hooks and audit can invoke it.                    |
+| **ScaffoldSkillReady**        | BC-4 (Scaffolding)    | BC-5 (Authoring)                         | Scaffolding works; authoring skills can assume valid module structures exist.            |
+| **NextNumberScriptReady**     | BC-5 (Authoring)      | BC-5 (all authoring skills)              | Sequence numbering works; proposal/plan/ADR creation can assign numbers.                 |
+| **AuthoringSkillsReady**      | BC-5 (Authoring)      | BC-6 (Lifecycle)                         | Authoring is functional; lifecycle transitions can prompt for follow-up creation.        |
+| **FrontmatterParserReady**    | BC-7 (Enforcement)    | BC-7 (Guards)                            | Frontmatter extraction works; guard scripts can read document status.                    |
+| **ProposalAccepted**          | BC-6 (Lifecycle)      | BC-5 (PlanAuthoring)                     | Triggers prompt to create implementation plan.                                           |
+| **ProposalSuperseded**        | BC-6 (Lifecycle)      | BC-5 (ProposalAuthoring)                 | Triggers cross-reference update on superseding proposal.                                 |
+| **ADRSuperseded**             | BC-5 (ADRAuthoring)   | BC-7 (Enforcement)                       | Existing ADR's `superseded_by` is updated — the one allowed mutation on an accepted ADR. |
 
 ---
 
@@ -344,13 +344,13 @@ Architectural decisions that should become ADRs during or after implementation:
 
 ## Dependencies
 
-| Dependency | Required By | Status |
-|---|---|---|
-| Claude Code v2.1.3+ plugin system | Entire implementation | Assumed available |
-| Bash shell with standard utilities (sed, awk, grep, find) | All scripts | Assumed available |
-| Git (for author detection in templates) | Authoring skills | Assumed available |
-| `jq` (for JSON output in validation) | validate-structure.sh, hooks | Optional; script should degrade gracefully |
-| The PRD itself (RFC-000) | This plan | Complete (status: draft) |
+| Dependency                                                | Required By                  | Status                                     |
+| --------------------------------------------------------- | ---------------------------- | ------------------------------------------ |
+| Claude Code v2.1.3+ plugin system                         | Entire implementation        | Assumed available                          |
+| Bash shell with standard utilities (sed, awk, grep, find) | All scripts                  | Assumed available                          |
+| Git (for author detection in templates)                   | Authoring skills             | Assumed available                          |
+| `jq` (for JSON output in validation)                      | validate-structure.sh, hooks | Optional; script should degrade gracefully |
+| The PRD itself (RFC-000)                                  | This plan                    | Complete (status: draft)                   |
 
 ---
 
@@ -384,19 +384,19 @@ Architectural decisions that should become ADRs during or after implementation:
 
 This plan produces artifacts that map back to PRD sections:
 
-| PRD Section | Plan Phase | Key Tasks |
-|---|---|---|
-| §5 Plugin Architecture | Phase 1 | 1.1, 1.2 |
-| §8 Templates | Phase 1 | 1.3–1.7 |
-| §7 Hooks (utilities) | Phase 2 | 2.1 |
+| PRD Section                  | Plan Phase | Key Tasks        |
+| ---------------------------- | ---------- | ---------------- |
+| §5 Plugin Architecture       | Phase 1    | 1.1, 1.2         |
+| §8 Templates                 | Phase 1    | 1.3–1.7          |
+| §7 Hooks (utilities)         | Phase 2    | 2.1              |
 | §6.2 scaffold, §6.8 validate | Phase 2, 3 | 2.2–2.5, 3.2–3.3 |
-| §6.1 docs-strategy | Phase 2, 3 | 2.6–2.12, 3.1 |
-| §6.3 new-proposal | Phase 4 | 4.1 |
-| §6.4 new-plan | Phase 4 | 4.2 |
-| §6.5 new-adr | Phase 4 | 4.3 |
-| §6.7 new-architecture-doc | Phase 4 | 4.4 |
-| §6.6 proposal-status | Phase 4 | 4.5–4.6 |
-| §7 Hooks (guards) | Phase 5 | 5.1–5.3 |
-| §6.9 docs-audit | Phase 6 | 6.1–6.2 |
-| §10 CI Integration | Phase 6 | 6.3 |
-| §11 Configuration | Phase 6 | 6.3 |
+| §6.1 docs-strategy           | Phase 2, 3 | 2.6–2.12, 3.1    |
+| §6.3 new-proposal            | Phase 4    | 4.1              |
+| §6.4 new-plan                | Phase 4    | 4.2              |
+| §6.5 new-adr                 | Phase 4    | 4.3              |
+| §6.7 new-architecture-doc    | Phase 4    | 4.4              |
+| §6.6 proposal-status         | Phase 4    | 4.5–4.6          |
+| §7 Hooks (guards)            | Phase 5    | 5.1–5.3          |
+| §6.9 docs-audit              | Phase 6    | 6.1–6.2          |
+| §10 CI Integration           | Phase 6    | 6.3              |
+| §11 Configuration            | Phase 6    | 6.3              |

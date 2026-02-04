@@ -46,7 +46,7 @@ The following sections specify the complete plugin design: goals, documentation 
 
 - **Content quality enforcement.** The plugin checks structure and template adherence, not prose quality. Whether an ADR is well-argued is a review concern, not a tooling concern.
 - **Replacing CI validation.** The plugin provides fast, local feedback during development. It complements — but does not replace — CI-level structural checks.
-- **Managing document content over time.** The plugin scaffolds and validates. It does not auto-update architecture docs when code changes or deprecate ADRs when new decisions supersede them. Those are authoring tasks the plugin *assists* but does not automate.
+- **Managing document content over time.** The plugin scaffolds and validates. It does not auto-update architecture docs when code changes or deprecate ADRs when new decisions supersede them. Those are authoring tasks the plugin _assists_ but does not automate.
 - **External publishing.** The plugin manages source documentation files. Rendering docs to a site, generating API docs, or publishing to a wiki are separate concerns.
 - **Template inheritance.** Teams override templates wholesale via `customTemplatesPath`. There is no mechanism for extending or merging with base templates.
 - **Module type detection.** The plugin does not auto-detect whether a module is core, lib, or app. Module type must always be explicitly declared.
@@ -64,11 +64,11 @@ Proposal (RFC)  ──→  Plan (DDD Implementation)  ──→  Decision (ADR)
    "what and why"       "how, decomposed"              "what was decided"
 ```
 
-**Proposals** are Requests for Comments. They describe *what* is being proposed and *why*. They are mutable while in draft and review, frozen once they reach a terminal state (accepted, rejected, superseded).
+**Proposals** are Requests for Comments. They describe _what_ is being proposed and _why_. They are mutable while in draft and review, frozen once they reach a terminal state (accepted, rejected, superseded).
 
 **Plans** are implementation breakdowns that bridge an accepted proposal and its resulting decisions. They use domain-driven development to decompose the work into bounded contexts, aggregates, and tasks. A plan is the tactical counterpart to a proposal's strategic intent. Plans are mutable throughout implementation and marked complete when all tasks are done.
 
-**Decisions** are Architectural Decision Records. They capture *what was decided*, the options considered, and the consequences expected. They are immutable after acceptance, with one exception: the `superseded_by` field may be updated when a new ADR supersedes an existing one.
+**Decisions** are Architectural Decision Records. They capture _what was decided_, the options considered, and the consequences expected. They are immutable after acceptance, with one exception: the `superseded_by` field may be updated when a new ADR supersedes an existing one.
 
 #### Shared Core (All Modules)
 
@@ -112,15 +112,15 @@ The root structure follows identical conventions — same naming, same templates
 
 #### Component Definitions
 
-| Component | Nature | Mutability | Naming Convention | Audience |
-|---|---|---|---|---|
-| `proposals/` | RFC proposals | Mutable while draft/review; frozen on acceptance | `NNN-short-title.md` | Maintainers, reviewers |
-| `plans/` | DDD implementation plans | Mutable during implementation; marked complete when done | `NNN-short-title.md` (matches originating proposal) | Implementers, maintainers |
-| `decisions/` | Architectural Decision Records | Immutable after acceptance (exception: `superseded_by`) | `NNN-short-title.md` (matches originating proposal where applicable) | Future maintainers |
-| `architecture/` | Living design documentation | Updated as design evolves | Freeform descriptive names | Onboarding engineers |
-| `README.md` | Module orientation | Updated as module evolves | Fixed name | Everyone |
-| `CONTRIBUTING.md` | Development conventions | Updated as tooling changes | Fixed name | Contributors |
-| `CLAUDE.md` | AI development context | Updated as patterns evolve | Fixed name | Claude Code |
+| Component         | Nature                         | Mutability                                               | Naming Convention                                                    | Audience                  |
+| ----------------- | ------------------------------ | -------------------------------------------------------- | -------------------------------------------------------------------- | ------------------------- |
+| `proposals/`      | RFC proposals                  | Mutable while draft/review; frozen on acceptance         | `NNN-short-title.md`                                                 | Maintainers, reviewers    |
+| `plans/`          | DDD implementation plans       | Mutable during implementation; marked complete when done | `NNN-short-title.md` (matches originating proposal)                  | Implementers, maintainers |
+| `decisions/`      | Architectural Decision Records | Immutable after acceptance (exception: `superseded_by`)  | `NNN-short-title.md` (matches originating proposal where applicable) | Future maintainers        |
+| `architecture/`   | Living design documentation    | Updated as design evolves                                | Freeform descriptive names                                           | Onboarding engineers      |
+| `README.md`       | Module orientation             | Updated as module evolves                                | Fixed name                                                           | Everyone                  |
+| `CONTRIBUTING.md` | Development conventions        | Updated as tooling changes                               | Fixed name                                                           | Contributors              |
+| `CLAUDE.md`       | AI development context         | Updated as patterns evolve                               | Fixed name                                                           | Claude Code               |
 
 #### Lib Extensions
 
@@ -268,13 +268,13 @@ The `scaffold` skill owns the canonical set of templates. Other skills (e.g., `n
 
 The drift check compares:
 
-| Canonical (in `scaffold/templates/`) | Copy location |
-|---|---|
-| `core/proposal.md` | `new-proposal/templates/proposal.md` |
-| `core/plan.md` | `new-plan/templates/plan.md` |
-| `core/decision.md` | `new-adr/templates/decision.md` |
-| `core/architecture.md` | `new-architecture-doc/templates/architecture.md` |
-| `validate-structure.sh` | `validate/scripts/validate-structure.sh` |
+| Canonical (in `scaffold/templates/`)  | Copy location                                                       |
+| ------------------------------------- | ------------------------------------------------------------------- |
+| `core/proposal.md`                    | `new-proposal/templates/proposal.md`                                |
+| `core/plan.md`                        | `new-plan/templates/plan.md`                                        |
+| `core/decision.md`                    | `new-adr/templates/decision.md`                                     |
+| `core/architecture.md`                | `new-architecture-doc/templates/architecture.md`                    |
+| `validate-structure.sh`               | `validate/scripts/validate-structure.sh`                            |
 | `next-number.sh` (in `new-proposal/`) | `new-plan/scripts/next-number.sh`, `new-adr/scripts/next-number.sh` |
 
 #### Plugin Manifest
@@ -286,7 +286,14 @@ The drift check compares:
   "description": "Scaffold, author, and enforce module documentation structure following the Principled specification-first methodology.",
   "author": "Alex",
   "homepage": "https://github.com/<org>/principled-docs",
-  "keywords": ["documentation", "rfc", "adr", "specification-first", "monorepo", "ddd"]
+  "keywords": [
+    "documentation",
+    "rfc",
+    "adr",
+    "specification-first",
+    "monorepo",
+    "ddd"
+  ]
 }
 ```
 
@@ -318,14 +325,14 @@ user-invocable: false
 
 **Co-located reference files:**
 
-| File | Purpose |
-|---|---|
-| `reference/structure-spec.md` | Complete structural definition per module type: which directories and files are required for core, lib, and app modules, plus the root-level structure |
-| `reference/component-guide.md` | Purpose, audience, and content expectations for every component |
-| `reference/naming-conventions.md` | `NNN-short-title.md` patterns, slug rules, sequence numbering |
-| `reference/lifecycle-rules.md` | Proposal state machine, plan lifecycle, ADR immutability contract (including `superseded_by` exception), valid transitions |
-| `reference/ddd-decomposition.md` | How to apply domain-driven development concepts when creating implementation plans: bounded contexts, aggregates, domain events, task decomposition |
-| `diagrams/pipeline-overview.md` | Visual representation of the proposals → plans → decisions pipeline |
+| File                              | Purpose                                                                                                                                                |
+| --------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `reference/structure-spec.md`     | Complete structural definition per module type: which directories and files are required for core, lib, and app modules, plus the root-level structure |
+| `reference/component-guide.md`    | Purpose, audience, and content expectations for every component                                                                                        |
+| `reference/naming-conventions.md` | `NNN-short-title.md` patterns, slug rules, sequence numbering                                                                                          |
+| `reference/lifecycle-rules.md`    | Proposal state machine, plan lifecycle, ADR immutability contract (including `superseded_by` exception), valid transitions                             |
+| `reference/ddd-decomposition.md`  | How to apply domain-driven development concepts when creating implementation plans: bounded contexts, aggregates, domain events, task decomposition    |
+| `diagrams/pipeline-overview.md`   | Visual representation of the proposals → plans → decisions pipeline                                                                                    |
 
 #### `scaffold` — Module Scaffolding
 
@@ -348,24 +355,25 @@ user-invocable: true
 
 **Co-located files:**
 
-| File | Purpose |
-|---|---|
-| `templates/core/proposal.md` | RFC template (canonical) |
-| `templates/core/plan.md` | DDD implementation plan template (canonical) |
-| `templates/core/decision.md` | ADR template (canonical) |
-| `templates/core/architecture.md` | Architecture doc template (canonical) |
-| `templates/core/README.md` | Module README template (canonical) |
-| `templates/core/CONTRIBUTING.md` | Module CONTRIBUTING template (canonical) |
-| `templates/core/CLAUDE.md` | Module CLAUDE.md template (canonical) |
-| `templates/lib/INTERFACE.md` | Interface contract template (canonical) |
-| `templates/lib/example.md` | Usage example template (canonical) |
-| `templates/app/runbook.md` | Runbook template (canonical) |
-| `templates/app/integration.md` | Integration doc template (canonical) |
-| `templates/app/config.md` | Configuration surface template (canonical) |
-| `scripts/validate-structure.sh` | Post-scaffold validation (canonical) |
-| `scripts/check-template-drift.sh` | CI: verify template copies match canonical |
+| File                              | Purpose                                      |
+| --------------------------------- | -------------------------------------------- |
+| `templates/core/proposal.md`      | RFC template (canonical)                     |
+| `templates/core/plan.md`          | DDD implementation plan template (canonical) |
+| `templates/core/decision.md`      | ADR template (canonical)                     |
+| `templates/core/architecture.md`  | Architecture doc template (canonical)        |
+| `templates/core/README.md`        | Module README template (canonical)           |
+| `templates/core/CONTRIBUTING.md`  | Module CONTRIBUTING template (canonical)     |
+| `templates/core/CLAUDE.md`        | Module CLAUDE.md template (canonical)        |
+| `templates/lib/INTERFACE.md`      | Interface contract template (canonical)      |
+| `templates/lib/example.md`        | Usage example template (canonical)           |
+| `templates/app/runbook.md`        | Runbook template (canonical)                 |
+| `templates/app/integration.md`    | Integration doc template (canonical)         |
+| `templates/app/config.md`         | Configuration surface template (canonical)   |
+| `scripts/validate-structure.sh`   | Post-scaffold validation (canonical)         |
+| `scripts/check-template-drift.sh` | CI: verify template copies match canonical   |
 
 **Workflow:**
+
 1. Accept module root path and `--type` flag from `$ARGUMENTS` (type is required)
 2. Create directory tree for the determined type (core directories plus type-specific extensions)
 3. Read each template from the skill's `templates/` directory
@@ -375,9 +383,11 @@ user-invocable: true
 7. Report created structure to user
 
 **Also scaffolds root-level structure** when invoked with `--root`:
+
 ```
 /scaffold --root
 ```
+
 Creates the repo-root `docs/` structure with `proposals/`, `plans/`, `decisions/`, and `architecture/` directories.
 
 #### `new-proposal` — Proposal (RFC) Creation
@@ -401,12 +411,13 @@ user-invocable: true
 
 **Co-located files:**
 
-| File | Purpose |
-|---|---|
-| `templates/proposal.md` | RFC template (copy of `scaffold/templates/core/proposal.md`) |
+| File                     | Purpose                                                                             |
+| ------------------------ | ----------------------------------------------------------------------------------- |
+| `templates/proposal.md`  | RFC template (copy of `scaffold/templates/core/proposal.md`)                        |
 | `scripts/next-number.sh` | Scans a directory for `NNN-*.md` files, returns next number zero-padded to 3 digits |
 
 **Workflow:**
+
 1. Parse short title from `$ARGUMENTS`; determine target (`--module` for module-level, `--root` for repo-level)
 2. Run `scripts/next-number.sh --dir <target>/docs/proposals/` to get next sequence number
 3. Create `NNN-<short-title>.md` from template
@@ -437,13 +448,14 @@ user-invocable: true
 
 **Co-located files:**
 
-| File | Purpose |
-|---|---|
-| `templates/plan.md` | DDD implementation plan template (copy of `scaffold/templates/core/plan.md`) |
+| File                     | Purpose                                                                                                                                                 |
+| ------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `templates/plan.md`      | DDD implementation plan template (copy of `scaffold/templates/core/plan.md`)                                                                            |
 | `reference/ddd-guide.md` | Practical guide to DDD decomposition for plans: how to identify bounded contexts, define aggregates, map domain events, and derive implementation tasks |
-| `scripts/next-number.sh` | Numbering logic (copy) |
+| `scripts/next-number.sh` | Numbering logic (copy)                                                                                                                                  |
 
 **Workflow:**
+
 1. Parse title and `--from-proposal NNN` from `$ARGUMENTS` (linking to a proposal is required)
 2. Locate the originating proposal; verify its status is `accepted`
 3. Use matching number from the proposal (plan NNN matches proposal NNN)
@@ -454,6 +466,7 @@ user-invocable: true
 8. Confirm creation
 
 **Plan lifecycle states:**
+
 - `active` — work is in progress
 - `complete` — all tasks are done; related ADRs have been created
 - `abandoned` — plan was abandoned (proposal may still stand)
@@ -479,12 +492,13 @@ user-invocable: true
 
 **Co-located files:**
 
-| File | Purpose |
-|---|---|
-| `templates/decision.md` | ADR template (copy of `scaffold/templates/core/decision.md`) |
-| `scripts/next-number.sh` | Numbering logic (copy) |
+| File                     | Purpose                                                      |
+| ------------------------ | ------------------------------------------------------------ |
+| `templates/decision.md`  | ADR template (copy of `scaffold/templates/core/decision.md`) |
+| `scripts/next-number.sh` | Numbering logic (copy)                                       |
 
 **Workflow:**
+
 1. Parse title and flags from `$ARGUMENTS`
 2. If `--from-proposal NNN`: read the proposal, verify status is `accepted`, use matching number and title, copy context
 3. If no `--from-proposal`: assign next available number independently
@@ -513,8 +527,8 @@ user-invocable: true
 
 **Co-located files:**
 
-| File | Purpose |
-|---|---|
+| File                             | Purpose                                                                          |
+| -------------------------------- | -------------------------------------------------------------------------------- |
 | `reference/valid-transitions.md` | State machine definition with every legal transition and conditions/side-effects |
 
 **State machine:**
@@ -528,6 +542,7 @@ draft ──→ in-review ──→ accepted
 No transitions from terminal states. No skipping states.
 
 **Workflow:**
+
 1. Parse identifier and target status from `$ARGUMENTS`
 2. Locate the proposal; read current status from frontmatter
 3. Validate the transition against `reference/valid-transitions.md`
@@ -556,11 +571,12 @@ user-invocable: true
 
 **Co-located files:**
 
-| File | Purpose |
-|---|---|
+| File                        | Purpose                                                                       |
+| --------------------------- | ----------------------------------------------------------------------------- |
 | `templates/architecture.md` | Architecture doc template (copy of `scaffold/templates/core/architecture.md`) |
 
 **Workflow:**
+
 1. Parse title and target (module or root)
 2. Scan `decisions/` for related ADRs to cross-reference
 3. Create document from template with ADR links pre-populated
@@ -587,11 +603,12 @@ user-invocable: true
 
 **Co-located files:**
 
-| File | Purpose |
-|---|---|
+| File                            | Purpose                                                              |
+| ------------------------------- | -------------------------------------------------------------------- |
 | `scripts/validate-structure.sh` | Validation engine (copy of `scaffold/scripts/validate-structure.sh`) |
 
 **Behavior:**
+
 - If no path given, validates current working directory
 - `--root` validates the repo-level `docs/` structure
 - Checks for presence of all required directories and files per module type
@@ -639,11 +656,12 @@ user-invocable: true
 
 **Co-located files:**
 
-| File | Purpose |
-|---|---|
+| File                         | Purpose                                  |
+| ---------------------------- | ---------------------------------------- |
 | `reference/report-format.md` | Specification of the audit output format |
 
 **Behavior:**
+
 - Discovers all modules within the specified directory
 - Runs structural validation on each module (type must be declared in module's config or CLAUDE.md)
 - `--include-root` adds the repo-level `docs/` structure to the audit
@@ -710,15 +728,16 @@ Hooks provide deterministic, automated enforcement that runs without explicit us
 **Script:** `hooks/scripts/check-adr-immutability.sh`
 
 **Behavior:**
+
 - Receives JSON via stdin containing `tool_input.file_path`
 - If path does not contain `/decisions/`: exit 0 (allow)
 - If file does not exist yet (new creation): exit 0 (allow)
 - Reads frontmatter `status` field using `parse-frontmatter.sh`
 - If status is `accepted`, `deprecated`, or `superseded`:
-  - Parse the incoming edit to check if it *only* modifies the `superseded_by` frontmatter field
+  - Parse the incoming edit to check if it _only_ modifies the `superseded_by` frontmatter field
   - If the edit is limited to `superseded_by`: exit 0 (allow — this is the exception)
   - Otherwise: exit 2 (block) with message:
-    *"Cannot modify ADR-NNN: this record has been accepted and is immutable. The only permitted change is setting superseded_by when a new ADR supersedes this one. To change this decision, create a new ADR. Use /new-adr."*
+    _"Cannot modify ADR-NNN: this record has been accepted and is immutable. The only permitted change is setting superseded_by when a new ADR supersedes this one. To change this decision, create a new ADR. Use /new-adr."_
 - Otherwise: exit 0 (allow)
 
 ##### Proposal Lifecycle Guard
@@ -727,12 +746,13 @@ Hooks provide deterministic, automated enforcement that runs without explicit us
 **Script:** `hooks/scripts/check-proposal-lifecycle.sh`
 
 **Behavior:**
+
 - Receives JSON via stdin containing `tool_input.file_path`
 - If path does not contain `/proposals/`: exit 0 (allow)
 - If file does not exist yet: exit 0 (allow)
 - Reads frontmatter `status` field
 - If status is `accepted`, `rejected`, or `superseded`: exit 2 (block) with message:
-  *"Cannot modify proposal NNN: this proposal has reached terminal status. To propose changes, create a new proposal that supersedes it. Use /new-proposal."*
+  _"Cannot modify proposal NNN: this proposal has reached terminal status. To propose changes, create a new proposal that supersedes it. Use /new-proposal."_
 - Otherwise: exit 0 (allow)
 
 ##### Post-Write Structure Nudge
@@ -741,6 +761,7 @@ Hooks provide deterministic, automated enforcement that runs without explicit us
 **Script:** `skills/scaffold/scripts/validate-structure.sh --on-write`
 
 **Behavior:**
+
 - After any file write, determines which module the file belongs to
 - Runs lightweight structural check
 - If violations detected: outputs warning (advisory, does not block)
@@ -766,11 +787,11 @@ Every template lives inside the skill that uses it. The `scaffold` skill owns th
 ```markdown
 ---
 title: "{{TITLE}}"
-number: {{NUMBER}}
+number: { { NUMBER } }
 status: draft
-author: {{AUTHOR}}
-created: {{DATE}}
-updated: {{DATE}}
+author: { { AUTHOR } }
+created: { { DATE } }
+updated: { { DATE } }
 supersedes: null
 superseded_by: null
 ---
@@ -835,12 +856,12 @@ TODO
 ```markdown
 ---
 title: "{{TITLE}}"
-number: {{NUMBER}}
+number: { { NUMBER } }
 status: active
-author: {{AUTHOR}}
-created: {{DATE}}
-updated: {{DATE}}
-originating_proposal: {{PROPOSAL_NUMBER}}
+author: { { AUTHOR } }
+created: { { DATE } }
+updated: { { DATE } }
+originating_proposal: { { PROPOSAL_NUMBER } }
 ---
 
 # Plan-{{NUMBER}}: {{TITLE}}
@@ -911,11 +932,11 @@ TODO
 ```markdown
 ---
 title: "{{TITLE}}"
-number: {{NUMBER}}
+number: { { NUMBER } }
 status: proposed
-author: {{AUTHOR}}
-created: {{DATE}}
-originating_proposal: {{PROPOSAL_NUMBER_OR_NULL}}
+author: { { AUTHOR } }
+created: { { DATE } }
+originating_proposal: { { PROPOSAL_NUMBER_OR_NULL } }
 superseded_by: null
 ---
 
@@ -973,7 +994,7 @@ TODO
 ```markdown
 ---
 title: "{{TITLE}}"
-last_updated: {{DATE}}
+last_updated: { { DATE } }
 related_adrs: []
 ---
 
@@ -1025,10 +1046,10 @@ TODO
 
 ## Ownership
 
-| Role | Owner |
-|------|-------|
-| Maintainer | TODO |
-| Team | TODO |
+| Role       | Owner |
+| ---------- | ----- |
+| Maintainer | TODO  |
+| Team       | TODO  |
 
 ## Quick Start
 
@@ -1089,6 +1110,7 @@ TODO
 ## Documentation Structure
 
 This module follows the Principled docs strategy:
+
 - `docs/proposals/` — RFCs (proposals). Naming: `NNN-short-title.md`.
 - `docs/plans/` — DDD implementation plans. Naming: `NNN-short-title.md` (matches proposal).
 - `docs/decisions/` — ADRs (immutable after acceptance). Naming: `NNN-short-title.md`.
@@ -1131,8 +1153,8 @@ TODO
 ## Stability Guarantees
 
 | Export | Stability | Since |
-|--------|-----------|-------|
-| TODO | stable | TODO |
+| ------ | --------- | ----- |
+| TODO   | stable    | TODO  |
 
 ## Key Invariants
 
@@ -1196,11 +1218,11 @@ TODO
 
 ## Connection Details
 
-| Property | Value |
-|----------|-------|
-| Type | TODO |
-| Protocol | TODO |
-| Authentication | TODO |
+| Property       | Value |
+| -------------- | ----- |
+| Type           | TODO  |
+| Protocol       | TODO  |
+| Authentication | TODO  |
 
 ## Failure Modes
 
@@ -1223,8 +1245,8 @@ TODO
 ## Environment Variables
 
 | Variable | Required | Default | Description |
-|----------|----------|---------|-------------|
-| TODO | TODO | TODO | TODO |
+| -------- | -------- | ------- | ----------- |
+| TODO     | TODO     | TODO    | TODO        |
 
 ## Feature Flags
 
@@ -1235,8 +1257,8 @@ TODO
 <!-- List by name and purpose. NEVER include values. -->
 
 | Secret | Purpose | Rotation Policy |
-|--------|---------|-----------------|
-| TODO | TODO | TODO |
+| ------ | ------- | --------------- |
+| TODO   | TODO    | TODO            |
 
 ## Environment Differences
 
@@ -1407,15 +1429,15 @@ Project-level configuration via `.claude/settings.json`:
 }
 ```
 
-| Setting | Default | Description |
-|---|---|---|
-| `modulesDirectory` | `"packages"` | Root directory containing modules |
-| `defaultModuleType` | `"core"` | Default when type is not specified |
-| `docsSubdirectory` | `"docs"` | Subdirectory within each module for documentation |
-| `strictMode` | `false` | When true, placeholder-only files are treated as failures |
-| `customTemplatesPath` | `null` | Override all default templates with project-specific ones (no inheritance — full replacement) |
-| `ignoredModules` | `[]` | Glob patterns for modules to skip during audit/validation |
-| `fileExtension` | `".md"` | Extension for generated documentation files |
+| Setting               | Default      | Description                                                                                   |
+| --------------------- | ------------ | --------------------------------------------------------------------------------------------- |
+| `modulesDirectory`    | `"packages"` | Root directory containing modules                                                             |
+| `defaultModuleType`   | `"core"`     | Default when type is not specified                                                            |
+| `docsSubdirectory`    | `"docs"`     | Subdirectory within each module for documentation                                             |
+| `strictMode`          | `false`      | When true, placeholder-only files are treated as failures                                     |
+| `customTemplatesPath` | `null`       | Override all default templates with project-specific ones (no inheritance — full replacement) |
+| `ignoredModules`      | `[]`         | Glob patterns for modules to skip during audit/validation                                     |
+| `fileExtension`       | `".md"`      | Extension for generated documentation files                                                   |
 
 ---
 
@@ -1492,7 +1514,7 @@ Rely entirely on CI scripts and markdown linters to validate documentation struc
 
 Build a separate CLI tool (`principled-docs scaffold`, `principled-docs validate`, etc.) that operates independently of Claude Code.
 
-**Rejected because:** A standalone tool misses the key value proposition — making Claude Code *documentation-aware*. The background knowledge skill, contextual template population, and hook-based enforcement require deep integration with Claude Code's skill and hook system. A separate CLI would duplicate effort without providing AI-assisted authoring.
+**Rejected because:** A standalone tool misses the key value proposition — making Claude Code _documentation-aware_. The background knowledge skill, contextual template population, and hook-based enforcement require deep integration with Claude Code's skill and hook system. A separate CLI would duplicate effort without providing AI-assisted authoring.
 
 ### Alternative 3: Monorepo-specific custom scripts per project
 
@@ -1538,19 +1560,19 @@ And the following architectural decisions:
 
 ## Success Criteria
 
-| Criterion | Measurement |
-|---|---|
-| New modules are structurally compliant from creation | `/validate` passes immediately after `/scaffold` |
-| Root-level structure works | `/scaffold --root` + `/validate --root` passes |
-| ADR immutability is enforced with exception | Accepted ADRs blocked except `superseded_by` updates |
-| Proposal lifecycle is enforced | Terminal-state proposals cannot be modified; invalid transitions blocked |
-| Plans require accepted proposals | `/new-plan` without `--from-proposal` to an accepted proposal fails |
-| DDD guidance is provided | Plan template includes bounded contexts, aggregates, and domain events sections |
-| Templates are consistent | CI drift check passes; all copies match canonical |
-| Full pipeline works end-to-end | proposal → plan → ADR lifecycle completes without errors |
-| Skills are self-contained | Each skill directory contains all its templates, scripts, and reference docs |
-| Cross-cutting docs work | Root-level proposals, plans, decisions, and architecture docs can be created and validated |
-| Plugin is self-documenting | README covers installation, configuration, all skills, all hooks |
+| Criterion                                            | Measurement                                                                                |
+| ---------------------------------------------------- | ------------------------------------------------------------------------------------------ |
+| New modules are structurally compliant from creation | `/validate` passes immediately after `/scaffold`                                           |
+| Root-level structure works                           | `/scaffold --root` + `/validate --root` passes                                             |
+| ADR immutability is enforced with exception          | Accepted ADRs blocked except `superseded_by` updates                                       |
+| Proposal lifecycle is enforced                       | Terminal-state proposals cannot be modified; invalid transitions blocked                   |
+| Plans require accepted proposals                     | `/new-plan` without `--from-proposal` to an accepted proposal fails                        |
+| DDD guidance is provided                             | Plan template includes bounded contexts, aggregates, and domain events sections            |
+| Templates are consistent                             | CI drift check passes; all copies match canonical                                          |
+| Full pipeline works end-to-end                       | proposal → plan → ADR lifecycle completes without errors                                   |
+| Skills are self-contained                            | Each skill directory contains all its templates, scripts, and reference docs               |
+| Cross-cutting docs work                              | Root-level proposals, plans, decisions, and architecture docs can be created and validated |
+| Plugin is self-documenting                           | README covers installation, configuration, all skills, all hooks                           |
 
 ---
 

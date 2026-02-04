@@ -22,26 +22,30 @@ Check that a module's documentation structure matches the expected standard for 
 
 ## Arguments
 
-| Argument | Required | Description |
-|---|---|---|
-| `[module-path]` | No | Path to the module to validate. Defaults to current working directory. |
-| `--type` | Yes (unless `--root` or detectable from CLAUDE.md) | Module type: `core`, `lib`, or `app` |
-| `--root` | No | Validate the repo-level `docs/` structure |
-| `--strict` | No | Treat placeholder-only files as failures instead of warnings |
-| `--json` | No | Produce machine-readable JSON output for CI |
+| Argument        | Required                                           | Description                                                            |
+| --------------- | -------------------------------------------------- | ---------------------------------------------------------------------- |
+| `[module-path]` | No                                                 | Path to the module to validate. Defaults to current working directory. |
+| `--type`        | Yes (unless `--root` or detectable from CLAUDE.md) | Module type: `core`, `lib`, or `app`                                   |
+| `--root`        | No                                                 | Validate the repo-level `docs/` structure                              |
+| `--strict`      | No                                                 | Treat placeholder-only files as failures instead of warnings           |
+| `--json`        | No                                                 | Produce machine-readable JSON output for CI                            |
 
 ## Workflow
 
 1. **Parse arguments** from `$ARGUMENTS`.
 2. **Determine module path and type.** If no path given, use the current working directory. If no type given, attempt to read from the module's `CLAUDE.md` (under `## Module Type`).
 3. **Run the validation engine:**
+
    ```bash
    bash scripts/validate-structure.sh --module-path <path> --type <type> [--strict] [--json]
    ```
+
    Or for root validation:
+
    ```bash
    bash scripts/validate-structure.sh --root [--strict] [--json]
    ```
+
 4. **Present results** to the user.
 
 ## Report Format
@@ -66,6 +70,7 @@ Result: FAIL (2 missing, 1 placeholder)
 ```
 
 **Legend:**
+
 - `✓` — Component exists with content
 - `✗` — Component is MISSING (always a failure)
 - `~` — Component exists but contains only placeholder content (failure in `--strict` mode)

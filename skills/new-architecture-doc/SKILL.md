@@ -20,11 +20,11 @@ Create a new architecture document describing current system design.
 
 ## Arguments
 
-| Argument | Required | Description |
-|---|---|---|
-| `<title>` | Yes | Descriptive title for the architecture document (e.g., `data-flow`, `authentication-system`) |
-| `--module <path>` | No | Target module path |
-| `--root` | No | Create at repo root level (`docs/architecture/`) |
+| Argument          | Required | Description                                                                                  |
+| ----------------- | -------- | -------------------------------------------------------------------------------------------- |
+| `<title>`         | Yes      | Descriptive title for the architecture document (e.g., `data-flow`, `authentication-system`) |
+| `--module <path>` | No       | Target module path                                                                           |
+| `--root`          | No       | Create at repo root level (`docs/architecture/`)                                             |
 
 ## Workflow
 
@@ -39,11 +39,11 @@ Create a new architecture document describing current system design.
 
 4. **Populate frontmatter:**
 
-   | Field | Value |
-   |---|---|
-   | `title` | The document title (humanized from the slug) |
-   | `last_updated` | Today's date |
-   | `related_adrs` | List of related ADR numbers found in step 2 |
+   | Field          | Value                                        |
+   | -------------- | -------------------------------------------- |
+   | `title`        | The document title (humanized from the slug) |
+   | `last_updated` | Today's date                                 |
+   | `related_adrs` | List of related ADR numbers found in step 2  |
 
 5. **Pre-populate ADR references.** In the "Key Decisions" section, insert links to the related ADRs discovered in step 2.
 

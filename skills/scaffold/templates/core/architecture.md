@@ -1,6 +1,6 @@
 ---
 title: "{{TITLE}}"
-last_updated: {{DATE}}
+last_updated: { { DATE } }
 related_adrs: []
 ---
 

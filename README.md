@@ -53,26 +53,26 @@ claude plugin add <path-to-principled-docs>
 
 ### Scaffolding & Validation
 
-| Command | Description |
-|---------|-------------|
+| Command                                  | Description                                                   |
+| ---------------------------------------- | ------------------------------------------------------------- |
 | `/scaffold <path> --type core\|lib\|app` | 🏗️ Generate complete documentation structure for a new module |
-| `/scaffold --root` | 🏗️ Generate repo-level cross-cutting docs structure |
-| `/validate [path] --type <type>` | ✅ Check documentation structure against the standard |
-| `/docs-audit` | 📊 Audit documentation health across all modules |
+| `/scaffold --root`                       | 🏗️ Generate repo-level cross-cutting docs structure           |
+| `/validate [path] --type <type>`         | ✅ Check documentation structure against the standard         |
+| `/docs-audit`                            | 📊 Audit documentation health across all modules              |
 
 ### Authoring
 
-| Command | Description |
-|---------|-------------|
-| `/new-proposal <title>` | 📋 Create a new RFC proposal |
+| Command                                 | Description                                                   |
+| --------------------------------------- | ------------------------------------------------------------- |
+| `/new-proposal <title>`                 | 📋 Create a new RFC proposal                                  |
 | `/new-plan <title> --from-proposal NNN` | 🗺️ Create a DDD implementation plan from an accepted proposal |
-| `/new-adr <title>` | 📌 Create an Architectural Decision Record |
-| `/new-architecture-doc <title>` | 📐 Create a living architecture document |
+| `/new-adr <title>`                      | 📌 Create an Architectural Decision Record                    |
+| `/new-architecture-doc <title>`         | 📐 Create a living architecture document                      |
 
 ### Lifecycle
 
-| Command | Description |
-|---------|-------------|
+| Command                           | Description                                                                           |
+| --------------------------------- | ------------------------------------------------------------------------------------- |
 | `/proposal-status <NNN> <status>` | 🔄 Transition a proposal through `draft → in-review → accepted\|rejected\|superseded` |
 
 ### Background Knowledge
@@ -83,11 +83,11 @@ claude plugin add <path-to-principled-docs>
 
 Three hooks provide deterministic guardrails — no manual action required.
 
-| Hook | Trigger | Behavior |
-|------|---------|----------|
-| **ADR Immutability Guard** | PreToolUse `Edit\|Write` | 🛡️ Blocks edits to accepted ADRs. Exception: `superseded_by` updates are allowed. |
-| **Proposal Lifecycle Guard** | PreToolUse `Edit\|Write` | 🛡️ Blocks edits to terminal proposals (`accepted`, `rejected`, `superseded`). |
-| **Structure Nudge** | PostToolUse `Write` | 💡 Advisory validation after file writes. Warns about missing structure. Never blocks. |
+| Hook                         | Trigger                  | Behavior                                                                               |
+| ---------------------------- | ------------------------ | -------------------------------------------------------------------------------------- |
+| **ADR Immutability Guard**   | PreToolUse `Edit\|Write` | 🛡️ Blocks edits to accepted ADRs. Exception: `superseded_by` updates are allowed.      |
+| **Proposal Lifecycle Guard** | PreToolUse `Edit\|Write` | 🛡️ Blocks edits to terminal proposals (`accepted`, `rejected`, `superseded`).          |
+| **Structure Nudge**          | PostToolUse `Write`      | 💡 Advisory validation after file writes. Warns about missing structure. Never blocks. |
 
 ## 📂 Module Structure
 
@@ -146,15 +146,15 @@ Configure via `.claude/settings.json`:
 }
 ```
 
-| Setting | Default | Description |
-|---------|---------|-------------|
-| `modulesDirectory` | `"packages"` | Root directory containing modules |
-| `defaultModuleType` | `"core"` | Fallback when type is not specified |
-| `docsSubdirectory` | `"docs"` | Subdirectory within each module for docs |
-| `strictMode` | `false` | Treat placeholder-only files as failures |
-| `customTemplatesPath` | `null` | Override all templates (full replacement, no inheritance) |
-| `ignoredModules` | `[]` | Glob patterns for modules to skip |
-| `fileExtension` | `".md"` | Extension for generated files |
+| Setting               | Default      | Description                                               |
+| --------------------- | ------------ | --------------------------------------------------------- |
+| `modulesDirectory`    | `"packages"` | Root directory containing modules                         |
+| `defaultModuleType`   | `"core"`     | Fallback when type is not specified                       |
+| `docsSubdirectory`    | `"docs"`     | Subdirectory within each module for docs                  |
+| `strictMode`          | `false`      | Treat placeholder-only files as failures                  |
+| `customTemplatesPath` | `null`       | Override all templates (full replacement, no inheritance) |
+| `ignoredModules`      | `[]`         | Glob patterns for modules to skip                         |
+| `fileExtension`       | `".md"`      | Extension for generated files                             |
 
 ## 🚀 CI Integration
 

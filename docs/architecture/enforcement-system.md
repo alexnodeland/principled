@@ -53,6 +53,7 @@ The enforcement system uses Claude Code's hook mechanism to intercept file opera
 ### Hook Configuration (`hooks.json`)
 
 The hook configuration file declares:
+
 - **Event type:** `PreToolUse` (before tool executes) or `PostToolUse` (after)
 - **Matcher:** Which tools trigger the hook (`Edit|Write`)
 - **Command:** The shell script to run
@@ -62,10 +63,10 @@ The hook configuration file declares:
 
 Guard scripts receive JSON on stdin containing the tool invocation details (including `tool_input.file_path`). They make a binary decision:
 
-| Exit Code | Meaning | Effect |
-|---|---|---|
-| `0` | Allow | Tool operation proceeds |
-| `2` | Block | Tool operation is prevented; error message shown to user |
+| Exit Code | Meaning | Effect                                                   |
+| --------- | ------- | -------------------------------------------------------- |
+| `0`       | Allow   | Tool operation proceeds                                  |
+| `2`       | Block   | Tool operation is prevented; error message shown to user |
 
 The decision logic follows a consistent pattern:
 

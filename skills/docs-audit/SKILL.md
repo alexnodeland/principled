@@ -20,11 +20,11 @@ Audit documentation health across all modules in the monorepo and produce an agg
 
 ## Arguments
 
-| Argument | Required | Description |
-|---|---|---|
-| `--modules-dir <path>` | No | Root directory containing modules (default: `packages` or value from config) |
-| `--format` | No | Output format: `summary` (default) or `detailed` |
-| `--include-root` | No | Also validate the repo-level `docs/` structure |
+| Argument               | Required | Description                                                                  |
+| ---------------------- | -------- | ---------------------------------------------------------------------------- |
+| `--modules-dir <path>` | No       | Root directory containing modules (default: `packages` or value from config) |
+| `--format`             | No       | Output format: `summary` (default) or `detailed`                             |
+| `--include-root`       | No       | Also validate the repo-level `docs/` structure                               |
 
 ## Workflow
 
@@ -39,13 +39,16 @@ Audit documentation health across all modules in the monorepo and produce an agg
    - If neither available, report the module as "unknown type" and skip validation
 
 4. **Validate each module.** For each module with a known type, run the structural validation:
+
    ```bash
    bash <plugin-root>/skills/scaffold/scripts/validate-structure.sh \
      --module-path <module-path> --type <type>
    ```
+
    Capture the results (present, missing, placeholder counts).
 
 5. **Validate root (if `--include-root`).** Run:
+
    ```bash
    bash <plugin-root>/skills/scaffold/scripts/validate-structure.sh --root
    ```
@@ -66,12 +69,12 @@ Audit documentation health across all modules in the monorepo and produce an agg
 
 The audit skill respects project-level configuration from `.claude/settings.json`:
 
-| Setting | Used For |
-|---|---|
-| `modulesDirectory` | Default modules directory if `--modules-dir` not specified |
-| `defaultModuleType` | Fallback module type if `CLAUDE.md` doesn't declare one |
-| `ignoredModules` | Glob patterns for modules to skip |
-| `strictMode` | If true, placeholder-only files are treated as failures |
+| Setting             | Used For                                                   |
+| ------------------- | ---------------------------------------------------------- |
+| `modulesDirectory`  | Default modules directory if `--modules-dir` not specified |
+| `defaultModuleType` | Fallback module type if `CLAUDE.md` doesn't declare one    |
+| `ignoredModules`    | Glob patterns for modules to skip                          |
+| `strictMode`        | If true, placeholder-only files are treated as failures    |
 
 ## Reference
 

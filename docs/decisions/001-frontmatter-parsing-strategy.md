@@ -38,12 +38,14 @@ Use pure bash parsing for all frontmatter extraction. The implementation (`hooks
 Parse frontmatter using a `while read` loop with bash regex matching. No external dependencies beyond standard POSIX utilities (`head` for first-line check).
 
 **Pros:**
+
 - Zero external dependencies — works on any system with bash
 - Fast execution (no process spawning for parsing)
 - Sufficient for the flat key-value schema used by this plugin
 - Hook timeout of 10 seconds is easily met
 
 **Cons:**
+
 - Cannot handle nested YAML, multi-line values, or flow sequences
 - Regex matching is brittle for complex YAML features (anchors, tags, etc.)
 
@@ -52,10 +54,12 @@ Parse frontmatter using a `while read` loop with bash regex matching. No externa
 Shell out to `yq` or `python3 -c 'import yaml; ...'` for parsing.
 
 **Pros:**
+
 - Full YAML spec compliance
 - Handles edge cases (multi-line values, special characters, nested structures)
 
 **Cons:**
+
 - Adds an external dependency (`yq` or Python with PyYAML)
 - Slower execution (process spawning overhead matters in hooks)
 - Over-engineered for the simple flat-key schema this plugin uses
@@ -65,10 +69,12 @@ Shell out to `yq` or `python3 -c 'import yaml; ...'` for parsing.
 Convert frontmatter to JSON, then use `jq` for field extraction.
 
 **Pros:**
+
 - `jq` is commonly available
 - Precise field extraction
 
 **Cons:**
+
 - Still requires a YAML-to-JSON conversion step
 - Adds `jq` as a hard dependency for hook enforcement (currently optional, only used for `--json` output mode)
 

@@ -2,11 +2,11 @@
 
 ## Connection Details
 
-| Property | Value |
-|----------|-------|
-| Type | TODO |
-| Protocol | TODO |
-| Authentication | TODO |
+| Property       | Value |
+| -------------- | ----- |
+| Type           | TODO  |
+| Protocol       | TODO  |
+| Authentication | TODO  |
 
 ## Failure Modes
 
