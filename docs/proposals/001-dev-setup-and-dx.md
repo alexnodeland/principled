@@ -1,7 +1,7 @@
 ---
 title: "Developer Setup and DX Infrastructure"
 number: 001
-status: draft
+status: accepted
 author: Alex
 created: 2026-02-04
 updated: 2026-02-04
@@ -147,19 +147,18 @@ Create a `.claude/` directory with project-level Claude Code configuration to gi
 - **Permissions** — pre-approve common tools (Bash, Read, Edit, Write, Glob, Grep) to reduce approval friction during development
 - **Environment context** — set `CLAUDE_PLUGIN_ROOT` so hook scripts resolve correctly during development
 
-#### `commands/`
+#### `skills/`
 
-Custom slash commands (as `.md` prompt files) for common developer workflows in this repo. Each file in `.claude/commands/` becomes a user-invocable `/project:<name>` command — the same mechanism as plugin skills, but scoped to this repo's development needs rather than the plugin's consumer-facing features.
+Project-level dev skills (as `SKILL.md` files in subdirectories) for common developer workflows in this repo. These supplement the 9 plugin skills available via dogfooding, scoped to this repo's development needs rather than the plugin's consumer-facing features.
 
-| Command                        | File                              | Purpose                                                                                   |
-| ------------------------------ | --------------------------------- | ----------------------------------------------------------------------------------------- |
-| `/project:lint`                | `commands/lint.md`                | Run the full lint suite (ShellCheck + shfmt + markdownlint + Prettier) and report results |
-| `/project:validate`            | `commands/validate.md`            | Run template drift check and full structure validation (`--root`)                         |
-| `/project:test-hooks`          | `commands/test-hooks.md`          | Smoke-test enforcement hooks by feeding known good/bad inputs and asserting exit codes    |
-| `/project:propagate-templates` | `commands/propagate-templates.md` | Copy canonical templates to all consuming skills and verify drift-free                    |
-| `/project:check-ci`            | `commands/check-ci.md`            | Run the full CI pipeline locally (all lint + validate steps)                              |
+| Skill                 | Command                | Purpose                                                                                   |
+| --------------------- | ---------------------- | ----------------------------------------------------------------------------------------- |
+| `lint`                | `/lint`                | Run the full lint suite (ShellCheck + shfmt + markdownlint + Prettier) and report results |
+| `test-hooks`          | `/test-hooks`          | Smoke-test enforcement hooks by feeding known good/bad inputs and asserting exit codes    |
+| `propagate-templates` | `/propagate-templates` | Copy canonical templates to all consuming skills and verify drift-free                    |
+| `check-ci`            | `/check-ci`            | Run the full CI pipeline locally (all lint + validate steps)                              |
 
-Each command file contains a prompt with workflow instructions — the same pattern used by plugin skills in their `SKILL.md` files. This encodes tribal knowledge about "how do I check my work" into discoverable, one-step operations.
+Each skill directory contains a `SKILL.md` with YAML frontmatter (`name`, `description`, `allowed-tools`, `user-invocable`) and workflow instructions. This encodes tribal knowledge about "how do I check my work" into discoverable, one-step operations. Root structure validation is covered by the plugin's own `/validate --root` skill (available via dogfooding).
 
 #### `CLAUDE.md` (project-level)
 
@@ -232,7 +231,7 @@ Testing externally doesn't catch integration issues with the plugin's own docs s
 - **Legal clarity** — MIT license removes ambiguity for adoption
 - **Automated quality** — shell and Markdown linting catches bugs and inconsistencies before they land; formatting eliminates style debates
 - **CI gate** — template drift, structure violations, and lint failures are caught in PRs, not after merge
-- **Better Claude Code DX** — `.claude/` with settings, commands, and self-installed plugin gives contributors a batteries-included experience
+- **Better Claude Code DX** — `.claude/` with settings, dev skills, and self-installed plugin gives contributors a batteries-included experience
 - **Dogfooding catches bugs** — using the plugin on its own repo provides continuous validation of skills, hooks, and templates
 - **Living reference** — the repo's own `docs/` directory serves as a working example of plugin output
 
@@ -252,7 +251,7 @@ Testing externally doesn't catch integration issues with the plugin's own docs s
 
 - No new plugin skills or hooks are created by this RFC. The plugin architecture is unchanged.
 - `.github/workflows/ci.yml` is a new infrastructure component outside the plugin architecture.
-- `.claude/` directory adds project-level Claude Code configuration: settings, dev commands, and self-referencing plugin installation. This should be documented in CLAUDE.md.
+- `.claude/` directory adds project-level Claude Code configuration: settings, dev skills, and self-referencing plugin installation. This should be documented in CLAUDE.md.
 - Dogfooding (installing the plugin on itself) means all plugin hooks and skills are active during development. This is intentional and desirable — it validates the plugin continuously.
 - CLAUDE.md should be updated to reference CONTRIBUTING.md, CI pipeline, and `.claude/` directory.
 - `package.json` may be introduced at root for Markdown tooling (`markdownlint-cli2`, `prettier`) as dev dependencies. This does not affect the plugin runtime, which remains pure bash.
@@ -271,7 +270,7 @@ The following questions were raised during drafting and have been resolved:
    - All other rules enabled by default
 6. **Prettier prose wrap set to `preserve`.** Respects author line breaks; less disruptive than hard-wrapping.
 7. **Dogfooding uses a relative path (`"."`)** in `.claude/settings.json`. Simplest approach, no symlinks or circular dependency concerns.
-8. **`.claude/commands/` are prompt-based skills** (`.md` files with workflow instructions), following the same pattern as plugin skills in `SKILL.md` files. They are user-invocable via `/project:<name>`.
+8. **Dev skills live in `.claude/skills/`** as proper `SKILL.md` files with YAML frontmatter, following the same format as plugin skills. Commands and skills were unified in Claude Code v2.1.3+.
 
 ## Open Questions
 
