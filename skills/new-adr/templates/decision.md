@@ -1,10 +1,10 @@
 ---
 title: "{{TITLE}}"
-number: {{NUMBER}}
+number: { { NUMBER } }
 status: proposed
-author: {{AUTHOR}}
-created: {{DATE}}
-originating_proposal: {{PROPOSAL_NUMBER_OR_NULL}}
+author: { { AUTHOR } }
+created: { { DATE } }
+originating_proposal: { { PROPOSAL_NUMBER_OR_NULL } }
 superseded_by: null
 ---
 

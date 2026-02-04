@@ -21,7 +21,7 @@ INPUT="$(cat)"
 # Try tool_input.file_path first, fall back to file_path
 FILE_PATH=""
 if command -v jq &> /dev/null; then
-  FILE_PATH="$(echo "$INPUT" | jq -r '.tool_input.file_path // .file_path // empty' 2>/dev/null || echo "")"
+  FILE_PATH="$(echo "$INPUT" | jq -r '.tool_input.file_path // .file_path // empty' 2> /dev/null || echo "")"
 else
   # Fallback: basic grep extraction
   FILE_PATH="$(echo "$INPUT" | grep -oP '"file_path"\s*:\s*"[^"]*"' | head -1 | grep -oP ':\s*"\K[^"]*' || echo "")"
@@ -47,11 +47,10 @@ STATUS="$(bash "$PARSE_FRONTMATTER" --file "$FILE_PATH" --field status)"
 
 # If status is not a protected state, allow
 case "$STATUS" in
-  accepted|deprecated|superseded)
-    ;;
-  *)
-    exit 0
-    ;;
+accepted | deprecated | superseded) ;;
+*)
+  exit 0
+  ;;
 esac
 
 # Protected state — check if the edit is limited to superseded_by
@@ -61,9 +60,9 @@ OLD_STRING=""
 NEW_STRING=""
 
 if command -v jq &> /dev/null; then
-  NEW_CONTENT="$(echo "$INPUT" | jq -r '.tool_input.content // empty' 2>/dev/null || echo "")"
-  OLD_STRING="$(echo "$INPUT" | jq -r '.tool_input.old_string // empty' 2>/dev/null || echo "")"
-  NEW_STRING="$(echo "$INPUT" | jq -r '.tool_input.new_string // empty' 2>/dev/null || echo "")"
+  NEW_CONTENT="$(echo "$INPUT" | jq -r '.tool_input.content // empty' 2> /dev/null || echo "")"
+  OLD_STRING="$(echo "$INPUT" | jq -r '.tool_input.old_string // empty' 2> /dev/null || echo "")"
+  NEW_STRING="$(echo "$INPUT" | jq -r '.tool_input.new_string // empty' 2> /dev/null || echo "")"
 fi
 
 # For Edit tool: check if old_string and new_string only differ in superseded_by

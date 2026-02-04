@@ -1,11 +1,11 @@
 ---
 title: "{{TITLE}}"
-number: {{NUMBER}}
+number: { { NUMBER } }
 status: active
-author: {{AUTHOR}}
-created: {{DATE}}
-updated: {{DATE}}
-originating_proposal: {{PROPOSAL_NUMBER}}
+author: { { AUTHOR } }
+created: { { DATE } }
+updated: { { DATE } }
+originating_proposal: { { PROPOSAL_NUMBER } }
 ---
 
 # Plan-{{NUMBER}}: {{TITLE}}

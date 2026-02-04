@@ -3,8 +3,8 @@
 ## Environment Variables
 
 | Variable | Required | Default | Description |
-|----------|----------|---------|-------------|
-| TODO | TODO | TODO | TODO |
+| -------- | -------- | ------- | ----------- |
+| TODO     | TODO     | TODO    | TODO        |
 
 ## Feature Flags
 
@@ -15,8 +15,8 @@ TODO
 <!-- List by name and purpose. NEVER include values. -->
 
 | Secret | Purpose | Rotation Policy |
-|--------|---------|-----------------|
-| TODO | TODO | TODO |
+| ------ | ------- | --------------- |
+| TODO   | TODO    | TODO            |
 
 ## Environment Differences
 

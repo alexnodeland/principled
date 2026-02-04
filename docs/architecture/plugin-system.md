@@ -51,21 +51,21 @@ skills/<skill-name>/
 
 Skills fall into three categories:
 
-| Category | Skills | Characteristic |
-|---|---|---|
-| **Background knowledge** | `docs-strategy` | Not user-invocable; informs Claude's behavior |
-| **Generative** | `scaffold`, `new-proposal`, `new-plan`, `new-adr`, `new-architecture-doc` | Create files and structure |
-| **Analytical** | `validate`, `docs-audit`, `proposal-status` | Read and report on existing state |
+| Category                 | Skills                                                                    | Characteristic                                |
+| ------------------------ | ------------------------------------------------------------------------- | --------------------------------------------- |
+| **Background knowledge** | `docs-strategy`                                                           | Not user-invocable; informs Claude's behavior |
+| **Generative**           | `scaffold`, `new-proposal`, `new-plan`, `new-adr`, `new-architecture-doc` | Create files and structure                    |
+| **Analytical**           | `validate`, `docs-audit`, `proposal-status`                               | Read and report on existing state             |
 
 ### Hooks
 
 Hooks are deterministic shell scripts triggered by Claude Code lifecycle events. They live in `hooks/` (not in skill directories) because they are not skills — they have no SKILL.md, no progressive disclosure, and no user-facing workflow.
 
-| Hook | Event | Behavior |
-|---|---|---|
-| ADR Immutability Guard | PreToolUse (Edit/Write) | Blocks edits to accepted ADRs |
-| Proposal Lifecycle Guard | PreToolUse (Edit/Write) | Blocks edits to terminal proposals |
-| Post-Write Structure Nudge | PostToolUse (Write) | Advisory validation after file writes |
+| Hook                       | Event                   | Behavior                              |
+| -------------------------- | ----------------------- | ------------------------------------- |
+| ADR Immutability Guard     | PreToolUse (Edit/Write) | Blocks edits to accepted ADRs         |
+| Proposal Lifecycle Guard   | PreToolUse (Edit/Write) | Blocks edits to terminal proposals    |
+| Post-Write Structure Nudge | PostToolUse (Write)     | Advisory validation after file writes |
 
 ### Templates
 
@@ -75,12 +75,12 @@ Templates are markdown files with `{{PLACEHOLDER}}` markers. The `scaffold` skil
 
 Utility scripts are shell programs that perform deterministic operations:
 
-| Script | Purpose | Canonical Location | Copies |
-|---|---|---|---|
-| `parse-frontmatter.sh` | Extract YAML frontmatter fields | `hooks/scripts/` | None |
-| `validate-structure.sh` | Check module documentation structure | `skills/scaffold/scripts/` | `skills/validate/scripts/` |
-| `check-template-drift.sh` | Verify template copies match canonical | `skills/scaffold/scripts/` | None |
-| `next-number.sh` | Determine next NNN sequence number | `skills/new-proposal/scripts/` | `skills/new-plan/scripts/`, `skills/new-adr/scripts/` |
+| Script                    | Purpose                                | Canonical Location             | Copies                                                |
+| ------------------------- | -------------------------------------- | ------------------------------ | ----------------------------------------------------- |
+| `parse-frontmatter.sh`    | Extract YAML frontmatter fields        | `hooks/scripts/`               | None                                                  |
+| `validate-structure.sh`   | Check module documentation structure   | `skills/scaffold/scripts/`     | `skills/validate/scripts/`                            |
+| `check-template-drift.sh` | Verify template copies match canonical | `skills/scaffold/scripts/`     | None                                                  |
+| `next-number.sh`          | Determine next NNN sequence number     | `skills/new-proposal/scripts/` | `skills/new-plan/scripts/`, `skills/new-adr/scripts/` |
 
 ## Component Relationships
 

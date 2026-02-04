@@ -22,12 +22,12 @@ Create a domain-driven implementation plan that bridges an accepted proposal and
 
 ## Arguments
 
-| Argument | Required | Description |
-|---|---|---|
-| `<short-title>` | Yes | Short, hyphenated title for the plan |
-| `--from-proposal NNN` | **Yes** | The number of the originating proposal. The proposal must have status `accepted`. |
-| `--module <path>` | No | Target module path |
-| `--root` | No | Create at repo root level |
+| Argument              | Required | Description                                                                       |
+| --------------------- | -------- | --------------------------------------------------------------------------------- |
+| `<short-title>`       | Yes      | Short, hyphenated title for the plan                                              |
+| `--from-proposal NNN` | **Yes**  | The number of the originating proposal. The proposal must have status `accepted`. |
+| `--module <path>`     | No       | Target module path                                                                |
+| `--root`              | No       | Create at repo root level                                                         |
 
 ## Workflow
 
@@ -36,9 +36,10 @@ Create a domain-driven implementation plan that bridges an accepted proposal and
 2. **Locate and verify the proposal.** Find the proposal matching NNN in the appropriate `docs/proposals/` directory. Read its frontmatter and verify:
    - The proposal exists
    - Its `status` is `accepted`
-   - If not accepted, report an error: *"Cannot create plan: proposal NNN has status '<status>'. Only accepted proposals can have implementation plans."*
+   - If not accepted, report an error: _"Cannot create plan: proposal NNN has status '\<status\>'. Only accepted proposals can have implementation plans."_
 
 3. **Get next sequence number.** Run:
+
    ```bash
    bash scripts/next-number.sh --dir <target-plans-dir>
    ```
@@ -49,14 +50,14 @@ Create a domain-driven implementation plan that bridges an accepted proposal and
 
 6. **Populate frontmatter:**
 
-   | Field | Value |
-   |---|---|
-   | `title` | Derived from the short title |
-   | `number` | The NNN from step 3 |
-   | `status` | `active` |
-   | `author` | Git user name or prompt |
-   | `created` | Today's date |
-   | `updated` | Today's date |
+   | Field                  | Value                                      |
+   | ---------------------- | ------------------------------------------ |
+   | `title`                | Derived from the short title               |
+   | `number`               | The NNN from step 3                        |
+   | `status`               | `active`                                   |
+   | `author`               | Git user name or prompt                    |
+   | `created`              | Today's date                               |
+   | `updated`              | Today's date                               |
    | `originating_proposal` | The proposal number from `--from-proposal` |
 
 7. **Pre-populate from proposal.** Read the originating proposal's content and use it to seed:
@@ -72,10 +73,10 @@ Create a domain-driven implementation plan that bridges an accepted proposal and
 
 ## Plan Lifecycle
 
-| State | Description |
-|---|---|
-| `active` | Work is in progress. Plan is mutable. |
-| `complete` | All tasks are done. Related ADRs have been created. |
+| State       | Description                                               |
+| ----------- | --------------------------------------------------------- |
+| `active`    | Work is in progress. Plan is mutable.                     |
+| `complete`  | All tasks are done. Related ADRs have been created.       |
 | `abandoned` | Plan was abandoned. Originating proposal may still stand. |
 
 ## Reference

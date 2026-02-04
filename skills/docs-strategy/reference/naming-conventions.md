@@ -10,12 +10,12 @@ NNN-short-title.md
 
 ### Rules
 
-| Rule | Detail |
-|---|---|
-| **Number format** | Three digits, zero-padded: `001`, `002`, ..., `999` |
-| **Separator** | Single hyphen between number and slug |
-| **Slug format** | Lowercase, hyphen-separated words. No special characters, no underscores, no spaces |
-| **Extension** | `.md` (configurable via `fileExtension` setting) |
+| Rule              | Detail                                                                              |
+| ----------------- | ----------------------------------------------------------------------------------- |
+| **Number format** | Three digits, zero-padded: `001`, `002`, ..., `999`                                 |
+| **Separator**     | Single hyphen between number and slug                                               |
+| **Slug format**   | Lowercase, hyphen-separated words. No special characters, no underscores, no spaces |
+| **Extension**     | `.md` (configurable via `fileExtension` setting)                                    |
 
 ### Examples
 
@@ -35,23 +35,23 @@ NNN-short-title.md
 
 ### Slug Rules
 
-| Do | Don't |
-|---|---|
-| `switch-to-event-sourcing` | `switch_to_event_sourcing` |
-| `add-payment-gateway` | `Add-Payment-Gateway` |
-| `use-redis-for-caching` | `use redis for caching` |
-| `adopt-typescript-strict` | `adopt-typescript-strict-mode!` |
+| Do                         | Don't                           |
+| -------------------------- | ------------------------------- |
+| `switch-to-event-sourcing` | `switch_to_event_sourcing`      |
+| `add-payment-gateway`      | `Add-Payment-Gateway`           |
+| `use-redis-for-caching`    | `use redis for caching`         |
+| `adopt-typescript-strict`  | `adopt-typescript-strict-mode!` |
 
 ## Fixed-Name Files
 
 These files use exact, fixed names with no number prefix:
 
-| File | Location |
-|---|---|
-| `README.md` | Module root |
-| `CONTRIBUTING.md` | Module root |
-| `CLAUDE.md` | Module root |
-| `INTERFACE.md` | Module root (lib only) |
+| File              | Location               |
+| ----------------- | ---------------------- |
+| `README.md`       | Module root            |
+| `CONTRIBUTING.md` | Module root            |
+| `CLAUDE.md`       | Module root            |
+| `INTERFACE.md`    | Module root (lib only) |
 
 ## Architecture Documents
 
@@ -67,13 +67,13 @@ docs/architecture/module-boundaries.md
 
 All directory names are lowercase, singular or plural as specified:
 
-| Directory | Form |
-|---|---|
-| `docs/proposals/` | Plural |
-| `docs/plans/` | Plural |
-| `docs/decisions/` | Plural |
-| `docs/architecture/` | Singular |
-| `docs/examples/` | Plural (lib) |
-| `docs/runbooks/` | Plural (app) |
-| `docs/integration/` | Singular (app) |
-| `docs/config/` | Singular (app) |
+| Directory            | Form           |
+| -------------------- | -------------- |
+| `docs/proposals/`    | Plural         |
+| `docs/plans/`        | Plural         |
+| `docs/decisions/`    | Plural         |
+| `docs/architecture/` | Singular       |
+| `docs/examples/`     | Plural (lib)   |
+| `docs/runbooks/`     | Plural (app)   |
+| `docs/integration/`  | Singular (app) |
+| `docs/config/`       | Singular (app) |

@@ -1,0 +1,34 @@
+{
+  // Enable all rules by default
+  "default": true,
+
+  // MD013 - Line length: disabled globally.
+  // Tables, long URLs, and frontmatter references regularly exceed reasonable limits.
+  "MD013": false,
+
+  // MD025 - Single H1: disabled.
+  // All docs use YAML frontmatter with a title field AND an H1 heading.
+  // This is intentional — frontmatter is metadata, H1 is the rendered heading.
+  "MD025": false,
+
+  // MD033 - Inline HTML: allow specific elements.
+  // Needed for Mermaid containers, collapsible sections, README badges/images, and line breaks.
+  "MD033": {
+    "allowed_elements": ["details", "summary", "br", "div", "p", "strong", "em", "img", "a", "sub"]
+  },
+
+  // MD041 - First line heading: disabled.
+  // README.md uses centered HTML badges before the first heading. Templates may use frontmatter.
+  "MD041": false,
+
+  // MD024 - Duplicate headings: allow in different sections.
+  // Common in DDD plans where multiple aggregates have "Description" subheadings.
+  "MD024": {
+    "siblings_only": true
+  },
+
+  // MD040 - Fenced code language: disabled.
+  // Many existing docs use unlabeled code blocks for directory trees, ASCII diagrams,
+  // and pseudo-code where no single language identifier is appropriate.
+  "MD040": false
+}

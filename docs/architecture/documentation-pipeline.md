@@ -28,12 +28,12 @@ Every significant change follows a three-stage pipeline:
 
 Each stage has distinct characteristics:
 
-| Property | Proposal | Plan | Decision |
-|---|---|---|---|
-| **Focus** | What and why | How, decomposed | What was decided |
-| **Method** | RFC | DDD (bounded contexts, aggregates) | ADR |
-| **Audience** | Maintainers, reviewers | Implementers | Future maintainers |
-| **Mutability** | Mutable until terminal | Mutable while active | Immutable after acceptance |
+| Property       | Proposal               | Plan                               | Decision                   |
+| -------------- | ---------------------- | ---------------------------------- | -------------------------- |
+| **Focus**      | What and why           | How, decomposed                    | What was decided           |
+| **Method**     | RFC                    | DDD (bounded contexts, aggregates) | ADR                        |
+| **Audience**   | Maintainers, reviewers | Implementers                       | Future maintainers         |
+| **Mutability** | Mutable until terminal | Mutable while active               | Immutable after acceptance |
 
 ## Key Abstractions
 
@@ -118,22 +118,22 @@ Architecture Doc (living)
 
 ### Cross-Referencing
 
-| Document | Links To | Via |
-|---|---|---|
-| Plan | Originating proposal | `originating_proposal` frontmatter + markdown link |
-| ADR | Originating proposal (optional) | `originating_proposal` frontmatter |
-| ADR | Superseded ADR | `superseded_by` on old ADR |
-| Architecture doc | Related ADRs | `related_adrs` frontmatter + "Key Decisions" section |
-| Proposal | Superseding proposal | `superseded_by` frontmatter |
+| Document         | Links To                        | Via                                                  |
+| ---------------- | ------------------------------- | ---------------------------------------------------- |
+| Plan             | Originating proposal            | `originating_proposal` frontmatter + markdown link   |
+| ADR              | Originating proposal (optional) | `originating_proposal` frontmatter                   |
+| ADR              | Superseded ADR                  | `superseded_by` on old ADR                           |
+| Architecture doc | Related ADRs                    | `related_adrs` frontmatter + "Key Decisions" section |
+| Proposal         | Superseding proposal            | `superseded_by` frontmatter                          |
 
 ### Scope: Module vs. Root
 
 The pipeline operates at two scopes:
 
-| Scope | Location | Affects |
-|---|---|---|
-| **Module-level** | `<module>/docs/{proposals,plans,decisions,architecture}/` | Single module |
-| **Root-level** | `docs/{proposals,plans,decisions,architecture}/` | Entire system (cross-cutting) |
+| Scope            | Location                                                  | Affects                       |
+| ---------------- | --------------------------------------------------------- | ----------------------------- |
+| **Module-level** | `<module>/docs/{proposals,plans,decisions,architecture}/` | Single module                 |
+| **Root-level**   | `docs/{proposals,plans,decisions,architecture}/`          | Entire system (cross-cutting) |
 
 Both scopes use identical conventions, templates, lifecycle rules, and naming patterns. The only difference is the breadth of impact.
 

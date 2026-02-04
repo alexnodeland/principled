@@ -9,8 +9,8 @@ TODO
 ## Stability Guarantees
 
 | Export | Stability | Since |
-|--------|-----------|-------|
-| TODO | stable | TODO |
+| ------ | --------- | ----- |
+| TODO   | stable    | TODO  |
 
 ## Key Invariants
 

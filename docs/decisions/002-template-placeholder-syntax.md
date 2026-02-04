@@ -35,6 +35,7 @@ Template placeholders are guidance markers for Claude, not machine-processed tok
 Claude reads templates, understands the `{{PLACEHOLDER}}` markers, substitutes values contextually, and writes the result. The skill's SKILL.md documents which placeholders exist and what values to use.
 
 **Pros:**
+
 - Leverages Claude's ability to understand context — can populate not just simple substitutions but also contextual sections (e.g., pre-populating a plan's bounded contexts from the proposal)
 - No brittle `sed` commands to maintain
 - Handles edge cases naturally (missing git user name falls back to prompting, date formatting is handled natively)
@@ -42,6 +43,7 @@ Claude reads templates, understands the `{{PLACEHOLDER}}` markers, substitutes v
 - Skills already have Read and Write permissions — no additional tooling needed
 
 **Cons:**
+
 - Non-deterministic: Claude may interpret placeholders slightly differently across invocations
 - Cannot be unit-tested as a standalone script
 - Requires Claude Code runtime — templates cannot be populated by CI or other tools
@@ -51,11 +53,13 @@ Claude reads templates, understands the `{{PLACEHOLDER}}` markers, substitutes v
 Write a `populate-template.sh` script that takes a template file and a set of `KEY=VALUE` pairs, runs `sed` replacements, and outputs the populated file.
 
 **Pros:**
+
 - Deterministic, testable, scriptable
 - Can be used in CI pipelines without Claude Code
 - Clear separation of concerns
 
 **Cons:**
+
 - Fragile with special characters in values (sed delimiter conflicts)
 - Cannot handle contextual population (e.g., pre-populating from proposal content)
 - Adds another script to maintain and drift-check
@@ -66,9 +70,11 @@ Write a `populate-template.sh` script that takes a template file and a set of `K
 Use `sed` for simple placeholders (`{{DATE}}`, `{{AUTHOR}}`) and Claude for contextual sections.
 
 **Pros:**
+
 - Deterministic where possible, contextual where needed
 
 **Cons:**
+
 - Split responsibility is confusing — which replacements are scripted vs. Claude-mediated?
 - More moving parts for the same outcome
 - Marginal benefit over pure Claude-mediated approach

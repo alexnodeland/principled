@@ -1,10 +1,10 @@
 ---
 title: "{{TITLE}}"
-number: {{NUMBER}}
+number: { { NUMBER } }
 status: draft
-author: {{AUTHOR}}
-created: {{DATE}}
-updated: {{DATE}}
+author: { { AUTHOR } }
+created: { { DATE } }
+updated: { { DATE } }
 supersedes: null
 superseded_by: null
 ---

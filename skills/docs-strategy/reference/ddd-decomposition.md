@@ -43,6 +43,7 @@ An aggregate is a cluster of domain objects treated as a single unit for the pur
 ### Example
 
 In a documentation plugin:
+
 - **Aggregate:** CanonicalTemplateSet
 - **Root entity:** `scaffold/templates/` directory
 - **Boundary:** All 12 canonical templates. They are versioned together, validated together, and serve as the source of truth together.
@@ -79,6 +80,7 @@ Once you have bounded contexts, aggregates, and domain events, derive concrete i
 ### Task Granularity
 
 A task should be:
+
 - **Concrete:** "Write `validate-structure.sh` with `--module-path`, `--type`, `--strict`, `--json` flags" (not "implement validation")
 - **Completable:** One person can verify it's done
 - **Mappable:** It maps to one or more aggregates in one or more bounded contexts

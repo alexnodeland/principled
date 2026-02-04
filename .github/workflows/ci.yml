@@ -1,0 +1,118 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  lint-shell:
+    name: Shell Lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install shfmt
+        run: |
+          SHFMT_VERSION="v3.10.0"
+          curl -sS "https://github.com/mvdan/sh/releases/download/${SHFMT_VERSION}/shfmt_${SHFMT_VERSION}_linux_amd64" -L -o /usr/local/bin/shfmt
+          chmod +x /usr/local/bin/shfmt
+
+      - name: Check shell formatting (shfmt)
+        run: |
+          find . -name '*.sh' -not -path './node_modules/*' | xargs shfmt -i 2 -bn -sr -d
+
+      - name: Lint shell scripts (ShellCheck)
+        run: |
+          find . -name '*.sh' -not -path './node_modules/*' | xargs shellcheck --shell=bash
+
+  lint-markdown:
+    name: Markdown Lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Lint Markdown (markdownlint-cli2)
+        run: npx markdownlint-cli2 '**/*.md'
+
+      - name: Check Markdown formatting (Prettier)
+        run: npx prettier --check '**/*.md'
+
+  validate:
+    name: Validate
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check template drift
+        run: bash skills/scaffold/scripts/check-template-drift.sh
+
+      - name: Validate root structure
+        run: bash skills/scaffold/scripts/validate-structure.sh --root
+
+      - name: Smoke-test ADR immutability hook
+        run: |
+          # Test: editing an accepted ADR should be blocked (exit 2)
+          for adr in docs/decisions/*.md; do
+            status=$(bash hooks/scripts/parse-frontmatter.sh --file "$adr" --field status)
+            if [ "$status" = "accepted" ]; then
+              result=0
+              echo "{\"tool_input\":{\"file_path\":\"$adr\"}}" \
+                | bash hooks/scripts/check-adr-immutability.sh || result=$?
+              if [ "$result" -ne 2 ]; then
+                echo "FAIL: expected exit 2 for accepted ADR $adr, got $result"
+                exit 1
+              fi
+              echo "PASS: accepted ADR $adr correctly blocked (exit 2)"
+            fi
+          done
+
+          # Test: editing a non-decision file should be allowed (exit 0)
+          result=0
+          echo '{"tool_input":{"file_path":"CLAUDE.md"}}' \
+            | bash hooks/scripts/check-adr-immutability.sh || result=$?
+          if [ "$result" -ne 0 ]; then
+            echo "FAIL: expected exit 0 for non-decision file, got $result"
+            exit 1
+          fi
+          echo "PASS: non-decision file correctly allowed (exit 0)"
+
+      - name: Smoke-test proposal lifecycle hook
+        run: |
+          # Test: editing a terminal-status proposal should be blocked (exit 2)
+          for proposal in docs/proposals/*.md; do
+            status=$(bash hooks/scripts/parse-frontmatter.sh --file "$proposal" --field status)
+            if [ "$status" = "accepted" ] || [ "$status" = "rejected" ] || [ "$status" = "superseded" ]; then
+              result=0
+              echo "{\"tool_input\":{\"file_path\":\"$proposal\"}}" \
+                | bash hooks/scripts/check-proposal-lifecycle.sh || result=$?
+              if [ "$result" -ne 2 ]; then
+                echo "FAIL: expected exit 2 for $status proposal $proposal, got $result"
+                exit 1
+              fi
+              echo "PASS: $status proposal $proposal correctly blocked (exit 2)"
+            fi
+          done
+
+          # Test: editing a draft proposal should be allowed (exit 0)
+          for proposal in docs/proposals/*.md; do
+            status=$(bash hooks/scripts/parse-frontmatter.sh --file "$proposal" --field status)
+            if [ "$status" = "draft" ]; then
+              result=0
+              echo "{\"tool_input\":{\"file_path\":\"$proposal\"}}" \
+                | bash hooks/scripts/check-proposal-lifecycle.sh || result=$?
+              if [ "$result" -ne 0 ]; then
+                echo "FAIL: expected exit 0 for draft proposal $proposal, got $result"
+                exit 1
+              fi
+              echo "PASS: draft proposal $proposal correctly allowed (exit 0)"
+            fi
+          done

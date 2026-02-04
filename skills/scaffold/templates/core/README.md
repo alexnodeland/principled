@@ -6,10 +6,10 @@ TODO
 
 ## Ownership
 
-| Role | Owner |
-|------|-------|
-| Maintainer | TODO |
-| Team | TODO |
+| Role       | Owner |
+| ---------- | ----- |
+| Maintainer | TODO  |
+| Team       | TODO  |
 
 ## Quick Start
 

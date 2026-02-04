@@ -11,6 +11,7 @@ TODO
 ## Documentation Structure
 
 This module follows the Principled docs strategy:
+
 - `docs/proposals/` — RFCs (proposals). Naming: `NNN-short-title.md`.
 - `docs/plans/` — DDD implementation plans. Naming: `NNN-short-title.md` (matches proposal).
 - `docs/decisions/` — ADRs (immutable after acceptance). Naming: `NNN-short-title.md`.

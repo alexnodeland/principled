@@ -1,0 +1,18 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(shellcheck *)",
+      "Bash(shfmt *)",
+      "Bash(npx markdownlint-cli2 *)",
+      "Bash(npx prettier *)",
+      "Bash(bash skills/*)",
+      "Bash(bash hooks/*)",
+      "Bash(pre-commit *)",
+      "Bash(npm *)",
+      "Bash(git *)"
+    ]
+  },
+  "env": {
+    "CLAUDE_PLUGIN_ROOT": "."
+  }
+}

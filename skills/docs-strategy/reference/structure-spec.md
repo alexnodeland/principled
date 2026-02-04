@@ -8,50 +8,50 @@ Every module, regardless of type, must contain:
 
 ### Directories
 
-| Directory | Purpose |
-|---|---|
-| `docs/proposals/` | RFC proposals with lifecycle management |
-| `docs/plans/` | DDD implementation plans bridging proposals and decisions |
-| `docs/decisions/` | Architectural Decision Records (immutable post-acceptance) |
-| `docs/architecture/` | Living documentation of current design |
+| Directory            | Purpose                                                    |
+| -------------------- | ---------------------------------------------------------- |
+| `docs/proposals/`    | RFC proposals with lifecycle management                    |
+| `docs/plans/`        | DDD implementation plans bridging proposals and decisions  |
+| `docs/decisions/`    | Architectural Decision Records (immutable post-acceptance) |
+| `docs/architecture/` | Living documentation of current design                     |
 
 ### Files
 
-| File | Purpose |
-|---|---|
-| `README.md` | Module front door — purpose, ownership, quick start, links |
-| `CONTRIBUTING.md` | Module-specific build, test, lint, and PR conventions |
-| `CLAUDE.md` | Module-scoped AI development context |
+| File              | Purpose                                                    |
+| ----------------- | ---------------------------------------------------------- |
+| `README.md`       | Module front door — purpose, ownership, quick start, links |
+| `CONTRIBUTING.md` | Module-specific build, test, lint, and PR conventions      |
+| `CLAUDE.md`       | Module-scoped AI development context                       |
 
 ## Lib Extensions
 
 In addition to the core structure, `lib` modules must contain:
 
-| Component | Purpose |
-|---|---|
-| `docs/examples/` | Worked usage examples organized by use case |
-| `INTERFACE.md` | Public API surface, stability guarantees, key invariants |
+| Component        | Purpose                                                  |
+| ---------------- | -------------------------------------------------------- |
+| `docs/examples/` | Worked usage examples organized by use case              |
+| `INTERFACE.md`   | Public API surface, stability guarantees, key invariants |
 
 ## App Extensions
 
 In addition to the core structure, `app` modules must contain:
 
-| Component | Purpose |
-|---|---|
-| `docs/runbooks/` | Operational procedures (one per incident type) |
-| `docs/integration/` | External dependency documentation |
-| `docs/config/` | Environment and configuration surface docs |
+| Component           | Purpose                                        |
+| ------------------- | ---------------------------------------------- |
+| `docs/runbooks/`    | Operational procedures (one per incident type) |
+| `docs/integration/` | External dependency documentation              |
+| `docs/config/`      | Environment and configuration surface docs     |
 
 ## Root-Level Structure
 
 Cross-cutting proposals, plans, and decisions that affect multiple modules live in a root-level docs structure:
 
-| Directory | Purpose |
-|---|---|
-| `docs/proposals/` | Cross-cutting RFCs |
-| `docs/plans/` | Cross-cutting implementation plans |
-| `docs/decisions/` | Cross-cutting ADRs |
-| `docs/architecture/` | System-wide architecture docs |
+| Directory            | Purpose                            |
+| -------------------- | ---------------------------------- |
+| `docs/proposals/`    | Cross-cutting RFCs                 |
+| `docs/plans/`        | Cross-cutting implementation plans |
+| `docs/decisions/`    | Cross-cutting ADRs                 |
+| `docs/architecture/` | System-wide architecture docs      |
 
 The root structure follows identical conventions to module-level structure — same naming, same templates, same lifecycle rules. The only difference is scope: root-level documents affect the system, module-level documents affect the module.
 
