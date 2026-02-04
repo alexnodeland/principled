@@ -131,8 +131,8 @@ jobs:
     # prettier --check all .md files
 
   validate:
-    # Template drift check
-    # Root structure validation
+    # Template drift check (check-template-drift.sh)
+    # Full root structure validation (validate-structure.sh --root)
     # Hook script smoke tests (feed known inputs, assert exit codes)
 ```
 
@@ -149,15 +149,17 @@ Create a `.claude/` directory with project-level Claude Code configuration to gi
 
 #### `commands/`
 
-Custom slash commands for common developer workflows in this repo:
+Custom slash commands (as `.md` prompt files) for common developer workflows in this repo. Each file in `.claude/commands/` becomes a user-invocable `/project:<name>` command — the same mechanism as plugin skills, but scoped to this repo's development needs rather than the plugin's consumer-facing features.
 
-- `/dev:lint` — run the full lint suite (ShellCheck + shfmt + markdownlint + Prettier) and report results
-- `/dev:validate` — run template drift check and structure validation
-- `/dev:test-hooks` — smoke-test enforcement hooks with known good/bad inputs
-- `/dev:propagate-templates` — update all template copies from canonical sources and verify drift-free
-- `/dev:check-ci` — run the full CI pipeline locally (all lint + validate steps)
+| Command | File | Purpose |
+|---|---|---|
+| `/project:lint` | `commands/lint.md` | Run the full lint suite (ShellCheck + shfmt + markdownlint + Prettier) and report results |
+| `/project:validate` | `commands/validate.md` | Run template drift check and full structure validation (`--root`) |
+| `/project:test-hooks` | `commands/test-hooks.md` | Smoke-test enforcement hooks by feeding known good/bad inputs and asserting exit codes |
+| `/project:propagate-templates` | `commands/propagate-templates.md` | Copy canonical templates to all consuming skills and verify drift-free |
+| `/project:check-ci` | `commands/check-ci.md` | Run the full CI pipeline locally (all lint + validate steps) |
 
-These commands encode tribal knowledge about "how do I check my work" into discoverable, one-step operations.
+Each command file contains a prompt with workflow instructions — the same pattern used by plugin skills in their `SKILL.md` files. This encodes tribal knowledge about "how do I check my work" into discoverable, one-step operations.
 
 #### `CLAUDE.md` (project-level)
 
@@ -255,13 +257,22 @@ Testing externally doesn't catch integration issues with the plugin's own docs s
 - CLAUDE.md should be updated to reference CONTRIBUTING.md, CI pipeline, and `.claude/` directory.
 - `package.json` may be introduced at root for Markdown tooling (`markdownlint-cli2`, `prettier`) as dev dependencies. This does not affect the plugin runtime, which remains pure bash.
 
+## Decisions
+
+The following questions were raised during drafting and have been resolved:
+
+1. **CI runs the full `validate-structure.sh --root` check**, not just template drift. Both are included in the `validate` job.
+2. **Use latest versions** of ShellCheck, shfmt, markdownlint-cli2, and Prettier in CI. No version pinning needed initially.
+3. **All ShellCheck rules enabled by default.** No project-wide disables at the start. Specific rules can be disabled later via `.shellcheckrc` if justified.
+4. **`.claude/settings.json` is committed.** It contains project-level configuration (dogfooding plugin path, permissions, environment) that all contributors should share.
+5. **markdownlint rules to relax:**
+   - MD013 (line length) — disabled for tables and long URLs, which are common in this repo's templates and architecture docs
+   - MD033 (inline HTML) — disabled to allow Mermaid diagram containers and other structural HTML
+   - All other rules enabled by default
+6. **Prettier prose wrap set to `preserve`.** Respects author line breaks; less disruptive than hard-wrapping.
+7. **Dogfooding uses a relative path (`"."`)** in `.claude/settings.json`. Simplest approach, no symlinks or circular dependency concerns.
+8. **`.claude/commands/` are prompt-based skills** (`.md` files with workflow instructions), following the same pattern as plugin skills in `SKILL.md` files. They are user-invocable via `/project:<name>`.
+
 ## Open Questions
 
-1. Should the CI pipeline also run the full `validate-structure.sh --root` check, or is template drift sufficient?
-2. Should we pin specific versions of ShellCheck, shfmt, markdownlint-cli2, and Prettier in CI, or use latest?
-3. Are there any ShellCheck rules that should be disabled project-wide from the start (e.g., SC2034 for unused variables in sourced scripts)?
-4. Should `.claude/settings.json` be committed or `.gitignore`-d (since it may contain user-specific preferences)? The dogfooding plugin path config argues for committing it.
-5. Which markdownlint rules should be disabled or relaxed? Candidates: MD013 (line length) for tables and long links, MD033 (inline HTML) for Mermaid diagram containers.
-6. Should Prettier's prose wrap be set to `preserve` (respect author line breaks) or `always` (hard-wrap at a column limit)? `preserve` is less disruptive.
-7. For dogfooding, should the plugin self-reference use a relative path (`"."`) or should we explore a symlink/install approach? Relative path is simplest and avoids circular dependency concerns.
-8. Should the `.claude/commands/` dev commands be thin wrappers around existing scripts, or should they add additional logic (e.g., colored output, summary reporting)?
+None — all questions resolved.
