@@ -5,14 +5,13 @@
       "Bash(shfmt *)",
       "Bash(npx markdownlint-cli2 *)",
       "Bash(npx prettier *)",
-      "Bash(bash skills/*)",
-      "Bash(bash hooks/*)",
+      "Bash(bash plugins/*)",
       "Bash(pre-commit *)",
       "Bash(npm *)",
       "Bash(git *)"
     ]
   },
   "env": {
-    "CLAUDE_PLUGIN_ROOT": "."
+    "CLAUDE_PLUGIN_ROOT": "./plugins/principled-docs"
   }
 }

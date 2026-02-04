@@ -4,7 +4,7 @@ description: >
   Run the full CI pipeline locally, mirroring the checks in
   .github/workflows/ci.yml. Use to verify everything passes before
   pushing.
-allowed-tools: Bash(shfmt *), Bash(shellcheck *), Bash(find *), Bash(npx markdownlint-cli2 *), Bash(npx prettier *), Bash(bash skills/*), Bash(bash hooks/*), Bash(echo *)
+allowed-tools: Bash(shfmt *), Bash(shellcheck *), Bash(find *), Bash(npx markdownlint-cli2 *), Bash(npx prettier *), Bash(bash plugins/*), Bash(echo *), Bash(jq *), Bash(python3 *)
 user-invocable: true
 ---
 
@@ -49,14 +49,22 @@ npx prettier --check '**/*.md'
 ### 5. Template Drift (validate)
 
 ```bash
-bash skills/scaffold/scripts/check-template-drift.sh
+bash plugins/principled-docs/skills/scaffold/scripts/check-template-drift.sh
 ```
 
 ### 6. Root Structure Validation (validate)
 
 ```bash
-bash skills/scaffold/scripts/validate-structure.sh --root
+bash plugins/principled-docs/skills/scaffold/scripts/validate-structure.sh --root
 ```
+
+### 7. Marketplace Manifest Validation (validate)
+
+Verify `.claude-plugin/marketplace.json` is valid JSON and all plugin source directories exist.
+
+### 8. Plugin Manifest Validation (validate)
+
+Verify every plugin in `plugins/*/` and `external_plugins/*/` has a valid `.claude-plugin/plugin.json`.
 
 ### Summary
 

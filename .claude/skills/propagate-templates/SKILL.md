@@ -4,7 +4,7 @@ description: >
   Propagate canonical templates and scripts to all consuming skills,
   then verify zero drift. Use after updating any canonical template
   or script to keep all copies in sync.
-allowed-tools: Bash(cp *), Bash(bash skills/*)
+allowed-tools: Bash(cp *), Bash(bash plugins/*)
 user-invocable: true
 ---
 
@@ -24,21 +24,21 @@ Propagate canonical templates and scripts to all consuming skills, then verify z
 
 Copy each canonical template to its consuming skill:
 
-1. `skills/scaffold/templates/core/proposal.md` → `skills/new-proposal/templates/proposal.md`
-2. `skills/scaffold/templates/core/plan.md` → `skills/new-plan/templates/plan.md`
-3. `skills/scaffold/templates/core/decision.md` → `skills/new-adr/templates/decision.md`
-4. `skills/scaffold/templates/core/architecture.md` → `skills/new-architecture-doc/templates/architecture.md`
+1. `plugins/principled-docs/skills/scaffold/templates/core/proposal.md` → `plugins/principled-docs/skills/new-proposal/templates/proposal.md`
+2. `plugins/principled-docs/skills/scaffold/templates/core/plan.md` → `plugins/principled-docs/skills/new-plan/templates/plan.md`
+3. `plugins/principled-docs/skills/scaffold/templates/core/decision.md` → `plugins/principled-docs/skills/new-adr/templates/decision.md`
+4. `plugins/principled-docs/skills/scaffold/templates/core/architecture.md` → `plugins/principled-docs/skills/new-architecture-doc/templates/architecture.md`
 
 ### Script Propagation
 
 Copy each canonical script to its consuming skill:
 
-1. `skills/new-proposal/scripts/next-number.sh` → `skills/new-plan/scripts/next-number.sh`
-2. `skills/new-proposal/scripts/next-number.sh` → `skills/new-adr/scripts/next-number.sh`
-3. `skills/scaffold/scripts/validate-structure.sh` → `skills/validate/scripts/validate-structure.sh`
+1. `plugins/principled-docs/skills/new-proposal/scripts/next-number.sh` → `plugins/principled-docs/skills/new-plan/scripts/next-number.sh`
+2. `plugins/principled-docs/skills/new-proposal/scripts/next-number.sh` → `plugins/principled-docs/skills/new-adr/scripts/next-number.sh`
+3. `plugins/principled-docs/skills/scaffold/scripts/validate-structure.sh` → `plugins/principled-docs/skills/validate/scripts/validate-structure.sh`
 
 ### Verification
 
-Run `bash skills/scaffold/scripts/check-template-drift.sh` to confirm all copies are byte-identical to their canonical sources.
+Run `bash plugins/principled-docs/skills/scaffold/scripts/check-template-drift.sh` to confirm all copies are byte-identical to their canonical sources.
 
 Report the result: PASS (zero drift) or FAIL (list drifted files).
