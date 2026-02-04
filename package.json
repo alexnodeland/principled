@@ -1,0 +1,14 @@
+{
+  "name": "principled-docs",
+  "private": true,
+  "description": "Dev tooling for principled-docs plugin",
+  "scripts": {
+    "lint:md": "markdownlint-cli2 '**/*.md'",
+    "format:md": "prettier --check '**/*.md'",
+    "format:md:fix": "prettier --write '**/*.md'"
+  },
+  "devDependencies": {
+    "markdownlint-cli2": "^0.17.0",
+    "prettier": "^3.4.0"
+  }
+}
