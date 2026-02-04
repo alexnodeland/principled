@@ -1,7 +1,7 @@
 ---
 title: "Plugin Marketplace Setup"
 number: 002
-status: draft
+status: accepted
 author: Alex
 created: 2026-02-04
 updated: 2026-02-04
