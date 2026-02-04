@@ -23,16 +23,17 @@ principled-docs is a working Claude Code plugin (v0.3.1) with a well-defined arc
 
 1. **No contribution guide.** New contributors have no onboarding path — conventions, branching strategy, commit message format, and PR expectations are undocumented.
 2. **No license file.** The repo has no explicit license, which creates legal ambiguity for adoption and contribution.
-3. **No linting or formatting standards.** Shell scripts (the entire codebase) have no automated style enforcement. Inconsistencies can creep in across 9 skill directories, hook scripts, and utility scripts.
-4. **No pre-commit hooks for code quality.** The existing hooks system enforces *document* integrity (ADR immutability, proposal lifecycle), but nothing enforces *code* quality on commit.
-5. **No CI pipeline.** Template drift checks and structure validation exist as scripts but are not wired into a PR-gated pipeline.
-6. **No `.claude/` directory.** The repo lacks Claude Code local configuration (settings, commands) that would improve the development experience for contributors using Claude Code.
+3. **No linting or formatting standards.** Shell scripts (the entire codebase) have no automated style enforcement. Inconsistencies can creep in across 9 skill directories, hook scripts, and utility scripts. Markdown files — the primary output artifact of this plugin — also have no lint or format enforcement.
+4. **No dogfooding.** principled-docs is a Claude Code plugin for enforcing documentation structure, yet the repo does not install itself as a plugin. We should eat our own cooking.
+5. **No pre-commit hooks for code quality.** The existing hooks system enforces *document* integrity (ADR immutability, proposal lifecycle), but nothing enforces *code* quality on commit.
+6. **No CI pipeline.** Template drift checks and structure validation exist as scripts but are not wired into a PR-gated pipeline.
+7. **No `.claude/` directory.** The repo lacks Claude Code local configuration (settings, skills, hooks, commands) that would improve the development experience for contributors using Claude Code.
 
 These gaps increase friction for contributors and risk inconsistent code quality as the plugin grows.
 
 ## Proposal
 
-Add developer setup and DX infrastructure in four areas:
+Add developer setup and DX infrastructure in six areas:
 
 ### 1. CONTRIBUTING.md
 
@@ -57,14 +58,27 @@ Add a root-level `LICENSE` file with the MIT license. MIT is appropriate because
 
 ### 3. Linting, Formatting, and Git Hooks
 
-#### Tool: ShellCheck + shfmt
+#### Shell: ShellCheck + shfmt
 
 All code in this repo is pure Bash. The standard toolchain for Bash quality is:
 
 - **[ShellCheck](https://www.shellcheck.net/)** — static analysis for shell scripts. Catches common bugs, portability issues, and bad practices.
 - **[shfmt](https://github.com/mvdan/sh)** — formatter for shell scripts. Enforces consistent indentation, spacing, and style.
 
-#### Configuration
+#### Markdown: markdownlint + Prettier
+
+Markdown is the primary output artifact of this plugin — every template, proposal, plan, ADR, and architecture doc is Markdown. Enforcing consistent Markdown style is just as important as enforcing shell script quality.
+
+- **[markdownlint-cli2](https://github.com/DavidAnson/markdownlint-cli2)** — linter for Markdown files. Catches inconsistent heading levels, trailing whitespace, line length issues, and structural problems.
+- **[Prettier](https://prettier.io/)** — opinionated formatter with first-class Markdown support. Normalizes list indentation, table alignment, and wrapping.
+
+Configuration:
+
+- `.markdownlint.jsonc` at repo root — markdownlint rules (e.g., disable line-length for long tables, allow HTML in Mermaid blocks)
+- `.prettierrc` at repo root — Prettier configuration scoped to Markdown (prose wrap, tab width)
+- `.prettierignore` — exclude generated files or vendored content if needed
+
+#### General Configuration
 
 - `.shellcheckrc` at repo root — project-wide ShellCheck configuration (shell directive, any disabled checks)
 - `.editorconfig` at repo root — editor-agnostic formatting defaults (indent style/size, end-of-line, trailing whitespace)
@@ -82,14 +96,25 @@ The pre-commit hook should run:
 
 1. `shfmt --diff` — fail if any staged `.sh` file is not formatted
 2. `shellcheck` — fail if any staged `.sh` file has lint errors
-3. Existing template drift check — `skills/scaffold/scripts/check-template-drift.sh`
+3. `markdownlint-cli2` — fail if any staged `.md` file has lint errors
+4. `prettier --check` — fail if any staged `.md` file is not formatted
+5. Existing template drift check — `skills/scaffold/scripts/check-template-drift.sh`
 
-#### Formatting Standards
+#### Shell Formatting Standards
 
 - **Indent:** 2 spaces (consistent with existing scripts)
 - **Binary operators:** at the beginning of the next line
 - **Redirect operators:** followed by a space
 - **Shell dialect:** `bash` (not `sh` or `posix`)
+
+#### Markdown Formatting Standards
+
+- **Prose wrap:** preserve (don't rewrap existing lines; let authors choose line breaks)
+- **List indent:** 2 spaces
+- **Emphasis marker:** `*` (asterisks, not underscores)
+- **Heading style:** ATX (`#` prefixed, not underline)
+- **Fenced code blocks:** backticks (not tildes)
+- **YAML frontmatter:** preserved as-is (Prettier handles this natively)
 
 ### 4. CI Pipeline
 
@@ -97,9 +122,13 @@ Add a GitHub Actions workflow (`.github/workflows/ci.yml`) that runs on every PR
 
 ```yaml
 jobs:
-  lint:
+  lint-shell:
     # ShellCheck all .sh files
     # shfmt --diff all .sh files
+
+  lint-markdown:
+    # markdownlint-cli2 all .md files
+    # prettier --check all .md files
 
   validate:
     # Template drift check
@@ -107,16 +136,69 @@ jobs:
     # Hook script smoke tests (feed known inputs, assert exit codes)
 ```
 
-This formalizes the checks that already exist as scripts into an automated gate.
+This formalizes the checks that already exist as scripts into an automated gate, and adds Markdown quality enforcement alongside shell script checks.
 
 ### 5. `.claude/` Directory Setup
 
-Create `.claude/settings.json` with project-level Claude Code configuration:
+Create a `.claude/` directory with project-level Claude Code configuration to give contributors a batteries-included development experience:
+
+#### `settings.json`
 
 - **Permissions** — pre-approve common tools (Bash, Read, Edit, Write, Glob, Grep) to reduce approval friction during development
 - **Environment context** — set `CLAUDE_PLUGIN_ROOT` so hook scripts resolve correctly during development
 
-This improves DX for anyone developing the plugin with Claude Code itself.
+#### `commands/`
+
+Custom slash commands for common developer workflows in this repo:
+
+- `/dev:lint` — run the full lint suite (ShellCheck + shfmt + markdownlint + Prettier) and report results
+- `/dev:validate` — run template drift check and structure validation
+- `/dev:test-hooks` — smoke-test enforcement hooks with known good/bad inputs
+- `/dev:propagate-templates` — update all template copies from canonical sources and verify drift-free
+- `/dev:check-ci` — run the full CI pipeline locally (all lint + validate steps)
+
+These commands encode tribal knowledge about "how do I check my work" into discoverable, one-step operations.
+
+#### `CLAUDE.md` (project-level)
+
+The existing root `CLAUDE.md` already provides plugin context. The `.claude/CLAUDE.md` can supplement it with development-specific guidance:
+
+- Common pitfalls when editing hook scripts
+- Reminder to propagate templates after modifying canonical copies
+- Pointer to run lint/validate before committing
+
+### 6. Dogfooding: Install principled-docs as Its Own Plugin
+
+principled-docs is a Claude Code plugin that enforces documentation structure. This repo has its own documentation structure (`docs/proposals/`, `docs/plans/`, `docs/decisions/`, `docs/architecture/`). We should install the plugin on itself.
+
+#### How
+
+The `.claude/settings.json` should reference the repo root as a plugin source:
+
+```json
+{
+  "plugins": [
+    {
+      "path": "."
+    }
+  ]
+}
+```
+
+This means contributors developing the plugin with Claude Code will automatically get:
+
+- **All 9 skills** — `/scaffold`, `/validate`, `/docs-audit`, `/new-proposal`, `/new-plan`, `/new-adr`, `/new-architecture-doc`, `/proposal-status` available as slash commands for managing the plugin's own docs
+- **All enforcement hooks** — ADR immutability and proposal lifecycle guards active while editing the plugin's own proposals and decisions
+- **Structure nudge** — PostToolUse validation fires when writing files in `docs/`
+
+#### Why This Matters
+
+- **Catches plugin bugs early.** If a skill or hook breaks, the developers using it on this repo will notice immediately.
+- **Validates the DX.** The plugin's UX is tested continuously by its own maintainers.
+- **Keeps docs consistent.** The plugin's own documentation follows the same standards it enforces on consumers.
+- **Living reference.** The repo's `docs/` directory serves as a working example of what the plugin produces.
+
+This improves DX for anyone developing the plugin with Claude Code itself, and ensures the plugin remains its own best advertisement.
 
 ## Alternatives Considered
 
@@ -132,21 +214,32 @@ Relying on manual review for shell script quality is error-prone. ShellCheck cat
 
 Apache-2.0 adds patent grant provisions but is more complex. GPL would restrict commercial use in proprietary monorepos. MIT is the simplest choice that maximizes adoption for a developer tool.
 
+### Alternative 4: Skip Markdown linting, only lint shell
+
+Markdown is the plugin's primary output artifact. Leaving it unformatted while enforcing shell style would be inconsistent. markdownlint + Prettier have negligible setup cost given we're already adopting pre-commit.
+
+### Alternative 5: Don't dogfood, test the plugin only on external repos
+
+Testing externally doesn't catch integration issues with the plugin's own docs structure. Dogfooding provides continuous, zero-cost validation and keeps the repo as a living reference implementation.
+
 ## Consequences
 
 ### Positive
 
 - **Lower contribution barrier** — CONTRIBUTING.md gives new contributors a clear onboarding path
 - **Legal clarity** — MIT license removes ambiguity for adoption
-- **Automated quality** — linting catches bugs before they land; formatting eliminates style debates
-- **CI gate** — template drift and structure violations are caught in PRs, not after merge
-- **Better Claude Code DX** — `.claude/` configuration reduces friction for plugin developers
+- **Automated quality** — shell and Markdown linting catches bugs and inconsistencies before they land; formatting eliminates style debates
+- **CI gate** — template drift, structure violations, and lint failures are caught in PRs, not after merge
+- **Better Claude Code DX** — `.claude/` with settings, commands, and self-installed plugin gives contributors a batteries-included experience
+- **Dogfooding catches bugs** — using the plugin on its own repo provides continuous validation of skills, hooks, and templates
+- **Living reference** — the repo's own `docs/` directory serves as a working example of plugin output
 
 ### Negative
 
-- **Pre-commit adds a dependency** — contributors need to install the pre-commit framework (or ShellCheck/shfmt directly for Option B)
+- **Pre-commit adds dependencies** — contributors need to install the pre-commit framework, ShellCheck, shfmt, markdownlint-cli2, and Prettier (or a subset for Option B)
 - **CI adds maintenance** — GitHub Actions workflow needs updates as new scripts/checks are added
-- **Initial formatting churn** — running shfmt on existing scripts may produce a large reformatting diff
+- **Initial formatting churn** — running shfmt and Prettier on existing files may produce large reformatting diffs
+- **Node.js dependency for Markdown tooling** — markdownlint-cli2 and Prettier require Node.js, adding a runtime dependency to a previously pure-bash project (scoped to dev tooling only, not plugin runtime)
 
 ### Risks
 
@@ -155,14 +248,20 @@ Apache-2.0 adds patent grant provisions but is more complex. GPL would restrict 
 
 ## Architecture Impact
 
-- No new skills or hooks are created by this RFC.
+- No new plugin skills or hooks are created by this RFC. The plugin architecture is unchanged.
 - `.github/workflows/ci.yml` is a new infrastructure component outside the plugin architecture.
-- `.claude/settings.json` is a new configuration surface that should be documented in CLAUDE.md.
-- CLAUDE.md should be updated to reference CONTRIBUTING.md and CI pipeline.
+- `.claude/` directory adds project-level Claude Code configuration: settings, dev commands, and self-referencing plugin installation. This should be documented in CLAUDE.md.
+- Dogfooding (installing the plugin on itself) means all plugin hooks and skills are active during development. This is intentional and desirable — it validates the plugin continuously.
+- CLAUDE.md should be updated to reference CONTRIBUTING.md, CI pipeline, and `.claude/` directory.
+- `package.json` may be introduced at root for Markdown tooling (`markdownlint-cli2`, `prettier`) as dev dependencies. This does not affect the plugin runtime, which remains pure bash.
 
 ## Open Questions
 
 1. Should the CI pipeline also run the full `validate-structure.sh --root` check, or is template drift sufficient?
-2. Should we pin specific versions of ShellCheck and shfmt in CI, or use latest?
+2. Should we pin specific versions of ShellCheck, shfmt, markdownlint-cli2, and Prettier in CI, or use latest?
 3. Are there any ShellCheck rules that should be disabled project-wide from the start (e.g., SC2034 for unused variables in sourced scripts)?
-4. Should `.claude/settings.json` be committed or `.gitignore`-d (since it may contain user-specific preferences)?
+4. Should `.claude/settings.json` be committed or `.gitignore`-d (since it may contain user-specific preferences)? The dogfooding plugin path config argues for committing it.
+5. Which markdownlint rules should be disabled or relaxed? Candidates: MD013 (line length) for tables and long links, MD033 (inline HTML) for Mermaid diagram containers.
+6. Should Prettier's prose wrap be set to `preserve` (respect author line breaks) or `always` (hard-wrap at a column limit)? `preserve` is less disruptive.
+7. For dogfooding, should the plugin self-reference use a relative path (`"."`) or should we explore a symlink/install approach? Relative path is simplest and avoids circular dependency concerns.
+8. Should the `.claude/commands/` dev commands be thin wrappers around existing scripts, or should they add additional logic (e.g., colored output, summary reporting)?
