@@ -100,7 +100,7 @@ hooks.json
     │
     └── PostToolUse: Write
         └── validate-structure.sh --on-write
-            (from skills/scaffold/scripts/)
+            (from plugins/principled-docs/skills/scaffold/scripts/)
 ```
 
 ### Dependency Chain

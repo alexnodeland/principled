@@ -12,25 +12,30 @@ Describes the overall architecture of the `principled-docs` Claude Code plugin: 
 
 ## Overview
 
-The plugin is organized around three architectural layers:
+The system is organized around four architectural layers. The marketplace layer sits above the plugin layers:
 
 ```
-┌─────────────────────────────────────────────────────────┐
-│                     SKILLS LAYER                         │
-│  (generative workflows: scaffolding, authoring, audit)   │
-│                                                          │
-│  9 skills, each self-contained with SKILL.md,            │
-│  templates, scripts, and reference docs                  │
+┌──────────────────────────────────────────────────────────┐
+│                   MARKETPLACE LAYER                       │
+│  (plugin catalog, discovery, and distribution)            │
+│                                                           │
+│  marketplace.json, plugins/, external_plugins/            │
 ├──────────────────────────────────────────────────────────┤
-│                  ENFORCEMENT LAYER                        │
-│  (deterministic guardrails: hooks + guard scripts)        │
-│                                                          │
-│  hooks.json + 3 shell scripts                            │
+│                     SKILLS LAYER                          │
+│  (generative workflows: scaffolding, authoring, audit)    │
+│                                                           │
+│  9 skills, each self-contained with SKILL.md,             │
+│  templates, scripts, and reference docs                   │
 ├──────────────────────────────────────────────────────────┤
-│                  FOUNDATION LAYER                         │
-│  (shared infrastructure: manifest, canonical templates)   │
-│                                                          │
-│  plugin.json, canonical template set, utility scripts     │
+│                  ENFORCEMENT LAYER                         │
+│  (deterministic guardrails: hooks + guard scripts)         │
+│                                                           │
+│  hooks.json + 3 shell scripts                             │
+├──────────────────────────────────────────────────────────┤
+│                  FOUNDATION LAYER                          │
+│  (shared infrastructure: manifest, canonical templates)    │
+│                                                           │
+│  plugin.json, canonical template set, utility scripts      │
 └──────────────────────────────────────────────────────────┘
 ```
 
@@ -41,7 +46,7 @@ The plugin is organized around three architectural layers:
 Skills are the single unit of capability. Every skill is also a slash command (Claude Code v2.1.3+ unifies skills and commands). A skill directory contains everything it needs:
 
 ```
-skills/<skill-name>/
+plugins/<plugin-name>/skills/<skill-name>/
 ├── SKILL.md              # Definition: frontmatter (name, description, tools) + workflow
 ├── templates/            # Document templates used by this skill
 ├── reference/            # Reference docs Claude reads during execution
@@ -59,7 +64,7 @@ Skills fall into three categories:
 
 ### Hooks
 
-Hooks are deterministic shell scripts triggered by Claude Code lifecycle events. They live in `hooks/` (not in skill directories) because they are not skills — they have no SKILL.md, no progressive disclosure, and no user-facing workflow.
+Hooks are deterministic shell scripts triggered by Claude Code lifecycle events. They live in a plugin's `hooks/` directory (not in skill directories) because they are not skills — they have no SKILL.md, no progressive disclosure, and no user-facing workflow.
 
 | Hook                       | Event                   | Behavior                              |
 | -------------------------- | ----------------------- | ------------------------------------- |
@@ -75,12 +80,14 @@ Templates are markdown files with `{{PLACEHOLDER}}` markers. The `scaffold` skil
 
 Utility scripts are shell programs that perform deterministic operations:
 
-| Script                    | Purpose                                | Canonical Location             | Copies                                                |
-| ------------------------- | -------------------------------------- | ------------------------------ | ----------------------------------------------------- |
-| `parse-frontmatter.sh`    | Extract YAML frontmatter fields        | `hooks/scripts/`               | None                                                  |
-| `validate-structure.sh`   | Check module documentation structure   | `skills/scaffold/scripts/`     | `skills/validate/scripts/`                            |
-| `check-template-drift.sh` | Verify template copies match canonical | `skills/scaffold/scripts/`     | None                                                  |
-| `next-number.sh`          | Determine next NNN sequence number     | `skills/new-proposal/scripts/` | `skills/new-plan/scripts/`, `skills/new-adr/scripts/` |
+| Script                    | Purpose                                | Canonical Location             | Copies                                |
+| ------------------------- | -------------------------------------- | ------------------------------ | ------------------------------------- |
+| `parse-frontmatter.sh`    | Extract YAML frontmatter fields        | `hooks/scripts/`               | None                                  |
+| `validate-structure.sh`   | Check module documentation structure   | `skills/scaffold/scripts/`     | `skills/validate/scripts/`            |
+| `check-template-drift.sh` | Verify template copies match canonical | `skills/scaffold/scripts/`     | None                                  |
+| `next-number.sh`          | Determine next NNN sequence number     | `skills/new-proposal/scripts/` | `skills/new-plan/`, `skills/new-adr/` |
+
+All script paths above are relative to `plugins/principled-docs/`.
 
 ## Component Relationships
 
@@ -175,4 +182,4 @@ PostToolUse hook fires (after execution)
 2. **Template copies are byte-identical.** The drift checker enforces this. Drift is a CI failure.
 3. **Hooks and skills never overlap.** Skills handle generative workflows. Hooks handle deterministic guardrails.
 4. **Scripts have no shared directory.** If a utility is needed in multiple places, each location maintains its own copy, validated by drift checks.
-5. **Plugin root contains only infrastructure.** `.claude-plugin/`, `hooks/`, `skills/`, `docs/`, `README.md`. No loose scripts, configs, or utilities at the root.
+5. **Marketplace root contains only infrastructure.** `.claude-plugin/marketplace.json`, `plugins/`, `external_plugins/`, `docs/`, `README.md`. Individual plugins are self-contained under `plugins/`.

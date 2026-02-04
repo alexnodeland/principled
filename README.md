@@ -1,200 +1,115 @@
 <p align="center">
-  <strong>📐 principled-docs</strong>
+  <strong>📐 Principled Marketplace</strong>
 </p>
 
 <p align="center">
-  <em>Specification-first documentation for monorepos, powered by Claude Code.</em>
+  <em>A curated Claude Code plugin marketplace for specification-first development.</em>
 </p>
 
 <p align="center">
   <img src="https://img.shields.io/badge/claude_code-v2.1.3+-7c3aed?style=flat-square" alt="Claude Code v2.1.3+" />
-  <img src="https://img.shields.io/badge/version-0.3.1-blue?style=flat-square" alt="Version 0.3.1" />
-  <img src="https://img.shields.io/badge/status-active-brightgreen?style=flat-square" alt="Status: Active" />
+  <img src="https://img.shields.io/badge/marketplace-v1.0.0-blue?style=flat-square" alt="Marketplace v1.0.0" />
   <img src="https://img.shields.io/badge/license-MIT-gray?style=flat-square" alt="License: MIT" />
 </p>
 
 ---
 
-A Claude Code plugin that **scaffolds**, **authors**, and **enforces** module documentation structure. Every module gets a consistent, audience-driven documentation set — from RFC proposals through DDD implementation plans to immutable architectural decision records.
+A Claude Code plugin marketplace hosting first-party and community plugins for the Principled specification-first methodology. Add the marketplace once, install any plugin.
 
-## 🔭 The Pipeline
+## 📦 Available Plugins
 
-Every significant change follows three stages:
+### First-Party
 
-```mermaid
-flowchart LR
-    P["📋 <b>Proposal</b> (RFC)<br/><i>what &amp; why</i><br/><br/>Strategic · Mutable"]
-    L["🗺️ <b>Plan</b> (DDD)<br/><i>how</i><br/><br/>Tactical · Mutable"]
-    D["📌 <b>Decision</b> (ADR)<br/><i>what was decided</i><br/><br/>Permanent · Immutable*"]
+| Plugin                                                   | Category      | Description                                                                                                                    |
+| -------------------------------------------------------- | ------------- | ------------------------------------------------------------------------------------------------------------------------------ |
+| [**principled-docs**](plugins/principled-docs/README.md) | documentation | Scaffold, author, and enforce module documentation structure following the Principled specification-first methodology (v0.3.1) |
 
-    P --> L --> D
-```
+### Community
 
-> \* Immutable except `superseded_by`
-
-**Proposals** define intent. **Plans** decompose work via bounded contexts and aggregates. **Decisions** are the permanent record — immutable after acceptance.
+_No community plugins yet. See [Contributing](#-contributing-a-plugin) to submit one._
 
 ## ⚡ Quick Start
 
-```bash
-# Install the plugin
-claude plugin add <path-to-principled-docs>
-
-# Scaffold a new module
-/scaffold packages/payment-gateway --type app
-
-# Start the pipeline
-/new-proposal switch-to-event-sourcing --module packages/payment-gateway
-```
-
-## 🛠️ Skills
-
-9 skills, each a slash command. Each skill is self-contained — its own templates, scripts, and reference docs.
-
-### Scaffolding & Validation
-
-| Command                                  | Description                                                   |
-| ---------------------------------------- | ------------------------------------------------------------- |
-| `/scaffold <path> --type core\|lib\|app` | 🏗️ Generate complete documentation structure for a new module |
-| `/scaffold --root`                       | 🏗️ Generate repo-level cross-cutting docs structure           |
-| `/validate [path] --type <type>`         | ✅ Check documentation structure against the standard         |
-| `/docs-audit`                            | 📊 Audit documentation health across all modules              |
-
-### Authoring
-
-| Command                                 | Description                                                   |
-| --------------------------------------- | ------------------------------------------------------------- |
-| `/new-proposal <title>`                 | 📋 Create a new RFC proposal                                  |
-| `/new-plan <title> --from-proposal NNN` | 🗺️ Create a DDD implementation plan from an accepted proposal |
-| `/new-adr <title>`                      | 📌 Create an Architectural Decision Record                    |
-| `/new-architecture-doc <title>`         | 📐 Create a living architecture document                      |
-
-### Lifecycle
-
-| Command                           | Description                                                                           |
-| --------------------------------- | ------------------------------------------------------------------------------------- |
-| `/proposal-status <NNN> <status>` | 🔄 Transition a proposal through `draft → in-review → accepted\|rejected\|superseded` |
-
-### Background Knowledge
-
-`docs-strategy` — not directly invocable. Gives Claude Code deep understanding of the documentation strategy, naming conventions, lifecycle rules, and DDD decomposition. Activates automatically when working with docs.
-
-## 🔒 Enforcement Hooks
-
-Three hooks provide deterministic guardrails — no manual action required.
-
-| Hook                         | Trigger                  | Behavior                                                                               |
-| ---------------------------- | ------------------------ | -------------------------------------------------------------------------------------- |
-| **ADR Immutability Guard**   | PreToolUse `Edit\|Write` | 🛡️ Blocks edits to accepted ADRs. Exception: `superseded_by` updates are allowed.      |
-| **Proposal Lifecycle Guard** | PreToolUse `Edit\|Write` | 🛡️ Blocks edits to terminal proposals (`accepted`, `rejected`, `superseded`).          |
-| **Structure Nudge**          | PostToolUse `Write`      | 💡 Advisory validation after file writes. Warns about missing structure. Never blocks. |
-
-## 📂 Module Structure
-
-Every module follows a consistent layout. The plugin scaffolds and validates this structure.
+### Add the Marketplace
 
 ```
-module/
-├── docs/
-│   ├── proposals/        📋 RFCs (NNN-short-title.md)
-│   ├── plans/            🗺️  DDD implementation plans
-│   ├── decisions/        📌 ADRs — immutable after acceptance
-│   └── architecture/     📐 Living design documentation
-├── README.md             📖 Module front door
-├── CONTRIBUTING.md       🤝 Build/test/PR conventions
-└── CLAUDE.md             🤖 AI development context
+/plugin marketplace add owner/principled-docs
 ```
 
-**Lib modules** add: `docs/examples/`, `INTERFACE.md`
-**App modules** add: `docs/runbooks/`, `docs/integration/`, `docs/config/`
+### Install a Plugin
 
-## 🔄 Full Pipeline Walkthrough
-
-```bash
-# 1. Create a proposal
-/new-proposal switch-to-event-sourcing --module packages/payments
-
-# 2. Write the proposal content, then move through lifecycle
-/proposal-status 001 in-review
-/proposal-status 001 accepted        # → prompts for plan creation
-
-# 3. Create an implementation plan (DDD decomposition)
-/new-plan switch-to-event-sourcing --from-proposal 001
-
-# 4. During implementation, record architectural decisions
-/new-adr use-kafka-for-event-store --from-proposal 001
-
-# 5. Document the resulting architecture
-/new-architecture-doc event-sourcing-design --module packages/payments
+```
+/plugin install principled-docs@principled-marketplace
 ```
 
-## ⚙️ Configuration
+### Team-Wide Adoption
 
-Configure via `.claude/settings.json`:
+Add to your project's `.claude/settings.json`:
 
 ```json
 {
-  "principled-docs": {
-    "modulesDirectory": "packages",
-    "defaultModuleType": "core",
-    "docsSubdirectory": "docs",
-    "strictMode": false,
-    "customTemplatesPath": null,
-    "ignoredModules": ["packages/deprecated-*"],
-    "fileExtension": ".md"
+  "extraKnownMarketplaces": {
+    "principled-marketplace": {
+      "source": {
+        "source": "github",
+        "repo": "owner/principled-docs"
+      }
+    }
+  },
+  "enabledPlugins": {
+    "principled-docs@principled-marketplace": true
   }
 }
 ```
 
-| Setting               | Default      | Description                                               |
-| --------------------- | ------------ | --------------------------------------------------------- |
-| `modulesDirectory`    | `"packages"` | Root directory containing modules                         |
-| `defaultModuleType`   | `"core"`     | Fallback when type is not specified                       |
-| `docsSubdirectory`    | `"docs"`     | Subdirectory within each module for docs                  |
-| `strictMode`          | `false`      | Treat placeholder-only files as failures                  |
-| `customTemplatesPath` | `null`       | Override all templates (full replacement, no inheritance) |
-| `ignoredModules`      | `[]`         | Glob patterns for modules to skip                         |
-| `fileExtension`       | `".md"`      | Extension for generated files                             |
+## 📂 Structure
 
-## 🚀 CI Integration
-
-### Structural Validation
-
-```yaml
-- name: Validate module docs structure
-  run: |
-    for module in packages/*/; do
-      ./principled-docs/skills/scaffold/scripts/validate-structure.sh \
-        --module-path "$module" --json >> results.json
-    done
-    ./principled-docs/skills/scaffold/scripts/validate-structure.sh \
-      --root --json >> results.json
-    jq -e '.[] | select(.status == "fail")' results.json && exit 1 || exit 0
+```
+principled-docs/
+├── .claude-plugin/
+│   └── marketplace.json         # Plugin catalog
+├── plugins/                     # First-party plugins
+│   └── principled-docs/         # Flagship documentation plugin
+├── external_plugins/            # Community plugins
+├── docs/                        # Marketplace governance
+│   ├── proposals/               # RFCs
+│   ├── plans/                   # Implementation plans
+│   ├── decisions/               # ADRs
+│   └── architecture/            # Design docs
+└── .claude/                     # Dev configuration
 ```
 
-### Template Drift Check
+## 🤝 Contributing a Plugin
 
-```yaml
-- name: Check template drift
-  run: ./principled-docs/skills/scaffold/scripts/check-template-drift.sh
-```
+### First-Party Plugins
 
-Exits non-zero if any template copy has diverged from canonical.
+First-party plugins live in `plugins/`. They are maintained by the project and must:
 
-## 🧩 Architecture
+- Have a valid `.claude-plugin/plugin.json` manifest
+- Follow marketplace lint standards (ShellCheck, shfmt, markdownlint, Prettier)
+- Include a `README.md` with installation, usage, and skill/hook documentation
+- Be self-contained (no cross-plugin imports)
 
-The plugin is built in three layers:
+### Community Plugins
 
-```mermaid
-flowchart TB
-    S["📋 <b>SKILLS</b> — generative workflows<br/>9 skills, each self-contained"]
-    H["🛡️ <b>HOOKS</b> — deterministic guardrails<br/>ADR immutability · proposal lifecycle · nudge"]
-    F["🧱 <b>FOUNDATION</b> — templates, scripts, manifest<br/>12 canonical templates · 4 utility scripts"]
+Community plugins live in `external_plugins/`. Submit via pull request:
 
-    S --> H --> F
-```
+1. Create `external_plugins/<your-plugin>/` with the standard plugin structure
+2. Include `.claude-plugin/plugin.json` with `author` and `homepage`/`repository` fields
+3. Include a `README.md`
+4. Ensure all CI checks pass
+5. A maintainer will review and add the entry to `marketplace.json`
 
-Templates are duplicated for skill self-containment. A CI drift check ensures copies never diverge from canonical.
+See [CONTRIBUTING.md](CONTRIBUTING.md) for the full guide.
+
+## 📋 Categories
+
+| Category        | Description                                             |
+| --------------- | ------------------------------------------------------- |
+| `documentation` | Documentation structure, authoring, and enforcement     |
+| `workflow`      | Development workflow automation and process enforcement |
+| `quality`       | Code quality, review, and standards enforcement         |
+| `architecture`  | Architectural governance and decision tracking          |
 
 ---
 
