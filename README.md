@@ -21,19 +21,16 @@ A Claude Code plugin that **scaffolds**, **authors**, and **enforces** module do
 
 Every significant change follows three stages:
 
-```
-  ┌──────────────┐       ┌──────────────┐       ┌──────────────┐
-  │  📋 Proposal  │──────▶│  🗺️  Plan     │──────▶│  📌 Decision  │
-  │    (RFC)      │       │    (DDD)      │       │    (ADR)      │
-  │              │       │              │       │              │
-  │ "what & why" │       │ "how"        │       │ "what was    │
-  │              │       │              │       │  decided"    │
-  └──────────────┘       └──────────────┘       └──────────────┘
-    Strategic              Tactical               Permanent
-    Mutable                Mutable                Immutable*
+```mermaid
+flowchart LR
+    P["📋 <b>Proposal</b> (RFC)<br/><i>what &amp; why</i><br/><br/>Strategic · Mutable"]
+    L["🗺️ <b>Plan</b> (DDD)<br/><i>how</i><br/><br/>Tactical · Mutable"]
+    D["📌 <b>Decision</b> (ADR)<br/><i>what was decided</i><br/><br/>Permanent · Immutable*"]
 
-  * except superseded_by
+    P --> L --> D
 ```
+
+> \* Immutable except `superseded_by`
 
 **Proposals** define intent. **Plans** decompose work via bounded contexts and aggregates. **Decisions** are the permanent record — immutable after acceptance.
 
@@ -188,17 +185,13 @@ Exits non-zero if any template copy has diverged from canonical.
 
 The plugin is built in three layers:
 
-```
-┌─────────────────────────────────────────────────┐
-│  📋 SKILLS — generative workflows               │
-│  9 skills, each self-contained                   │
-├─────────────────────────────────────────────────┤
-│  🛡️  HOOKS — deterministic guardrails            │
-│  ADR immutability · proposal lifecycle · nudge   │
-├─────────────────────────────────────────────────┤
-│  🧱 FOUNDATION — templates, scripts, manifest    │
-│  12 canonical templates · 4 utility scripts      │
-└─────────────────────────────────────────────────┘
+```mermaid
+flowchart TB
+    S["📋 <b>SKILLS</b> — generative workflows<br/>9 skills, each self-contained"]
+    H["🛡️ <b>HOOKS</b> — deterministic guardrails<br/>ADR immutability · proposal lifecycle · nudge"]
+    F["🧱 <b>FOUNDATION</b> — templates, scripts, manifest<br/>12 canonical templates · 4 utility scripts"]
+
+    S --> H --> F
 ```
 
 Templates are duplicated for skill self-containment. A CI drift check ensures copies never diverge from canonical.
