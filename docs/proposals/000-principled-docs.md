@@ -1,13 +1,22 @@
-# PRD: `principled-docs` — Claude Code Plugin
-
-**Status:** Draft
-**Author:** Alex
-**Date:** 2026-02-04
-**Version:** 0.3.1
-
+---
+title: "principled-docs — Claude Code Plugin"
+number: 000
+status: accepted
+author: Alex
+created: 2026-02-04
+updated: 2026-02-04
+version: 0.3.1
+supersedes: null
+superseded_by: null
 ---
 
-## 1. Problem Statement
+# RFC-000: principled-docs — Claude Code Plugin
+
+## Audience
+
+Maintainers, plugin contributors, and engineers who will use the plugin across monorepos. This proposal defines the full specification for the `principled-docs` Claude Code plugin.
+
+## Context
 
 Monorepo modules accumulate documentation inconsistently. Some modules have thorough architecture docs but no decision records. Others have a README and nothing else. Over time, the gap between "what the team agreed to document" and "what actually exists" widens silently. New modules are created without the expected structure. Existing modules drift. Nobody notices until someone needs a runbook at 3am or an ADR during a design review and finds nothing.
 
@@ -15,9 +24,13 @@ The Module Documentation Strategy defines a clear, audience-driven structure for
 
 This plugin bridges that gap. It gives Claude Code the knowledge, the tools, and the guardrails to treat documentation structure as a first-class concern throughout the development lifecycle.
 
+## Proposal
+
+The following sections specify the complete plugin design: goals, documentation structure, plugin architecture, skills, hooks, templates, workflows, CI integration, configuration, and implementation phases.
+
 ---
 
-## 2. Goals
+### Goals
 
 1. **Scaffold correctly from the start.** When a new module is created, produce the complete documentation structure — directories, template files, and CLAUDE.md — in a single command, with no manual file creation required.
 
@@ -29,7 +42,7 @@ This plugin bridges that gap. It gives Claude Code the knowledge, the tools, and
 
 5. **Work for all module types.** Support the shared core structure, plus the lib-specific and app-specific extensions, through a single configurable plugin.
 
-## 3. Non-Goals
+### Non-Goals
 
 - **Content quality enforcement.** The plugin checks structure and template adherence, not prose quality. Whether an ADR is well-argued is a review concern, not a tooling concern.
 - **Replacing CI validation.** The plugin provides fast, local feedback during development. It complements — but does not replace — CI-level structural checks.
@@ -40,9 +53,9 @@ This plugin bridges that gap. It gives Claude Code the knowledge, the tools, and
 
 ---
 
-## 4. Core Documentation Structure
+### Core Documentation Structure
 
-### 4.1 The Proposals → Plans → Decisions Pipeline
+#### The Proposals → Plans → Decisions Pipeline
 
 The documentation structure is built around a three-stage pipeline that traces the lifecycle of every significant change:
 
@@ -57,7 +70,7 @@ Proposal (RFC)  ──→  Plan (DDD Implementation)  ──→  Decision (ADR)
 
 **Decisions** are Architectural Decision Records. They capture *what was decided*, the options considered, and the consequences expected. They are immutable after acceptance, with one exception: the `superseded_by` field may be updated when a new ADR supersedes an existing one.
 
-### 4.2 Shared Core (All Modules)
+#### Shared Core (All Modules)
 
 ```
 docs/
@@ -70,7 +83,7 @@ CONTRIBUTING.md              # Module-specific build/test/PR conventions
 CLAUDE.md                    # Module-scoped AI development context
 ```
 
-### 4.3 Root-Level Structure (Multi-Module)
+#### Root-Level Structure (Multi-Module)
 
 Cross-cutting proposals, plans, and decisions that affect multiple modules live in a root-level docs structure, parallel to the module-level structure:
 
@@ -97,7 +110,7 @@ repo-root/
 
 The root structure follows identical conventions — same naming, same templates, same lifecycle rules. The only difference is scope: root-level documents affect the system, module-level documents affect the module.
 
-### 4.4 Component Definitions
+#### Component Definitions
 
 | Component | Nature | Mutability | Naming Convention | Audience |
 |---|---|---|---|---|
@@ -109,7 +122,7 @@ The root structure follows identical conventions — same naming, same templates
 | `CONTRIBUTING.md` | Development conventions | Updated as tooling changes | Fixed name | Contributors |
 | `CLAUDE.md` | AI development context | Updated as patterns evolve | Fixed name | Claude Code |
 
-### 4.5 Lib Extensions
+#### Lib Extensions
 
 ```
 docs/
@@ -117,7 +130,7 @@ docs/
 INTERFACE.md                 # Public API surface, stability guarantees, invariants
 ```
 
-### 4.6 App Extensions
+#### App Extensions
 
 ```
 docs/
@@ -126,7 +139,7 @@ docs/
 ├── config/                  # Environment and configuration surface docs
 ```
 
-### 4.7 Governing Principles
+#### Governing Principles
 
 These principles are not decorative. They drive enforcement and template design throughout the plugin.
 
@@ -138,9 +151,9 @@ These principles are not decorative. They drive enforcement and template design 
 
 ---
 
-## 5. Plugin Architecture
+### Plugin Architecture
 
-### 5.1 Design Principles
+#### Design Principles
 
 **Skills are the single unit of capability.** Since Claude Code v2.1.3, skills and slash commands are unified. Every skill is also a command. There is no separate `commands/` directory.
 
@@ -150,7 +163,7 @@ These principles are not decorative. They drive enforcement and template design 
 
 **Templates are duplicated, drift is checked.** Several skills use the same template (e.g., the proposal template exists in both `scaffold` and `new-proposal`). The duplication is intentional — each skill must be self-contained. A CI check validates that duplicated templates remain in sync with the canonical copy in `scaffold`.
 
-### 5.2 Directory Layout
+#### Directory Layout
 
 ```
 principled-docs/
@@ -243,13 +256,13 @@ principled-docs/
 └── README.md                                # Plugin installation and usage documentation
 ```
 
-### 5.3 Rationale for `hooks/scripts/`
+#### Rationale for `hooks/scripts/`
 
 Hook scripts live alongside `hooks.json` in the `hooks/` directory, following the official Claude Code plugin structure. This is the standard placement for two reasons. First, hooks are not skills — they are deterministic shell commands triggered by Claude Code lifecycle events, with no SKILL.md and no progressive disclosure. They belong with their configuration, not distributed across skill directories. Second, plugin auto-discovery in Claude Code v2.1+ locates `hooks/hooks.json` at the plugin root. Co-locating the scripts that `hooks.json` references keeps the enforcement layer self-contained and auditable as a unit.
 
 Scripts that are only used by a single skill live in that skill's `scripts/` directory. Scripts that are only used by hooks live in `hooks/scripts/`. There is no `shared/` directory — if a utility (e.g., frontmatter parsing) is needed by both a hook and a skill, each maintains its own copy, and the CI drift check validates they remain in sync.
 
-### 5.4 Template Duplication Strategy
+#### Template Duplication Strategy
 
 The `scaffold` skill owns the canonical set of templates. Other skills (e.g., `new-proposal`, `new-plan`, `new-adr`, `new-architecture-doc`) maintain their own copies for self-containment. A CI script (`skills/scaffold/scripts/check-template-drift.sh`) validates that all copies match their canonical source. Drift is a CI failure.
 
@@ -264,7 +277,7 @@ The drift check compares:
 | `validate-structure.sh` | `validate/scripts/validate-structure.sh` |
 | `next-number.sh` (in `new-proposal/`) | `new-plan/scripts/next-number.sh`, `new-adr/scripts/next-number.sh` |
 
-### 5.5 Plugin Manifest
+#### Plugin Manifest
 
 ```json
 {
@@ -279,11 +292,11 @@ The drift check compares:
 
 ---
 
-## 6. Skills
+### Skills
 
 Every skill is also a slash command. The skill directory name becomes the command name. Skills activate either automatically (when Claude determines relevance from the description) or explicitly (when the user types `/skill-name`).
 
-### 6.1 `docs-strategy` — Core Knowledge Skill
+#### `docs-strategy` — Core Knowledge Skill
 
 **Type:** Background knowledge (not directly invocable)
 **Directory:** `skills/docs-strategy/`
@@ -314,7 +327,7 @@ user-invocable: false
 | `reference/ddd-decomposition.md` | How to apply domain-driven development concepts when creating implementation plans: bounded contexts, aggregates, domain events, task decomposition |
 | `diagrams/pipeline-overview.md` | Visual representation of the proposals → plans → decisions pipeline |
 
-### 6.2 `scaffold` — Module Scaffolding
+#### `scaffold` — Module Scaffolding
 
 **Type:** User-invocable skill / slash command
 **Directory:** `skills/scaffold/`
@@ -367,7 +380,7 @@ user-invocable: true
 ```
 Creates the repo-root `docs/` structure with `proposals/`, `plans/`, `decisions/`, and `architecture/` directories.
 
-### 6.3 `new-proposal` — Proposal (RFC) Creation
+#### `new-proposal` — Proposal (RFC) Creation
 
 **Type:** User-invocable skill / slash command
 **Directory:** `skills/new-proposal/`
@@ -402,7 +415,7 @@ user-invocable: true
 6. List architecture docs that may need updating if this proposal is accepted
 7. Confirm creation and remind user of next steps
 
-### 6.4 `new-plan` — Implementation Plan Creation
+#### `new-plan` — Implementation Plan Creation
 
 **Type:** User-invocable skill / slash command
 **Directory:** `skills/new-plan/`
@@ -445,7 +458,7 @@ user-invocable: true
 - `complete` — all tasks are done; related ADRs have been created
 - `abandoned` — plan was abandoned (proposal may still stand)
 
-### 6.5 `new-adr` — ADR Creation
+#### `new-adr` — ADR Creation
 
 **Type:** User-invocable skill / slash command
 **Directory:** `skills/new-adr/`
@@ -480,7 +493,7 @@ user-invocable: true
 6. Identify architecture docs that should reference this ADR
 7. Confirm creation
 
-### 6.6 `proposal-status` — Proposal Lifecycle Transitions
+#### `proposal-status` — Proposal Lifecycle Transitions
 
 **Type:** User-invocable skill / slash command
 **Directory:** `skills/proposal-status/`
@@ -523,7 +536,7 @@ No transitions from terminal states. No skipping states.
 6. If transitioning to `accepted`: prompt user to create an implementation plan via `/new-plan`
 7. If transitioning to `superseded`: prompt for the superseding proposal number; set `superseded_by`
 
-### 6.7 `new-architecture-doc` — Architecture Doc Creation
+#### `new-architecture-doc` — Architecture Doc Creation
 
 **Type:** User-invocable skill / slash command
 **Directory:** `skills/new-architecture-doc/`
@@ -553,7 +566,7 @@ user-invocable: true
 3. Create document from template with ADR links pre-populated
 4. Set `last_updated` and `related_adrs` in frontmatter
 
-### 6.8 `validate` — Structural Validation
+#### `validate` — Structural Validation
 
 **Type:** User-invocable skill / slash command
 **Directory:** `skills/validate/`
@@ -606,7 +619,7 @@ Module: packages/auth-service (app)
 Result: FAIL (2 missing, 1 placeholder)
 ```
 
-### 6.9 `docs-audit` — Monorepo-Wide Audit
+#### `docs-audit` — Monorepo-Wide Audit
 
 **Type:** User-invocable skill / slash command
 **Directory:** `skills/docs-audit/`
@@ -639,11 +652,11 @@ user-invocable: true
 
 ---
 
-## 7. Hooks
+### Hooks
 
 Hooks provide deterministic, automated enforcement that runs without explicit user action. Hook scripts live in `hooks/scripts/`, co-located with the `hooks.json` configuration they serve.
 
-### 7.1 Hook Configuration
+#### Hook Configuration
 
 **File:** `hooks/hooks.json`
 
@@ -689,9 +702,9 @@ Hooks provide deterministic, automated enforcement that runs without explicit us
 }
 ```
 
-### 7.2 Hook Definitions
+#### Hook Definitions
 
-#### 7.2.1 ADR Immutability Guard
+##### ADR Immutability Guard
 
 **Event:** `PreToolUse` on `Edit` and `Write`
 **Script:** `hooks/scripts/check-adr-immutability.sh`
@@ -708,7 +721,7 @@ Hooks provide deterministic, automated enforcement that runs without explicit us
     *"Cannot modify ADR-NNN: this record has been accepted and is immutable. The only permitted change is setting superseded_by when a new ADR supersedes this one. To change this decision, create a new ADR. Use /new-adr."*
 - Otherwise: exit 0 (allow)
 
-#### 7.2.2 Proposal Lifecycle Guard
+##### Proposal Lifecycle Guard
 
 **Event:** `PreToolUse` on `Edit` and `Write`
 **Script:** `hooks/scripts/check-proposal-lifecycle.sh`
@@ -722,7 +735,7 @@ Hooks provide deterministic, automated enforcement that runs without explicit us
   *"Cannot modify proposal NNN: this proposal has reached terminal status. To propose changes, create a new proposal that supersedes it. Use /new-proposal."*
 - Otherwise: exit 0 (allow)
 
-#### 7.2.3 Post-Write Structure Nudge
+##### Post-Write Structure Nudge
 
 **Event:** `PostToolUse` on `Write`
 **Script:** `skills/scaffold/scripts/validate-structure.sh --on-write`
@@ -733,7 +746,7 @@ Hooks provide deterministic, automated enforcement that runs without explicit us
 - If violations detected: outputs warning (advisory, does not block)
 - If file is not inside a known module or root docs: silently exits 0
 
-### 7.3 Hook Utilities
+#### Hook Utilities
 
 **`hooks/scripts/parse-frontmatter.sh`** — Extracts a named field from YAML frontmatter.
 
@@ -742,11 +755,11 @@ Hooks provide deterministic, automated enforcement that runs without explicit us
 
 ---
 
-## 8. Templates
+### Templates
 
 Every template lives inside the skill that uses it. The `scaffold` skill owns the canonical set. Other skills maintain copies. CI enforces that copies match.
 
-### 8.1 Proposal (RFC) Template
+#### Proposal (RFC) Template
 
 **Canonical:** `skills/scaffold/templates/core/proposal.md`
 
@@ -815,7 +828,7 @@ TODO
 TODO
 ```
 
-### 8.2 Implementation Plan Template (DDD)
+#### Implementation Plan Template (DDD)
 
 **Canonical:** `skills/scaffold/templates/core/plan.md`
 
@@ -891,7 +904,7 @@ TODO
 TODO
 ```
 
-### 8.3 ADR Template
+#### ADR Template
 
 **Canonical:** `skills/scaffold/templates/core/decision.md`
 
@@ -953,7 +966,7 @@ TODO
 TODO
 ```
 
-### 8.4 Architecture Doc Template
+#### Architecture Doc Template
 
 **Canonical:** `skills/scaffold/templates/core/architecture.md`
 
@@ -999,7 +1012,7 @@ TODO
 TODO
 ```
 
-### 8.5 README Template
+#### README Template
 
 **Canonical:** `skills/scaffold/templates/core/README.md`
 
@@ -1030,7 +1043,7 @@ TODO
 - [Contributing](CONTRIBUTING.md) — How to contribute
 ```
 
-### 8.6 CONTRIBUTING Template
+#### CONTRIBUTING Template
 
 **Canonical:** `skills/scaffold/templates/core/CONTRIBUTING.md`
 
@@ -1058,7 +1071,7 @@ TODO
 TODO
 ```
 
-### 8.7 CLAUDE.md Template
+#### CLAUDE.md Template
 
 **Canonical:** `skills/scaffold/templates/core/CLAUDE.md`
 
@@ -1102,7 +1115,7 @@ TODO
 TODO
 ```
 
-### 8.8 Lib-Specific Templates
+#### Lib-Specific Templates
 
 **INTERFACE.md** (`skills/scaffold/templates/lib/INTERFACE.md`):
 
@@ -1148,7 +1161,7 @@ TODO
 TODO
 ```
 
-### 8.9 App-Specific Templates
+#### App-Specific Templates
 
 **runbook.md** (`skills/scaffold/templates/app/runbook.md`):
 
@@ -1238,9 +1251,9 @@ TODO
 
 ---
 
-## 9. User Workflows
+### User Workflows
 
-### 9.1 Creating a New Module
+#### Creating a New Module
 
 ```
 Developer: /scaffold packages/payment-gateway --type app
@@ -1256,7 +1269,7 @@ Output:
   Created 7 directories, 10 files
 ```
 
-### 9.2 Scaffolding Root-Level Docs
+#### Scaffolding Root-Level Docs
 
 ```
 Developer: /scaffold --root
@@ -1266,7 +1279,7 @@ Claude Code:
   2. Confirms root-level structure is in place for cross-cutting concerns
 ```
 
-### 9.3 Full Pipeline: Proposal → Plan → Decision
+#### Full Pipeline: Proposal → Plan → Decision
 
 ```
 Developer: /new-proposal switch-to-event-sourcing --module packages/payment-gateway
@@ -1300,7 +1313,7 @@ Claude Code:
   2. Links to originating proposal
 ```
 
-### 9.4 Superseding an ADR
+#### Superseding an ADR
 
 ```
 Developer: /new-adr switch-from-kafka-to-pulsar --from-proposal 003
@@ -1316,7 +1329,7 @@ Claude Code:
   2. Sets new ADR's frontmatter to reference the superseded record
 ```
 
-### 9.5 Blocked: Editing an Accepted ADR
+#### Blocked: Editing an Accepted ADR
 
 ```
 Developer: "Update the decision in ADR 001 to include streaming"
@@ -1330,7 +1343,7 @@ Developer: "Update the decision in ADR 001 to include streaming"
    To change this decision, create a new ADR. Use /new-adr."
 ```
 
-### 9.6 Cross-Cutting Proposal
+#### Cross-Cutting Proposal
 
 ```
 Developer: /new-proposal unified-logging-standard --root
@@ -1342,9 +1355,9 @@ Claude Code:
 
 ---
 
-## 10. Integration with CI
+### Integration with CI
 
-### 10.1 Structural Validation
+#### Structural Validation
 
 ```yaml
 - name: Validate module docs structure
@@ -1360,7 +1373,7 @@ Claude Code:
     jq -e '.[] | select(.status == "fail")' results.json && exit 1 || exit 0
 ```
 
-### 10.2 Template Drift Check
+#### Template Drift Check
 
 ```yaml
 - name: Check template drift
@@ -1370,13 +1383,13 @@ Claude Code:
 
 Exits non-zero if any template copy has diverged from the canonical version in `scaffold/templates/`.
 
-### 10.3 Single Source of Truth
+#### Single Source of Truth
 
 The plugin's template and validation definitions are the single source of truth. Both Claude Code hooks and CI checks reference the same structural definitions, ensuring no drift between local and pipeline enforcement.
 
 ---
 
-## 11. Configuration
+### Configuration
 
 Project-level configuration via `.claude/settings.json`:
 
@@ -1406,7 +1419,7 @@ Project-level configuration via `.claude/settings.json`:
 
 ---
 
-## 12. Implementation Phases
+### Implementation Phases
 
 ### Phase 1: Foundation (Days 1–3)
 
@@ -1467,7 +1480,63 @@ Project-level configuration via `.claude/settings.json`:
 
 ---
 
-## 13. Success Criteria
+## Alternatives Considered
+
+### Alternative 1: Static linting only (no Claude Code integration)
+
+Rely entirely on CI scripts and markdown linters to validate documentation structure. No scaffolding, no authoring guidance, no lifecycle enforcement during development.
+
+**Rejected because:** CI catches violations after the fact. It cannot scaffold new modules, guide authors through templates, or prevent immutability violations in real time. The gap between "commit" and "CI feedback" is where documentation debt accumulates.
+
+### Alternative 2: Standalone CLI tool (not a Claude Code plugin)
+
+Build a separate CLI tool (`principled-docs scaffold`, `principled-docs validate`, etc.) that operates independently of Claude Code.
+
+**Rejected because:** A standalone tool misses the key value proposition — making Claude Code *documentation-aware*. The background knowledge skill, contextual template population, and hook-based enforcement require deep integration with Claude Code's skill and hook system. A separate CLI would duplicate effort without providing AI-assisted authoring.
+
+### Alternative 3: Monorepo-specific custom scripts per project
+
+Let each project maintain its own scaffolding and validation scripts tailored to its conventions.
+
+**Rejected because:** This is the status quo. Every project reinvents the wheel, conventions diverge, and there is no shared enforcement model. A plugin provides a reusable, configurable standard.
+
+## Consequences
+
+### Positive
+
+- New modules are structurally compliant from the moment they are scaffolded — no manual file creation or guesswork.
+- ADR immutability is enforced in real time, preventing accidental modification of the architectural record.
+- The proposals → plans → decisions pipeline provides traceability from intent to implementation to decision.
+- Claude Code gains contextual understanding of documentation conventions, reducing friction for authors.
+- CI and local enforcement use the same structural definitions, eliminating drift between environments.
+
+### Negative
+
+- The plugin adds complexity to the Claude Code setup. Teams must install and configure it.
+- Template duplication across skills increases maintenance surface, though the drift checker mitigates divergence risk.
+- Pure bash scripting for hooks limits the complexity of enforcement logic (no nested YAML parsing, no sophisticated content analysis).
+
+### Risks
+
+- Claude Code plugin API changes could break hook or skill behavior. Mitigated by targeting a specific minimum version (v2.1.3+).
+- Teams may find the RFC → Plan → ADR pipeline too heavyweight for small changes. Mitigated by making the pipeline optional — the plugin enforces structure, not process. Individual documents can be created standalone.
+- The `{{PLACEHOLDER}}` replacement relies on Claude's interpretation, which is non-deterministic. Mitigated by validation catching placeholder-only content.
+
+## Architecture Impact
+
+This proposal produces the following architecture documentation:
+
+- [Plugin System Architecture](../architecture/plugin-system.md) — skill/hook/template layered design
+- [Documentation Pipeline](../architecture/documentation-pipeline.md) — proposals → plans → decisions flow
+- [Enforcement System](../architecture/enforcement-system.md) — hooks, immutability, lifecycle guards
+
+And the following architectural decisions:
+
+- [ADR-001: Pure Bash Frontmatter Parsing](../decisions/001-frontmatter-parsing-strategy.md)
+- [ADR-002: Claude-Mediated Template Placeholder Replacement](../decisions/002-template-placeholder-syntax.md)
+- [ADR-003: Module Type Declaration via CLAUDE.md](../decisions/003-module-type-storage.md)
+
+## Success Criteria
 
 | Criterion | Measurement |
 |---|---|
@@ -1485,7 +1554,7 @@ Project-level configuration via `.claude/settings.json`:
 
 ---
 
-## 14. Open Questions
+## Open Questions
 
 1. **Plan completion workflow.** When all tasks in a plan are checked off, should the plugin automatically transition the plan to `complete` status, or should this always be an explicit action?
 
