@@ -1,4 +1,22 @@
+---
+name: lint
+description: >
+  Run the full lint suite for this repository: shell formatting (shfmt),
+  shell lint (ShellCheck), Markdown lint (markdownlint-cli2), and Markdown
+  formatting (Prettier). Use before committing to ensure code quality.
+allowed-tools: Bash(shfmt *), Bash(shellcheck *), Bash(find *), Bash(npx markdownlint-cli2 *), Bash(npx prettier *)
+user-invocable: true
+---
+
+# Lint — Full Quality Suite
+
 Run the full lint suite for this repository and report results.
+
+## Command
+
+```
+/lint
+```
 
 ## Workflow
 

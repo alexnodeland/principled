@@ -17,7 +17,7 @@ Three layers, top to bottom:
 | **Skills**     | `skills/` (9 directories)                               | Generative workflows — each skill is a slash command with its own `SKILL.md`, templates, scripts, and reference docs |
 | **Hooks**      | `hooks/`                                                | Deterministic guardrails — `hooks.json` declares PreToolUse/PostToolUse triggers that run shell scripts              |
 | **Foundation** | `.claude-plugin/`, canonical templates, utility scripts | Plugin manifest, 12 canonical templates (owned by `scaffold`), shared scripts                                        |
-| **Dev DX**     | `.claude/`, config files, `.github/workflows/`          | Project-level Claude Code settings, dev commands, CI pipeline, linting config                                        |
+| **Dev DX**     | `.claude/`, config files, `.github/workflows/`          | Project-level Claude Code settings, dev skills, CI pipeline, linting config                                          |
 
 ## Skills
 
@@ -81,7 +81,7 @@ See `CONTRIBUTING.md` for the full contributor guide. Key points:
 
 - **Pre-commit hooks** enforce shell and Markdown lint on every commit (`pre-commit install`)
 - **CI pipeline** (`.github/workflows/ci.yml`) runs shell lint, Markdown lint, template drift, and structure validation on every PR
-- **`.claude/` directory** provides project-level Claude Code configuration and dev commands
+- **`.claude/` directory** provides project-level Claude Code settings and dev skills (`/lint`, `/test-hooks`, `/propagate-templates`, `/check-ci`)
 
 ## Dogfooding
 
@@ -125,7 +125,7 @@ Both guard scripts depend on `hooks/scripts/parse-frontmatter.sh` for YAML field
 - **Hook testing:** Feed JSON with `tool_input.file_path` to guard scripts via stdin. Exit 0 = allow, exit 2 = block.
 - **Shell lint:** `shellcheck --shell=bash` and `shfmt -i 2 -bn -sr -d` on all `.sh` files.
 - **Markdown lint:** `npx markdownlint-cli2 '**/*.md'` and `npx prettier --check '**/*.md'`.
-- **All at once:** `pre-commit run --all-files` or `/project:check-ci`.
+- **All at once:** `pre-commit run --all-files` or `/check-ci`.
 
 ## Dependencies
 

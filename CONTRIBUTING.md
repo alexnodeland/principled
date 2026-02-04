@@ -38,7 +38,7 @@ Read `CLAUDE.md` at the repo root for the full architectural context. The key di
 | `hooks/`          | Enforcement hooks — `hooks.json` config + guard scripts                               |
 | `.claude-plugin/` | Plugin manifest (`plugin.json`)                                                       |
 | `docs/`           | The plugin's own documentation pipeline (proposals, plans, decisions, architecture)   |
-| `.claude/`        | Claude Code project configuration — settings, dev commands                            |
+| `.claude/`        | Claude Code project configuration — settings, dev skills                              |
 
 ## Development Workflow
 
@@ -181,7 +181,7 @@ Scripts with copies:
 1. Edit the **canonical** version first
 2. Copy to all consuming locations
 3. Run `skills/scaffold/scripts/check-template-drift.sh` to verify
-4. Or use `/project:propagate-templates` if working with Claude Code
+4. Or use `/propagate-templates` if working with Claude Code
 
 Drift = CI failure. Always propagate after modifying canonical sources.
 
@@ -239,16 +239,15 @@ After running `pre-commit install`, the following checks run automatically on ea
 
 To bypass in emergencies: `git commit --no-verify` (use sparingly).
 
-## Claude Code Commands
+## Claude Code Dev Skills
 
-If you develop with Claude Code, the `.claude/` directory provides project-specific commands:
+If you develop with Claude Code, the `.claude/skills/` directory provides project-specific dev skills:
 
-| Command                        | Purpose                                 |
-| ------------------------------ | --------------------------------------- |
-| `/project:lint`                | Run full lint suite                     |
-| `/project:validate`            | Run drift check + structure validation  |
-| `/project:test-hooks`          | Smoke-test enforcement hooks            |
-| `/project:propagate-templates` | Propagate canonical templates to copies |
-| `/project:check-ci`            | Run full CI pipeline locally            |
+| Skill                 | Command                | Purpose                                 |
+| --------------------- | ---------------------- | --------------------------------------- |
+| `lint`                | `/lint`                | Run full lint suite                     |
+| `test-hooks`          | `/test-hooks`          | Smoke-test enforcement hooks            |
+| `propagate-templates` | `/propagate-templates` | Propagate canonical templates to copies |
+| `check-ci`            | `/check-ci`            | Run full CI pipeline locally            |
 
 The plugin is also self-installed (dogfooding), so all 9 plugin skills and enforcement hooks are active while developing.

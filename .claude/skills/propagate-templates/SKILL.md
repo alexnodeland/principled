@@ -1,4 +1,22 @@
+---
+name: propagate-templates
+description: >
+  Propagate canonical templates and scripts to all consuming skills,
+  then verify zero drift. Use after updating any canonical template
+  or script to keep all copies in sync.
+allowed-tools: Bash(cp *), Bash(bash skills/*)
+user-invocable: true
+---
+
+# Propagate Templates — Canonical Copy Sync
+
 Propagate canonical templates and scripts to all consuming skills, then verify zero drift.
+
+## Command
+
+```
+/propagate-templates
+```
 
 ## Workflow
 

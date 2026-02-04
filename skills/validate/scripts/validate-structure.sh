@@ -21,34 +21,34 @@ ON_WRITE=""
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
-    --module-path)
-      MODULE_PATH="$2"
-      shift 2
-      ;;
-    --type)
-      MODULE_TYPE="$2"
-      shift 2
-      ;;
-    --strict)
-      STRICT=true
-      shift
-      ;;
-    --json)
-      JSON_OUTPUT=true
-      shift
-      ;;
-    --root)
-      ROOT_MODE=true
-      shift
-      ;;
-    --on-write)
-      ON_WRITE="$2"
-      shift 2
-      ;;
-    *)
-      echo "Unknown argument: $1" >&2
-      exit 1
-      ;;
+  --module-path)
+    MODULE_PATH="$2"
+    shift 2
+    ;;
+  --type)
+    MODULE_TYPE="$2"
+    shift 2
+    ;;
+  --strict)
+    STRICT=true
+    shift
+    ;;
+  --json)
+    JSON_OUTPUT=true
+    shift
+    ;;
+  --root)
+    ROOT_MODE=true
+    shift
+    ;;
+  --on-write)
+    ON_WRITE="$2"
+    shift 2
+    ;;
+  *)
+    echo "Unknown argument: $1" >&2
+    exit 1
+    ;;
   esac
 done
 
@@ -67,7 +67,7 @@ check_dir() {
 
   if [[ -d "$dir" ]]; then
     local count
-    count=$(find "$dir" -maxdepth 1 -name '*.md' -type f 2>/dev/null | wc -l)
+    count=$(find "$dir" -maxdepth 1 -name '*.md' -type f 2> /dev/null | wc -l)
     PRESENT=$((PRESENT + 1))
     RESULTS+=("present|${label}|exists (${count} files)")
   else
@@ -85,7 +85,7 @@ check_file() {
   if [[ -f "$file" ]]; then
     # Check if file is placeholder-only (contains only TODO markers and template structure)
     local content_lines
-    content_lines=$(grep -cvE '^\s*$|^\s*#|^\s*TODO|^\s*<!--|^\s*-->|^\s*\|.*TODO|^---' "$file" 2>/dev/null || echo "0")
+    content_lines=$(grep -cvE '^\s*$|^\s*#|^\s*TODO|^\s*<!--|^\s*-->|^\s*\|.*TODO|^---' "$file" 2> /dev/null || echo "0")
     if [[ "$content_lines" -eq 0 ]]; then
       PLACEHOLDER=$((PLACEHOLDER + 1))
       if $STRICT; then
@@ -112,7 +112,7 @@ if [[ -n "$ON_WRITE" ]]; then
   CURRENT="$(dirname "$FILE_PATH")"
   MODULE_ROOT=""
   while [[ "$CURRENT" != "/" && "$CURRENT" != "." ]]; do
-    if [[ -d "$CURRENT/docs" && ( -f "$CURRENT/README.md" || -f "$CURRENT/CLAUDE.md" ) ]]; then
+    if [[ -d "$CURRENT/docs" && (-f "$CURRENT/README.md" || -f "$CURRENT/CLAUDE.md") ]]; then
       MODULE_ROOT="$CURRENT"
       break
     fi
@@ -179,9 +179,9 @@ if $ROOT_MODE; then
     for result in "${RESULTS[@]}"; do
       IFS='|' read -r state label detail <<< "$result"
       case "$state" in
-        present)    echo "✓ $label  $detail" ;;
-        missing)    echo "✗ $label  $detail" ;;
-        placeholder) echo "~ $label  $detail" ;;
+      present) echo "✓ $label  $detail" ;;
+      missing) echo "✗ $label  $detail" ;;
+      placeholder) echo "~ $label  $detail" ;;
       esac
     done
     printf '%.0s─' {1..40}
@@ -208,7 +208,7 @@ if [[ -z "$MODULE_TYPE" ]]; then
       true
     fi
     # Look for "## Module Type" section
-    MODULE_TYPE=$(awk '/^## Module Type/{getline; gsub(/^[[:space:]]+|[[:space:]]+$/,""); if ($0 != "") print; exit}' "$MODULE_PATH/CLAUDE.md" 2>/dev/null || echo "")
+    MODULE_TYPE=$(awk '/^## Module Type/{getline; gsub(/^[[:space:]]+|[[:space:]]+$/,""); if ($0 != "") print; exit}' "$MODULE_PATH/CLAUDE.md" 2> /dev/null || echo "")
   fi
   if [[ -z "$MODULE_TYPE" ]]; then
     echo "Error: --type is required (could not detect module type)" >&2
@@ -268,9 +268,9 @@ else
   for result in "${RESULTS[@]}"; do
     IFS='|' read -r state label detail <<< "$result"
     case "$state" in
-      present)    echo "✓ $label  $detail" ;;
-      missing)    echo "✗ $label  $detail" ;;
-      placeholder) echo "~ $label  $detail" ;;
+    present) echo "✓ $label  $detail" ;;
+    missing) echo "✗ $label  $detail" ;;
+    placeholder) echo "~ $label  $detail" ;;
     esac
   done
   printf '%.0s─' {1..40}

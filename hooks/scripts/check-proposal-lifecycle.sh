@@ -19,7 +19,7 @@ INPUT="$(cat)"
 # Extract file_path from the JSON input
 FILE_PATH=""
 if command -v jq &> /dev/null; then
-  FILE_PATH="$(echo "$INPUT" | jq -r '.tool_input.file_path // .file_path // empty' 2>/dev/null || echo "")"
+  FILE_PATH="$(echo "$INPUT" | jq -r '.tool_input.file_path // .file_path // empty' 2> /dev/null || echo "")"
 else
   # Fallback: basic grep extraction
   FILE_PATH="$(echo "$INPUT" | grep -oP '"file_path"\s*:\s*"[^"]*"' | head -1 | grep -oP ':\s*"\K[^"]*' || echo "")"
@@ -45,14 +45,14 @@ STATUS="$(bash "$PARSE_FRONTMATTER" --file "$FILE_PATH" --field status)"
 
 # If status is terminal, block
 case "$STATUS" in
-  accepted|rejected|superseded)
-    # Extract the proposal number from the filename
-    PROPOSAL_FILENAME="$(basename "$FILE_PATH")"
-    PROPOSAL_NUM="${PROPOSAL_FILENAME%%-*}"
-    echo "Cannot modify proposal ${PROPOSAL_NUM}: this proposal has reached terminal status '${STATUS}'. To propose changes, create a new proposal that supersedes it. Use /new-proposal."
-    exit 2
-    ;;
-  *)
-    exit 0
-    ;;
+accepted | rejected | superseded)
+  # Extract the proposal number from the filename
+  PROPOSAL_FILENAME="$(basename "$FILE_PATH")"
+  PROPOSAL_NUM="${PROPOSAL_FILENAME%%-*}"
+  echo "Cannot modify proposal ${PROPOSAL_NUM}: this proposal has reached terminal status '${STATUS}'. To propose changes, create a new proposal that supersedes it. Use /new-proposal."
+  exit 2
+  ;;
+*)
+  exit 0
+  ;;
 esac

@@ -1,4 +1,22 @@
+---
+name: check-ci
+description: >
+  Run the full CI pipeline locally, mirroring the checks in
+  .github/workflows/ci.yml. Use to verify everything passes before
+  pushing.
+allowed-tools: Bash(shfmt *), Bash(shellcheck *), Bash(find *), Bash(npx markdownlint-cli2 *), Bash(npx prettier *), Bash(bash skills/*), Bash(bash hooks/*), Bash(echo *)
+user-invocable: true
+---
+
+# Check CI — Local CI Pipeline
+
 Run the full CI pipeline locally, mirroring the checks in `.github/workflows/ci.yml`.
+
+## Command
+
+```
+/check-ci
+```
 
 ## Workflow
 

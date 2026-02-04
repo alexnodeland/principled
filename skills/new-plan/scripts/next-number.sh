@@ -13,14 +13,14 @@ DIR=""
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
-    --dir)
-      DIR="$2"
-      shift 2
-      ;;
-    *)
-      echo "Unknown argument: $1" >&2
-      exit 1
-      ;;
+  --dir)
+    DIR="$2"
+    shift 2
+    ;;
+  *)
+    echo "Unknown argument: $1" >&2
+    exit 1
+    ;;
   esac
 done
 
@@ -46,10 +46,10 @@ for file in "$DIR"/[0-9][0-9][0-9]-*.md; do
   # Strip leading zeros for arithmetic
   num_int=$((10#$num))
 
-  if (( num_int > MAX )); then
+  if ((num_int > MAX)); then
     MAX=$num_int
   fi
 done
 
-NEXT=$(( MAX + 1 ))
+NEXT=$((MAX + 1))
 printf "%03d\n" "$NEXT"

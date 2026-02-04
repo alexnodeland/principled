@@ -1,4 +1,22 @@
+---
+name: test-hooks
+description: >
+  Smoke-test the enforcement hooks by feeding known good and bad inputs
+  and verifying exit codes. Tests both the ADR immutability guard and
+  the proposal lifecycle guard.
+allowed-tools: Bash(echo *), Bash(bash hooks/*), Read
+user-invocable: true
+---
+
+# Test Hooks — Enforcement Hook Smoke Tests
+
 Smoke-test the enforcement hooks by feeding known good and bad inputs and verifying exit codes.
+
+## Command
+
+```
+/test-hooks
+```
 
 ## Workflow
 

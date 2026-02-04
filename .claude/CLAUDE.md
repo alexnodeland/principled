@@ -21,7 +21,7 @@ This repo installs principled-docs as its own plugin (via `.claude/settings.json
 ### Modifying Templates
 
 - **Always edit the canonical version first** (in `skills/scaffold/templates/`)
-- Then propagate to all copies. Use `/project:propagate-templates` or copy manually.
+- Then propagate to all copies. Use `/propagate-templates` or copy manually.
 - Run `bash skills/scaffold/scripts/check-template-drift.sh` to verify zero drift.
 - Forgetting to propagate = CI failure.
 
@@ -31,16 +31,17 @@ This repo installs principled-docs as its own plugin (via `.claude/settings.json
 
 ## Before Committing
 
-1. Run `/project:lint` or `pre-commit run --all-files` to check formatting and lint
-2. Run `/project:validate` to check template drift and structure
-3. If you modified templates, run `/project:propagate-templates` first
+1. Run `/lint` or `pre-commit run --all-files` to check formatting and lint
+2. Run `/validate --root` to check root structure (plugin skill, from dogfooding)
+3. If you modified templates, run `/propagate-templates` first
 
-## Project Commands
+## Dev Skills
 
-| Command                        | What It Does                                                   |
-| ------------------------------ | -------------------------------------------------------------- |
-| `/project:lint`                | Full lint suite (ShellCheck + shfmt + markdownlint + Prettier) |
-| `/project:validate`            | Template drift check + root structure validation               |
-| `/project:test-hooks`          | Smoke-test enforcement hooks with known inputs                 |
-| `/project:propagate-templates` | Copy canonical templates/scripts to consuming skills           |
-| `/project:check-ci`            | Run the full CI pipeline locally                               |
+These supplement the 9 plugin skills available via dogfooding:
+
+| Skill                 | Command                | What It Does                                                   |
+| --------------------- | ---------------------- | -------------------------------------------------------------- |
+| `lint`                | `/lint`                | Full lint suite (ShellCheck + shfmt + markdownlint + Prettier) |
+| `test-hooks`          | `/test-hooks`          | Smoke-test enforcement hooks with known inputs                 |
+| `propagate-templates` | `/propagate-templates` | Copy canonical templates/scripts to consuming skills           |
+| `check-ci`            | `/check-ci`            | Run the full CI pipeline locally                               |
