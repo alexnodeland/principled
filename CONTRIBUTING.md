@@ -1,6 +1,6 @@
-# Contributing to principled-docs
+# Contributing to Principled
 
-Thank you for your interest in contributing to principled-docs! This guide covers everything you need to get started.
+Thank you for your interest in contributing to the Principled plugin marketplace! This guide covers contributing to the marketplace, its plugins, and submitting new plugins.
 
 ## Getting Started
 
@@ -18,8 +18,8 @@ Thank you for your interest in contributing to principled-docs! This guide cover
 
 ```bash
 # Clone the repository
-git clone https://github.com/alexnodeland/principled-docs.git
-cd principled-docs
+git clone https://github.com/alexnodeland/principled.git
+cd principled
 
 # Install Node.js dev dependencies (Markdown tooling)
 npm install
@@ -32,13 +32,15 @@ pre-commit install
 
 Read `CLAUDE.md` at the repo root for the full architectural context. The key directories are:
 
-| Directory         | Purpose                                                                               |
-| ----------------- | ------------------------------------------------------------------------------------- |
-| `skills/`         | 9 skill directories, each self-contained with SKILL.md, templates, scripts, reference |
-| `hooks/`          | Enforcement hooks — `hooks.json` config + guard scripts                               |
-| `.claude-plugin/` | Plugin manifest (`plugin.json`)                                                       |
-| `docs/`           | The plugin's own documentation pipeline (proposals, plans, decisions, architecture)   |
-| `.claude/`        | Claude Code project configuration — settings, dev skills                              |
+| Directory                         | Purpose                                                                               |
+| --------------------------------- | ------------------------------------------------------------------------------------- |
+| `.claude-plugin/`                 | Marketplace manifest (`marketplace.json`)                                             |
+| `plugins/`                        | First-party plugins (maintained by the project)                                       |
+| `plugins/principled-docs/skills/` | 9 skill directories, each self-contained with SKILL.md, templates, scripts, reference |
+| `plugins/principled-docs/hooks/`  | Enforcement hooks — `hooks.json` config + guard scripts                               |
+| `external_plugins/`               | Community plugins (submitted via PR)                                                  |
+| `docs/`                           | Marketplace documentation pipeline (proposals, plans, decisions, architecture)        |
+| `.claude/`                        | Claude Code project configuration — settings, dev skills                              |
 
 ## Development Workflow
 
@@ -62,25 +64,102 @@ Examples:
 ### Pull Requests
 
 - Ensure all pre-commit hooks pass locally before pushing
-- CI pipeline must pass (shell lint, Markdown lint, validation)
+- CI pipeline must pass (shell lint, Markdown lint, validation, marketplace validation)
 - Reference relevant proposals or plans in PR description
 
-## Plugin Architecture Overview
+## Marketplace Architecture
 
-principled-docs has three layers:
+The repo is organized as a curated plugin marketplace with two tiers:
 
-1. **Skills** (`skills/`) — generative workflows (slash commands)
-2. **Hooks** (`hooks/`) — deterministic guardrails (pre/post tool use)
-3. **Foundation** (`.claude-plugin/`, templates, scripts) — plugin manifest and shared infrastructure
+1. **Marketplace** (`.claude-plugin/marketplace.json`, `plugins/`, `external_plugins/`) — plugin catalog and directory structure
+2. **First-party plugins** (`plugins/`) — plugins maintained by the project
+3. **Community plugins** (`external_plugins/`) — plugins contributed by third parties
+
+Each plugin is self-contained with its own `.claude-plugin/plugin.json`, skills, hooks, and documentation.
 
 See `CLAUDE.md` and `docs/architecture/` for deeper context.
 
+## Contributing a First-Party Plugin
+
+First-party plugins live in `plugins/<plugin-name>/`. To add one:
+
+1. Create the plugin directory with the required structure:
+
+   ```
+   plugins/<plugin-name>/
+   ├── .claude-plugin/
+   │   └── plugin.json           # Plugin manifest (required)
+   ├── skills/                    # Plugin skills
+   │   └── <skill-name>/
+   │       ├── SKILL.md
+   │       ├── templates/
+   │       ├── scripts/
+   │       └── reference/
+   ├── hooks/                     # Plugin hooks (optional)
+   │   ├── hooks.json
+   │   └── scripts/
+   └── README.md                  # Plugin documentation (required)
+   ```
+
+2. Add a `plugin.json` manifest:
+
+   ```json
+   {
+     "name": "<plugin-name>",
+     "version": "0.1.0",
+     "description": "What the plugin does.",
+     "author": "Author Name",
+     "keywords": ["keyword1", "keyword2"]
+   }
+   ```
+
+3. Add the plugin entry to `.claude-plugin/marketplace.json`:
+
+   ```json
+   {
+     "name": "<plugin-name>",
+     "source": "./plugins/<plugin-name>",
+     "description": "What the plugin does.",
+     "version": "0.1.0",
+     "category": "documentation|workflow|quality|architecture"
+   }
+   ```
+
+4. Ensure all CI checks pass (lint, marketplace validation, plugin validation)
+
+## Submitting an External Plugin
+
+Community plugins live in `external_plugins/<plugin-name>/`. To submit one:
+
+1. Follow the same directory structure as first-party plugins
+2. Include `author` and `homepage` or `repository` fields in `plugin.json`
+3. Include a `README.md` with installation, usage, and skill/hook documentation
+4. Submit a pull request — a maintainer will review and add the entry to `marketplace.json`
+
+### Plugin Review Criteria
+
+External plugins are reviewed for:
+
+- Valid `.claude-plugin/plugin.json` manifest
+- Clean lint (ShellCheck, shfmt, markdownlint, Prettier)
+- Self-contained skills (no cross-plugin imports)
+- Clear documentation (README with usage instructions)
+- No security concerns in hook or skill scripts
+
+## Marketplace Manifest Maintenance
+
+The `.claude-plugin/marketplace.json` file is the source of truth for available plugins. When modifying it:
+
+- Every `source` path must point to an existing directory
+- Plugin `name` must be unique across all entries
+- CI validates the manifest on every PR
+
 ## Skill Development
 
-Each skill is a self-contained directory:
+Each skill is a self-contained directory within a plugin:
 
 ```
-skills/<skill-name>/
+plugins/<plugin-name>/skills/<skill-name>/
 ├── SKILL.md              # Command definition and workflow
 ├── templates/            # Document templates (if generative)
 ├── scripts/              # Bash scripts (if needed)
@@ -114,7 +193,7 @@ Skills are self-contained. If multiple skills need the same template or script, 
 
 ## Hook Development
 
-Hooks are declared in `hooks/hooks.json` and run shell scripts:
+Hooks are declared in a plugin's `hooks/hooks.json` and run shell scripts:
 
 ```json
 {
@@ -148,7 +227,7 @@ Feed JSON to hook scripts via stdin:
 
 ```bash
 echo '{"tool_input":{"file_path":"docs/decisions/001-example.md"}}' \
-  | bash hooks/scripts/check-adr-immutability.sh
+  | bash plugins/principled-docs/hooks/scripts/check-adr-immutability.sh
 echo $?  # 0 = allow, 2 = block
 ```
 
@@ -156,7 +235,7 @@ echo $?  # 0 = allow, 2 = block
 
 ### Canonical Sources
 
-All canonical templates live in `skills/scaffold/templates/{core,lib,app}/`.
+All canonical templates for the principled-docs plugin live in `plugins/principled-docs/skills/scaffold/templates/{core,lib,app}/`.
 
 ### Copy Rules
 
@@ -176,11 +255,13 @@ Scripts with copies:
 | `new-proposal/scripts/next-number.sh`    | `new-plan/scripts/next-number.sh`, `new-adr/scripts/next-number.sh` |
 | `scaffold/scripts/validate-structure.sh` | `validate/scripts/validate-structure.sh`                            |
 
+All paths above are relative to `plugins/principled-docs/skills/`.
+
 ### Propagation Workflow
 
 1. Edit the **canonical** version first
 2. Copy to all consuming locations
-3. Run `skills/scaffold/scripts/check-template-drift.sh` to verify
+3. Run `bash plugins/principled-docs/skills/scaffold/scripts/check-template-drift.sh` to verify
 4. Or use `/propagate-templates` if working with Claude Code
 
 Drift = CI failure. Always propagate after modifying canonical sources.
@@ -189,14 +270,14 @@ Drift = CI failure. Always propagate after modifying canonical sources.
 
 ```bash
 # Template drift check
-bash skills/scaffold/scripts/check-template-drift.sh
+bash plugins/principled-docs/skills/scaffold/scripts/check-template-drift.sh
 
 # Root structure validation
-bash skills/scaffold/scripts/validate-structure.sh --root
+bash plugins/principled-docs/skills/scaffold/scripts/validate-structure.sh --root
 
 # Shell linting
-shellcheck skills/**/*.sh hooks/**/*.sh
-shfmt --diff skills/**/*.sh hooks/**/*.sh
+find . -name '*.sh' -not -path './node_modules/*' | xargs shellcheck --shell=bash
+find . -name '*.sh' -not -path './node_modules/*' | xargs shfmt -i 2 -bn -sr -d
 
 # Markdown linting
 npx markdownlint-cli2 '**/*.md'
@@ -250,4 +331,4 @@ If you develop with Claude Code, the `.claude/skills/` directory provides projec
 | `propagate-templates` | `/propagate-templates` | Propagate canonical templates to copies |
 | `check-ci`            | `/check-ci`            | Run full CI pipeline locally            |
 
-The plugin is also self-installed (dogfooding), so all 9 plugin skills and enforcement hooks are active while developing.
+The principled-docs plugin is self-installed (dogfooding), so all 9 plugin skills and enforcement hooks are active while developing.

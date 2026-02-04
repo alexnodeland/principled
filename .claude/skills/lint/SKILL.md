@@ -20,9 +20,9 @@ Run the full lint suite for this repository and report results.
 
 ## Workflow
 
-1. **Shell formatting check** — run `shfmt -i 2 -bn -sr -d` on all `.sh` files under `skills/` and `hooks/`. Report any files that need formatting.
+1. **Shell formatting check** — run `shfmt -i 2 -bn -sr -d` on all `.sh` files under `plugins/` and any other directories. Report any files that need formatting.
 
-2. **Shell lint** — run `shellcheck --shell=bash` on all `.sh` files under `skills/` and `hooks/`. Report any warnings or errors.
+2. **Shell lint** — run `shellcheck --shell=bash` on all `.sh` files under `plugins/` and any other directories. Report any warnings or errors.
 
 3. **Markdown lint** — run `npx markdownlint-cli2 '**/*.md'`. Report any rule violations.
 

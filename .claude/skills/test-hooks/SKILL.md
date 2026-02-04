@@ -4,7 +4,7 @@ description: >
   Smoke-test the enforcement hooks by feeding known good and bad inputs
   and verifying exit codes. Tests both the ADR immutability guard and
   the proposal lifecycle guard.
-allowed-tools: Bash(echo *), Bash(bash hooks/*), Read
+allowed-tools: Bash(echo *), Bash(bash plugins/*), Read
 user-invocable: true
 ---
 
@@ -20,7 +20,7 @@ Smoke-test the enforcement hooks by feeding known good and bad inputs and verify
 
 ## Workflow
 
-### ADR Immutability Guard (`hooks/scripts/check-adr-immutability.sh`)
+### ADR Immutability Guard (`plugins/principled-docs/hooks/scripts/check-adr-immutability.sh`)
 
 Run these test cases:
 
@@ -28,7 +28,7 @@ Run these test cases:
    For each file in `docs/decisions/` with `status: accepted`, feed its path:
 
    ```bash
-   echo '{"tool_input":{"file_path":"<path>"}}' | bash hooks/scripts/check-adr-immutability.sh
+   echo '{"tool_input":{"file_path":"<path>"}}' | bash plugins/principled-docs/hooks/scripts/check-adr-immutability.sh
    ```
 
    Expected: exit code 2.
@@ -36,7 +36,7 @@ Run these test cases:
 2. **Non-decision file — should allow (exit 0):**
 
    ```bash
-   echo '{"tool_input":{"file_path":"CLAUDE.md"}}' | bash hooks/scripts/check-adr-immutability.sh
+   echo '{"tool_input":{"file_path":"CLAUDE.md"}}' | bash plugins/principled-docs/hooks/scripts/check-adr-immutability.sh
    ```
 
    Expected: exit code 0.
@@ -44,12 +44,12 @@ Run these test cases:
 3. **Non-existent file — should allow (exit 0):**
 
    ```bash
-   echo '{"tool_input":{"file_path":"docs/decisions/999-nonexistent.md"}}' | bash hooks/scripts/check-adr-immutability.sh
+   echo '{"tool_input":{"file_path":"docs/decisions/999-nonexistent.md"}}' | bash plugins/principled-docs/hooks/scripts/check-adr-immutability.sh
    ```
 
    Expected: exit code 0.
 
-### Proposal Lifecycle Guard (`hooks/scripts/check-proposal-lifecycle.sh`)
+### Proposal Lifecycle Guard (`plugins/principled-docs/hooks/scripts/check-proposal-lifecycle.sh`)
 
 Run these test cases:
 
@@ -62,7 +62,7 @@ Run these test cases:
 3. **Non-proposal file — should allow (exit 0):**
 
    ```bash
-   echo '{"tool_input":{"file_path":"CLAUDE.md"}}' | bash hooks/scripts/check-proposal-lifecycle.sh
+   echo '{"tool_input":{"file_path":"CLAUDE.md"}}' | bash plugins/principled-docs/hooks/scripts/check-proposal-lifecycle.sh
    ```
 
    Expected: exit code 0.
