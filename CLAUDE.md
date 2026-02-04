@@ -12,25 +12,26 @@ This repo **is** the `principled-docs` Claude Code plugin (v0.3.1). It scaffolds
 
 Three layers, top to bottom:
 
-| Layer | Location | Role |
-|---|---|---|
-| **Skills** | `skills/` (9 directories) | Generative workflows — each skill is a slash command with its own `SKILL.md`, templates, scripts, and reference docs |
-| **Hooks** | `hooks/` | Deterministic guardrails — `hooks.json` declares PreToolUse/PostToolUse triggers that run shell scripts |
-| **Foundation** | `.claude-plugin/`, canonical templates, utility scripts | Plugin manifest, 12 canonical templates (owned by `scaffold`), shared scripts |
+| Layer          | Location                                                | Role                                                                                                                 |
+| -------------- | ------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------- |
+| **Skills**     | `skills/` (9 directories)                               | Generative workflows — each skill is a slash command with its own `SKILL.md`, templates, scripts, and reference docs |
+| **Hooks**      | `hooks/`                                                | Deterministic guardrails — `hooks.json` declares PreToolUse/PostToolUse triggers that run shell scripts              |
+| **Foundation** | `.claude-plugin/`, canonical templates, utility scripts | Plugin manifest, 12 canonical templates (owned by `scaffold`), shared scripts                                        |
+| **Dev DX**     | `.claude/`, config files, `.github/workflows/`          | Project-level Claude Code settings, dev commands, CI pipeline, linting config                                        |
 
 ## Skills
 
-| Skill | Command | Category |
-|---|---|---|
-| `docs-strategy` | *(background — not user-invocable)* | Knowledge |
-| `scaffold` | `/scaffold <path> --type core\|lib\|app` | Generative |
-| `validate` | `/validate [path] --type <type>` | Analytical |
-| `docs-audit` | `/docs-audit` | Analytical |
-| `new-proposal` | `/new-proposal <title>` | Generative |
-| `new-plan` | `/new-plan <title> --from-proposal NNN` | Generative |
-| `new-adr` | `/new-adr <title>` | Generative |
-| `new-architecture-doc` | `/new-architecture-doc <title>` | Generative |
-| `proposal-status` | `/proposal-status NNN <status>` | Analytical |
+| Skill                  | Command                                  | Category   |
+| ---------------------- | ---------------------------------------- | ---------- |
+| `docs-strategy`        | _(background — not user-invocable)_      | Knowledge  |
+| `scaffold`             | `/scaffold <path> --type core\|lib\|app` | Generative |
+| `validate`             | `/validate [path] --type <type>`         | Analytical |
+| `docs-audit`           | `/docs-audit`                            | Analytical |
+| `new-proposal`         | `/new-proposal <title>`                  | Generative |
+| `new-plan`             | `/new-plan <title> --from-proposal NNN`  | Generative |
+| `new-adr`              | `/new-adr <title>`                       | Generative |
+| `new-architecture-doc` | `/new-architecture-doc <title>`          | Generative |
+| `proposal-status`      | `/proposal-status NNN <status>`          | Analytical |
 
 Each skill directory is **self-contained**. No cross-skill imports. If a template or script is needed by multiple skills, each maintains its own copy.
 
@@ -69,8 +70,22 @@ This repo uses its own documentation pipeline at the root level:
   - 001: Pure bash frontmatter parsing strategy
   - 002: Claude-mediated template placeholder replacement
   - 003: Module type declaration via CLAUDE.md
+  - 004: Node.js dev tooling boundary
+  - 005: pre-commit framework for git hooks
 - `docs/architecture/` — Living design docs.
   - plugin-system.md, documentation-pipeline.md, enforcement-system.md
+
+## Contributing
+
+See `CONTRIBUTING.md` for the full contributor guide. Key points:
+
+- **Pre-commit hooks** enforce shell and Markdown lint on every commit (`pre-commit install`)
+- **CI pipeline** (`.github/workflows/ci.yml`) runs shell lint, Markdown lint, template drift, and structure validation on every PR
+- **`.claude/` directory** provides project-level Claude Code configuration and dev commands
+
+## Dogfooding
+
+This repo installs principled-docs as its own plugin (via `.claude/settings.json`). All 9 skills and enforcement hooks are active during development. See `.claude/CLAUDE.md` for development-specific context.
 
 ## Pipeline
 
@@ -94,11 +109,11 @@ Proposals → Plans → Decisions.
 
 Declared in `hooks/hooks.json`:
 
-| Hook | Event | Script | Timeout |
-|---|---|---|---|
-| ADR Immutability Guard | PreToolUse (Edit\|Write) | `hooks/scripts/check-adr-immutability.sh` | 10s |
-| Proposal Lifecycle Guard | PreToolUse (Edit\|Write) | `hooks/scripts/check-proposal-lifecycle.sh` | 10s |
-| Structure Nudge | PostToolUse (Write) | `skills/scaffold/scripts/validate-structure.sh --on-write` | 15s |
+| Hook                     | Event                    | Script                                                     | Timeout |
+| ------------------------ | ------------------------ | ---------------------------------------------------------- | ------- |
+| ADR Immutability Guard   | PreToolUse (Edit\|Write) | `hooks/scripts/check-adr-immutability.sh`                  | 10s     |
+| Proposal Lifecycle Guard | PreToolUse (Edit\|Write) | `hooks/scripts/check-proposal-lifecycle.sh`                | 10s     |
+| Structure Nudge          | PostToolUse (Write)      | `skills/scaffold/scripts/validate-structure.sh --on-write` | 15s     |
 
 Both guard scripts depend on `hooks/scripts/parse-frontmatter.sh` for YAML field extraction.
 
@@ -108,10 +123,17 @@ Both guard scripts depend on `hooks/scripts/parse-frontmatter.sh` for YAML field
 - **Structure validation:** `skills/scaffold/scripts/validate-structure.sh --module-path <path> [--type <type>] [--strict] [--json]` — checks a module's docs structure.
 - **Root validation:** `skills/scaffold/scripts/validate-structure.sh --root` — checks repo-level docs structure.
 - **Hook testing:** Feed JSON with `tool_input.file_path` to guard scripts via stdin. Exit 0 = allow, exit 2 = block.
+- **Shell lint:** `shellcheck --shell=bash` and `shfmt -i 2 -bn -sr -d` on all `.sh` files.
+- **Markdown lint:** `npx markdownlint-cli2 '**/*.md'` and `npx prettier --check '**/*.md'`.
+- **All at once:** `pre-commit run --all-files` or `/project:check-ci`.
 
 ## Dependencies
 
 - **Claude Code v2.1.3+** (skills/commands unification)
-- **Bash** (all scripts are pure bash; no Python, Node, or other runtimes)
+- **Bash** (all plugin scripts are pure bash)
 - **Git** (for repository context)
 - **jq** (optional — scripts fall back to grep-based extraction)
+- **Node.js 18+** (dev tooling only — markdownlint-cli2, prettier)
+- **ShellCheck** (dev tooling — shell script static analysis)
+- **shfmt** (dev tooling — shell script formatting)
+- **pre-commit** (dev tooling — git hook framework)
