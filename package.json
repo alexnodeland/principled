@@ -1,7 +1,7 @@
 {
-  "name": "principled-docs",
+  "name": "principled",
   "private": true,
-  "description": "Dev tooling for principled-docs plugin",
+  "description": "Dev tooling for the Principled plugin marketplace",
   "scripts": {
     "lint:md": "markdownlint-cli2 '**/*.md'",
     "format:md": "prettier --check '**/*.md'",

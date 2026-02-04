@@ -2,7 +2,7 @@
   "name": "principled-docs",
   "version": "0.3.1",
   "description": "Scaffold, author, and enforce module documentation structure following the Principled specification-first methodology.",
-  "author": "Alex",
-  "homepage": "https://github.com/<org>/principled-docs",
+  "author": "Alex Nodeland",
+  "homepage": "https://github.com/alexnodeland/principled",
   "keywords": ["documentation", "rfc", "adr", "specification-first", "monorepo", "ddd"]
 }

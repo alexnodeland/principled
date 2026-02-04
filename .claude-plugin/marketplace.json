@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "description": "Curated marketplace for Principled methodology Claude Code plugins. First-party and community plugins for specification-first development.",
   "owner": {
-    "name": "Alex"
+    "name": "Alex Nodeland"
   },
   "metadata": {
     "pluginRoot": "./plugins"

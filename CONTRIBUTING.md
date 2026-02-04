@@ -1,6 +1,6 @@
-# Contributing to principled-docs
+# Contributing to Principled
 
-Thank you for your interest in contributing to the principled-docs marketplace! This guide covers contributing to the marketplace, its plugins, and submitting new plugins.
+Thank you for your interest in contributing to the Principled plugin marketplace! This guide covers contributing to the marketplace, its plugins, and submitting new plugins.
 
 ## Getting Started
 
@@ -18,8 +18,8 @@ Thank you for your interest in contributing to the principled-docs marketplace! 
 
 ```bash
 # Clone the repository
-git clone https://github.com/alexnodeland/principled-docs.git
-cd principled-docs
+git clone https://github.com/alexnodeland/principled.git
+cd principled
 
 # Install Node.js dev dependencies (Markdown tooling)
 npm install

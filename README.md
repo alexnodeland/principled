@@ -33,7 +33,7 @@ _No community plugins yet. See [Contributing](#-contributing-a-plugin) to submit
 ### Add the Marketplace
 
 ```
-/plugin marketplace add owner/principled-docs
+/plugin marketplace add alexnodeland/principled
 ```
 
 ### Install a Plugin
@@ -52,7 +52,7 @@ Add to your project's `.claude/settings.json`:
     "principled-marketplace": {
       "source": {
         "source": "github",
-        "repo": "owner/principled-docs"
+        "repo": "alexnodeland/principled"
       }
     }
   },
@@ -65,7 +65,7 @@ Add to your project's `.claude/settings.json`:
 ## 📂 Structure
 
 ```
-principled-docs/
+principled/
 ├── .claude-plugin/
 │   └── marketplace.json         # Plugin catalog
 ├── plugins/                     # First-party plugins

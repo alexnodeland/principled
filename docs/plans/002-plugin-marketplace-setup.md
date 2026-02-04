@@ -2,7 +2,7 @@
 title: "Plugin Marketplace Setup"
 number: "002"
 status: complete
-author: Alex
+author: Alex Nodeland
 created: 2026-02-04
 updated: 2026-02-04
 originating_proposal: "002"
