@@ -1,133 +1,137 @@
-# principled-docs
+<p align="center">
+  <strong>📐 principled-docs</strong>
+</p>
 
-A Claude Code plugin that scaffolds, authors, and enforces module documentation structure following the Principled specification-first methodology.
+<p align="center">
+  <em>Specification-first documentation for monorepos, powered by Claude Code.</em>
+</p>
 
-## Overview
+<p align="center">
+  <img src="https://img.shields.io/badge/claude_code-v2.1.3+-7c3aed?style=flat-square" alt="Claude Code v2.1.3+" />
+  <img src="https://img.shields.io/badge/version-0.3.1-blue?style=flat-square" alt="Version 0.3.1" />
+  <img src="https://img.shields.io/badge/status-active-brightgreen?style=flat-square" alt="Status: Active" />
+  <img src="https://img.shields.io/badge/license-MIT-gray?style=flat-square" alt="License: MIT" />
+</p>
 
-`principled-docs` gives Claude Code the knowledge, tools, and guardrails to treat documentation structure as a first-class concern. It implements a three-stage documentation pipeline:
+---
+
+A Claude Code plugin that **scaffolds**, **authors**, and **enforces** module documentation structure. Every module gets a consistent, audience-driven documentation set — from RFC proposals through DDD implementation plans to immutable architectural decision records.
+
+## 🔭 The Pipeline
+
+Every significant change follows three stages:
 
 ```
-Proposal (RFC)  →  Plan (DDD Implementation)  →  Decision (ADR)
-  "what and why"     "how, decomposed"              "what was decided"
+  ┌──────────────┐       ┌──────────────┐       ┌──────────────┐
+  │  📋 Proposal  │──────▶│  🗺️  Plan     │──────▶│  📌 Decision  │
+  │    (RFC)      │       │    (DDD)      │       │    (ADR)      │
+  │              │       │              │       │              │
+  │ "what & why" │       │ "how"        │       │ "what was    │
+  │              │       │              │       │  decided"    │
+  └──────────────┘       └──────────────┘       └──────────────┘
+    Strategic              Tactical               Permanent
+    Mutable                Mutable                Immutable*
+
+  * except superseded_by
 ```
 
-## Installation
+**Proposals** define intent. **Plans** decompose work via bounded contexts and aggregates. **Decisions** are the permanent record — immutable after acceptance.
 
-Add this plugin to your Claude Code project:
+## ⚡ Quick Start
 
 ```bash
+# Install the plugin
 claude plugin add <path-to-principled-docs>
-```
 
-Or reference it in your project's Claude Code configuration.
-
-## Skills (Slash Commands)
-
-### `/scaffold` — Module Scaffolding
-
-Generate the complete documentation structure for a new module.
-
-```
+# Scaffold a new module
 /scaffold packages/payment-gateway --type app
-/scaffold packages/shared-utils --type lib
-/scaffold --root
-```
 
-Supported module types: `core`, `lib`, `app`. Use `--root` to scaffold repo-level docs.
-
-### `/new-proposal` — Create an RFC
-
-Create a new proposal document with correct numbering and template.
-
-```
+# Start the pipeline
 /new-proposal switch-to-event-sourcing --module packages/payment-gateway
-/new-proposal unified-logging-standard --root
 ```
 
-### `/new-plan` — Create a DDD Implementation Plan
+## 🛠️ Skills
 
-Create an implementation plan linked to an accepted proposal. Plans decompose work using domain-driven development: bounded contexts, aggregates, domain events, and tasks.
+9 skills, each a slash command. Each skill is self-contained — its own templates, scripts, and reference docs.
+
+### Scaffolding & Validation
+
+| Command | Description |
+|---------|-------------|
+| `/scaffold <path> --type core\|lib\|app` | 🏗️ Generate complete documentation structure for a new module |
+| `/scaffold --root` | 🏗️ Generate repo-level cross-cutting docs structure |
+| `/validate [path] --type <type>` | ✅ Check documentation structure against the standard |
+| `/docs-audit` | 📊 Audit documentation health across all modules |
+
+### Authoring
+
+| Command | Description |
+|---------|-------------|
+| `/new-proposal <title>` | 📋 Create a new RFC proposal |
+| `/new-plan <title> --from-proposal NNN` | 🗺️ Create a DDD implementation plan from an accepted proposal |
+| `/new-adr <title>` | 📌 Create an Architectural Decision Record |
+| `/new-architecture-doc <title>` | 📐 Create a living architecture document |
+
+### Lifecycle
+
+| Command | Description |
+|---------|-------------|
+| `/proposal-status <NNN> <status>` | 🔄 Transition a proposal through `draft → in-review → accepted\|rejected\|superseded` |
+
+### Background Knowledge
+
+`docs-strategy` — not directly invocable. Gives Claude Code deep understanding of the documentation strategy, naming conventions, lifecycle rules, and DDD decomposition. Activates automatically when working with docs.
+
+## 🔒 Enforcement Hooks
+
+Three hooks provide deterministic guardrails — no manual action required.
+
+| Hook | Trigger | Behavior |
+|------|---------|----------|
+| **ADR Immutability Guard** | PreToolUse `Edit\|Write` | 🛡️ Blocks edits to accepted ADRs. Exception: `superseded_by` updates are allowed. |
+| **Proposal Lifecycle Guard** | PreToolUse `Edit\|Write` | 🛡️ Blocks edits to terminal proposals (`accepted`, `rejected`, `superseded`). |
+| **Structure Nudge** | PostToolUse `Write` | 💡 Advisory validation after file writes. Warns about missing structure. Never blocks. |
+
+## 📂 Module Structure
+
+Every module follows a consistent layout. The plugin scaffolds and validates this structure.
 
 ```
-/new-plan switch-to-event-sourcing --from-proposal 001 --module packages/payment-gateway
+module/
+├── docs/
+│   ├── proposals/        📋 RFCs (NNN-short-title.md)
+│   ├── plans/            🗺️  DDD implementation plans
+│   ├── decisions/        📌 ADRs — immutable after acceptance
+│   └── architecture/     📐 Living design documentation
+├── README.md             📖 Module front door
+├── CONTRIBUTING.md       🤝 Build/test/PR conventions
+└── CLAUDE.md             🤖 AI development context
 ```
 
-Requires `--from-proposal` pointing to an accepted proposal.
+**Lib modules** add: `docs/examples/`, `INTERFACE.md`
+**App modules** add: `docs/runbooks/`, `docs/integration/`, `docs/config/`
 
-### `/new-adr` — Create an ADR
+## 🔄 Full Pipeline Walkthrough
 
-Create an Architectural Decision Record, standalone or linked to a proposal.
+```bash
+# 1. Create a proposal
+/new-proposal switch-to-event-sourcing --module packages/payments
 
-```
-/new-adr use-kafka-for-event-store --from-proposal 001
-/new-adr adopt-typescript-strict
-```
-
-### `/proposal-status` — Transition Proposal Lifecycle
-
-Move a proposal through its lifecycle states.
-
-```
+# 2. Write the proposal content, then move through lifecycle
 /proposal-status 001 in-review
-/proposal-status 001 accepted
+/proposal-status 001 accepted        # → prompts for plan creation
+
+# 3. Create an implementation plan (DDD decomposition)
+/new-plan switch-to-event-sourcing --from-proposal 001
+
+# 4. During implementation, record architectural decisions
+/new-adr use-kafka-for-event-store --from-proposal 001
+
+# 5. Document the resulting architecture
+/new-architecture-doc event-sourcing-design --module packages/payments
 ```
 
-Valid transitions: `draft → in-review → accepted|rejected|superseded`. On acceptance, prompts for plan creation.
-
-### `/new-architecture-doc` — Create Architecture Doc
-
-Create a living architecture document with ADR cross-references.
-
-```
-/new-architecture-doc data-flow --module packages/payment-gateway
-/new-architecture-doc system-overview --root
-```
-
-### `/validate` — Structural Validation
-
-Check documentation structure against the expected standard.
-
-```
-/validate packages/auth-service --type app
-/validate --root
-/validate packages/shared-utils --type lib --strict --json
-```
-
-### `/docs-audit` — Monorepo-Wide Audit
-
-Audit documentation health across all modules.
-
-```
-/docs-audit
-/docs-audit --format detailed --include-root
-/docs-audit --modules-dir packages
-```
-
-### `docs-strategy` — Background Knowledge
-
-Not directly invocable. Provides Claude Code with comprehensive understanding of the documentation strategy, naming conventions, lifecycle rules, and DDD decomposition guidance.
-
-## Hooks (Enforcement)
-
-### ADR Immutability Guard
-
-**Event:** PreToolUse on Edit and Write
-
-Blocks edits to ADRs with status `accepted`, `deprecated`, or `superseded`. One exception: updates to the `superseded_by` field are allowed when a new ADR supersedes an existing one.
-
-### Proposal Lifecycle Guard
-
-**Event:** PreToolUse on Edit and Write
-
-Blocks edits to proposals with terminal status (`accepted`, `rejected`, `superseded`). Terminal proposals are frozen — to propose changes, create a new proposal.
-
-### Post-Write Structure Nudge
-
-**Event:** PostToolUse on Write
-
-After any file write, checks if the file belongs to a module and runs a lightweight structural validation. Advisory only — does not block operations.
-
-## Configuration
+## ⚙️ Configuration
 
 Configure via `.claude/settings.json`:
 
@@ -146,16 +150,16 @@ Configure via `.claude/settings.json`:
 ```
 
 | Setting | Default | Description |
-|---|---|---|
+|---------|---------|-------------|
 | `modulesDirectory` | `"packages"` | Root directory containing modules |
-| `defaultModuleType` | `"core"` | Default when type is not specified |
-| `docsSubdirectory` | `"docs"` | Subdirectory within each module for documentation |
-| `strictMode` | `false` | When true, placeholder-only files are treated as failures |
-| `customTemplatesPath` | `null` | Override all default templates (no inheritance — full replacement) |
-| `ignoredModules` | `[]` | Glob patterns for modules to skip during audit/validation |
-| `fileExtension` | `".md"` | Extension for generated documentation files |
+| `defaultModuleType` | `"core"` | Fallback when type is not specified |
+| `docsSubdirectory` | `"docs"` | Subdirectory within each module for docs |
+| `strictMode` | `false` | Treat placeholder-only files as failures |
+| `customTemplatesPath` | `null` | Override all templates (full replacement, no inheritance) |
+| `ignoredModules` | `[]` | Glob patterns for modules to skip |
+| `fileExtension` | `".md"` | Extension for generated files |
 
-## CI Integration
+## 🚀 CI Integration
 
 ### Structural Validation
 
@@ -164,8 +168,7 @@ Configure via `.claude/settings.json`:
   run: |
     for module in packages/*/; do
       ./principled-docs/skills/scaffold/scripts/validate-structure.sh \
-        --module-path "$module" \
-        --json >> results.json
+        --module-path "$module" --json >> results.json
     done
     ./principled-docs/skills/scaffold/scripts/validate-structure.sh \
       --root --json >> results.json
@@ -176,40 +179,32 @@ Configure via `.claude/settings.json`:
 
 ```yaml
 - name: Check template drift
-  run: |
-    ./principled-docs/skills/scaffold/scripts/check-template-drift.sh
+  run: ./principled-docs/skills/scaffold/scripts/check-template-drift.sh
 ```
 
-Exits non-zero if any template copy has diverged from the canonical version in `scaffold/templates/`.
+Exits non-zero if any template copy has diverged from canonical.
 
-## Documentation Structure
+## 🧩 Architecture
 
-Every module follows this structure:
-
-```
-module/
-├── docs/
-│   ├── proposals/        # RFCs (NNN-short-title.md)
-│   ├── plans/            # DDD implementation plans (NNN-short-title.md)
-│   ├── decisions/        # ADRs — immutable after acceptance (NNN-short-title.md)
-│   └── architecture/     # Living design docs
-├── README.md             # Module front door
-├── CONTRIBUTING.md       # Build/test/PR conventions
-└── CLAUDE.md             # AI development context
-```
-
-**Lib modules** add: `docs/examples/`, `INTERFACE.md`
-
-**App modules** add: `docs/runbooks/`, `docs/integration/`, `docs/config/`
-
-## Pipeline Workflow
+The plugin is built in three layers:
 
 ```
-1. /new-proposal <title>           → Creates RFC in docs/proposals/
-2. [Author writes proposal]
-3. /proposal-status NNN in-review  → Moves to review
-4. /proposal-status NNN accepted   → Accepts, prompts for plan
-5. /new-plan <title> --from-proposal NNN  → Creates DDD plan in docs/plans/
-6. [Implementer fills in bounded contexts, aggregates, tasks]
-7. /new-adr <title> --from-proposal NNN   → Records decisions in docs/decisions/
+┌─────────────────────────────────────────────────┐
+│  📋 SKILLS — generative workflows               │
+│  9 skills, each self-contained                   │
+├─────────────────────────────────────────────────┤
+│  🛡️  HOOKS — deterministic guardrails            │
+│  ADR immutability · proposal lifecycle · nudge   │
+├─────────────────────────────────────────────────┤
+│  🧱 FOUNDATION — templates, scripts, manifest    │
+│  12 canonical templates · 4 utility scripts      │
+└─────────────────────────────────────────────────┘
 ```
+
+Templates are duplicated for skill self-containment. A CI drift check ensures copies never diverge from canonical.
+
+---
+
+<p align="center">
+  <sub>Built with the <a href="https://docs.anthropic.com/en/docs/claude-code">Claude Code</a> plugin system · Principled specification-first methodology</sub>
+</p>
