@@ -123,11 +123,11 @@ The `metadata.pluginRoot` field provides a default base path for relative plugin
 
 Move the existing principled-docs plugin from the repo root into `plugins/principled-docs/`:
 
-| Current Location | New Location |
-| --- | --- |
+| Current Location             | New Location                                         |
+| ---------------------------- | ---------------------------------------------------- |
 | `.claude-plugin/plugin.json` | `plugins/principled-docs/.claude-plugin/plugin.json` |
-| `skills/` | `plugins/principled-docs/skills/` |
-| `hooks/` | `plugins/principled-docs/hooks/` |
+| `skills/`                    | `plugins/principled-docs/skills/`                    |
+| `hooks/`                     | `plugins/principled-docs/hooks/`                     |
 
 The `plugin.json` content does not change. The plugin remains self-contained — all skills, hooks, scripts, templates, and reference docs move together.
 
@@ -212,12 +212,12 @@ External plugins are listed in `marketplace.json` with their `external_plugins/`
 
 Plugins are organized by category in the marketplace catalog. Initial categories:
 
-| Category | Description |
-| --- | --- |
-| `documentation` | Documentation structure, authoring, and enforcement |
-| `workflow` | Development workflow automation and process enforcement |
-| `quality` | Code quality, review, and standards enforcement |
-| `architecture` | Architectural governance and decision tracking |
+| Category        | Description                                             |
+| --------------- | ------------------------------------------------------- |
+| `documentation` | Documentation structure, authoring, and enforcement     |
+| `workflow`      | Development workflow automation and process enforcement |
+| `quality`       | Code quality, review, and standards enforcement         |
+| `architecture`  | Architectural governance and decision tracking          |
 
 Categories are informational — they appear in `marketplace.json` plugin entries and are used for display and filtering. They do not affect directory structure. New categories can be added without a proposal.
 
