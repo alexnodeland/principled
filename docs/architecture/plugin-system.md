@@ -175,6 +175,7 @@ PostToolUse hook fires (after execution)
 ## Key Decisions
 
 - [ADR-002: Claude-Mediated Template Placeholder Replacement](../decisions/002-template-placeholder-syntax.md) — Templates use `{{PLACEHOLDER}}` syntax that Claude interprets during skill execution, rather than sed-based script substitution.
+- [ADR-006: Structural Plugin Validation in CI](../decisions/006-structural-plugin-validation-in-ci.md) — CI validates plugin manifests via structural checks rather than requiring the `claude` CLI.
 
 ## Constraints and Invariants
 

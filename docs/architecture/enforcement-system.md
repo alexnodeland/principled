@@ -219,6 +219,7 @@ Quick structural check:
 ## Key Decisions
 
 - [ADR-001: Pure Bash Frontmatter Parsing](../decisions/001-frontmatter-parsing-strategy.md) — Guard scripts use pure bash for frontmatter extraction, keeping the enforcement layer dependency-free.
+- [ADR-006: Structural Plugin Validation in CI](../decisions/006-structural-plugin-validation-in-ci.md) — CI validates plugins via structural checks (`plugin.json` existence + JSON validity) rather than requiring the `claude` CLI.
 
 ## Constraints and Invariants
 

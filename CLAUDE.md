@@ -74,6 +74,7 @@ This repo uses its own documentation pipeline at the root level (governing the m
   - 003: Module type declaration via CLAUDE.md
   - 004: Node.js dev tooling boundary
   - 005: pre-commit framework for git hooks
+  - 006: Structural plugin validation in CI
 - `docs/architecture/` — Living design docs.
   - plugin-system.md, documentation-pipeline.md, enforcement-system.md
 
