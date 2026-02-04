@@ -1,0 +1,28 @@
+{
+  "name": "principled-marketplace",
+  "version": "1.0.0",
+  "description": "Curated marketplace for Principled methodology Claude Code plugins. First-party and community plugins for specification-first development.",
+  "owner": {
+    "name": "Alex"
+  },
+  "metadata": {
+    "pluginRoot": "./plugins"
+  },
+  "plugins": [
+    {
+      "name": "principled-docs",
+      "source": "./plugins/principled-docs",
+      "description": "Scaffold, author, and enforce module documentation structure following the Principled specification-first methodology.",
+      "version": "0.3.1",
+      "category": "documentation",
+      "keywords": [
+        "documentation",
+        "rfc",
+        "adr",
+        "specification-first",
+        "monorepo",
+        "ddd"
+      ]
+    }
+  ]
+}
