@@ -31,7 +31,7 @@ NNN-short-title.md
 - Each directory (`proposals/`, `plans/`, `decisions/`) maintains its own independent sequence within a module.
 - Root-level and module-level directories maintain independent sequences.
 - Gaps in sequences are not backfilled. The next number is always `max + 1`.
-- When an ADR originates from a proposal, it uses its own sequence number (not the proposal's number). The link is maintained via the `originating_proposal` frontmatter field. When a plan originates from an ADR, the link is maintained via the `originating_adr` frontmatter field.
+- When an ADR originates from a proposal, it uses its own sequence number (not the proposal's number). The link is maintained via the `originating_proposal` frontmatter field. Plans also link to their originating proposal via `originating_proposal` and reference related ADRs via the `related_adrs` field.
 
 ### Slug Rules
 

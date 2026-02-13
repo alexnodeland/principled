@@ -44,23 +44,20 @@
 ```
 Proposal (accepted)
     │
-    ├── originating_proposal: NNN
-    │   (frontmatter field linking ADR back to proposal)
-    │
-    ▼
-Decision (ADR, accepted)
-    │
-    ├── originating_adr: NNN
-    │   (frontmatter field linking plan back to ADR)
-    │
-    ▼
-Plan (active)
-    │
-    ├── Bounded contexts, aggregates, domain events
-    ├── Implementation tasks with checkboxes
-    │
-    │   During implementation:
-    │   └── Task complete? ──▶ Check off in plan
+    │  originating_proposal: NNN
+    ├──────────────────────────────────┐
+    │                                  │
+    ▼                                  ▼
+Decision(s) (ADR, accepted)       Plan (active)
+    │                                  │
+    │  originating_proposal: NNN       │  originating_proposal: NNN
+    │                                  │  related_adrs: [NNN, ...]
+    │                                  │
+    │                                  │  Bounded contexts, aggregates
+    │                                  │  Implementation tasks
+    │                                  │
+    │                                  │  During implementation:
+    │                                  │  └── Task complete? ──▶ Check off
     │
     ▼
 Architecture Doc (living)

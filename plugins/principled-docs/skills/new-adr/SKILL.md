@@ -5,7 +5,7 @@ description: >
   Use when recording an architectural decision, either standalone
   or linked to an accepted proposal. Handles numbering and cross-referencing.
   ADRs are immutable after acceptance except for the superseded_by field.
-  Once accepted, an ADR can be implemented via `/new-plan --from-adr NNN`.
+  Once all ADRs for a proposal are accepted, create a plan via `/new-plan --from-proposal NNN`.
 allowed-tools: Read, Write, Bash(ls *), Bash(grep *)
 user-invocable: true
 ---

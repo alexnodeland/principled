@@ -62,12 +62,12 @@ claude plugin add <path-to-principled-docs>
 
 ### Authoring
 
-| Command                            | Description                                                   |
-| ---------------------------------- | ------------------------------------------------------------- |
-| `/new-proposal <title>`            | 📋 Create a new RFC proposal                                  |
-| `/new-plan <title> --from-adr NNN` | 🗺️ Create a DDD implementation plan from an accepted decision |
-| `/new-adr <title>`                 | 📌 Create an Architectural Decision Record                    |
-| `/new-architecture-doc <title>`    | 📐 Create a living architecture document                      |
+| Command                                 | Description                                                   |
+| --------------------------------------- | ------------------------------------------------------------- |
+| `/new-proposal <title>`                 | 📋 Create a new RFC proposal                                  |
+| `/new-plan <title> --from-proposal NNN` | 🗺️ Create a DDD implementation plan from an accepted proposal |
+| `/new-adr <title>`                      | 📌 Create an Architectural Decision Record                    |
+| `/new-architecture-doc <title>`         | 📐 Create a living architecture document                      |
 
 ### Lifecycle
 
@@ -118,11 +118,12 @@ module/
 /proposal-status 001 in-review
 /proposal-status 001 accepted        # → prompts for ADR creation
 
-# 3. Record the architectural decision
+# 3. Record architectural decisions
 /new-adr use-kafka-for-event-store --from-proposal 001
+/new-adr cqrs-read-model-strategy --from-proposal 001
 
-# 4. Create an implementation plan from the accepted ADR (DDD decomposition)
-/new-plan switch-to-event-sourcing --from-adr 001
+# 4. Create an implementation plan (DDD decomposition, informed by ADRs)
+/new-plan switch-to-event-sourcing --from-proposal 001
 
 # 5. Document the resulting architecture
 /new-architecture-doc event-sourcing-design --module packages/payments

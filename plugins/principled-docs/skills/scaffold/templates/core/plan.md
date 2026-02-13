@@ -5,16 +5,23 @@ status: active
 author: { { AUTHOR } }
 created: { { DATE } }
 updated: { { DATE } }
-originating_adr: { { ADR_NUMBER } }
+originating_proposal: { { PROPOSAL_NUMBER } }
+related_adrs: { { ADR_NUMBERS } }
 ---
 
 # Plan-{{NUMBER}}: {{TITLE}}
 
 ## Objective
 
-<!-- What does this plan accomplish? Link to the originating decision. -->
+<!-- What does this plan accomplish? Link to the originating proposal. -->
 
-Implements [ADR-{{ADR_NUMBER}}](../decisions/{{ADR_NUMBER}}-{{ADR_SLUG}}.md).
+Implements [RFC-{{PROPOSAL_NUMBER}}](../proposals/{{PROPOSAL_NUMBER}}-{{PROPOSAL_SLUG}}.md).
+
+TODO
+
+## Related Decisions
+
+<!-- ADRs that inform this plan. Created before the plan as part of the PRD → ADR → DDD flow. -->
 
 TODO
 

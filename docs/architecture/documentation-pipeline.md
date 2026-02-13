@@ -80,9 +80,10 @@ active ──→ complete
        ──→ abandoned
 ```
 
-- Always linked to an accepted decision via `originating_adr`
+- Always linked to an accepted proposal via `originating_proposal`
+- References related ADRs via `related_adrs` field
 - Mutable while `active`
-- Provide the tactical roadmap for implementing accepted decisions
+- Provide the tactical roadmap informed by the decisions made in ADRs
 
 ### Architecture Docs (Living)
 
@@ -96,18 +97,16 @@ Architecture docs describe the current design. They reference the ADRs that prod
 Proposal (accepted)
     │
     │  originating_proposal: NNN
-    │
-    ▼
-Decision (ADR, accepted)
-    │
-    │  Permanent record
-    │  originating_adr: NNN
-    │
-    ▼
-Plan (active → complete)
-    │
-    │  During implementation:
-    │  └── Task complete? → Check off
+    ├──────────────────────────────────┐
+    │                                  │
+    ▼                                  ▼
+Decision (ADR, accepted)          Plan (active → complete)
+    │                                  │
+    │  Permanent record                │  originating_proposal: NNN
+    │                                  │  related_adrs: [NNN, ...]
+    │                                  │
+    │                                  │  During implementation:
+    │                                  │  └── Task complete? → Check off
     │
     ▼
 Architecture Doc (living)
@@ -122,7 +121,8 @@ Architecture Doc (living)
 | ---------------- | ------------------------------- | ---------------------------------------------------- |
 | ADR              | Originating proposal (optional) | `originating_proposal` frontmatter                   |
 | ADR              | Superseded ADR                  | `superseded_by` on old ADR                           |
-| Plan             | Originating decision            | `originating_adr` frontmatter + markdown link        |
+| Plan             | Originating proposal            | `originating_proposal` frontmatter + markdown link   |
+| Plan             | Related ADRs                    | `related_adrs` frontmatter + "Related Decisions"     |
 | Architecture doc | Related ADRs                    | `related_adrs` frontmatter + "Key Decisions" section |
 | Proposal         | Superseding proposal            | `superseded_by` frontmatter                          |
 
@@ -189,6 +189,6 @@ Numbers are never reused. Gaps are not backfilled.
 1. **Proposals cannot skip states.** `draft → in-review` is required before any terminal transition.
 2. **Terminal documents are frozen.** No edits to accepted/rejected/superseded proposals or accepted ADRs.
 3. **The `superseded_by` exception is the only mutation allowed on an accepted ADR.**
-4. **Plans require an accepted decision.** No plan can be created without `--from-adr` pointing to an accepted ADR.
+4. **Plans require an accepted proposal.** No plan can be created without `--from-proposal` pointing to an accepted proposal. Plans also reference related ADRs created from that proposal.
 5. **Architecture docs reference ADRs.** They are living documents that reflect decisions, not independent from them.
 6. **Independent numbering per scope.** Module-level and root-level sequences are independent. Proposal, plan, and decision sequences within the same scope are also independent.

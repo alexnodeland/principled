@@ -48,13 +48,13 @@ active ──→ complete
 | ----------- | -------- | ------------------------------------------------------------- |
 | `active`    | Yes      | Implementation is in progress. Tasks are being completed.     |
 | `complete`  | No       | All tasks are done.                                           |
-| `abandoned` | No       | Plan was abandoned. The originating decision may still stand. |
+| `abandoned` | No       | Plan was abandoned. The originating proposal may still stand. |
 
 ### Rules
 
 - Plans are mutable while `active`. Any section can be updated as implementation progresses.
 - Transitioning to `complete` should only happen when all implementation tasks are checked off.
-- A plan always links back to its originating decision via the `originating_adr` frontmatter field.
+- A plan always links back to its originating proposal via the `originating_proposal` frontmatter field and references related ADRs via the `related_adrs` field.
 
 ## ADR Lifecycle
 

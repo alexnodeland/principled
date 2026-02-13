@@ -30,7 +30,7 @@ The principled-docs plugin provides 9 skills:
 | `validate`             | `/validate [path] --type <type>`         | Analytical |
 | `docs-audit`           | `/docs-audit`                            | Analytical |
 | `new-proposal`         | `/new-proposal <title>`                  | Generative |
-| `new-plan`             | `/new-plan <title> --from-adr NNN`       | Generative |
+| `new-plan`             | `/new-plan <title> --from-proposal NNN`  | Generative |
 | `new-adr`              | `/new-adr <title>`                       | Generative |
 | `new-architecture-doc` | `/new-architecture-doc <title>`          | Generative |
 | `proposal-status`      | `/proposal-status NNN <status>`          | Analytical |
@@ -96,13 +96,13 @@ Proposals → Decisions → Plans.
 
 - **Proposals** are strategic (what/why). Status: `draft → in-review → accepted|rejected|superseded`.
 - **Decisions** are the permanent record. Status: `proposed → accepted → deprecated|superseded`. Immutable after acceptance.
-- **Plans** are tactical (how, via DDD). Status: `active → complete|abandoned`. Require an accepted decision (`--from-adr NNN`).
+- **Plans** are tactical (how, via DDD). Status: `active → complete|abandoned`. Require an accepted proposal (`--from-proposal NNN`).
 
 ## Important Constraints
 
 - **Proposals** with terminal status (`accepted`, `rejected`, `superseded`) must NOT be modified. Enforced by `check-proposal-lifecycle.sh`.
 - **ADRs** with status `accepted` must NOT be modified, except the `superseded_by` field. Enforced by `check-adr-immutability.sh`.
-- **Plans** require an accepted decision (`--from-adr NNN`).
+- **Plans** require an accepted proposal (`--from-proposal NNN`).
 - **Skills and hooks never overlap.** Skills create/modify documents. Hooks enforce rules.
 - **Guard scripts default to allow.** They only block when they can positively confirm a violation.
 - **Guard exit codes:** `0` = allow, `2` = block.

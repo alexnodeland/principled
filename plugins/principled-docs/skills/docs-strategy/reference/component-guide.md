@@ -31,9 +31,9 @@ Purpose, audience, and content expectations for every documentation component.
 | **Nature**     | DDD implementation plans                                                             |
 | **Audience**   | Implementers, maintainers                                                            |
 | **Mutability** | Mutable during implementation (`active`); marked `complete` or `abandoned` when done |
-| **Naming**     | `NNN-short-title.md` (number matches originating ADR)                                |
+| **Naming**     | `NNN-short-title.md` (number matches originating proposal)                           |
 
-**Content expectations:** A plan implements an accepted decision (ADR) by decomposing the work using domain-driven development: bounded contexts, aggregates, domain events, and concrete implementation tasks. Plans are tactical — they answer _how_, decomposed.
+**Content expectations:** A plan implements an accepted proposal, informed by its related ADRs, by decomposing the work using domain-driven development: bounded contexts, aggregates, domain events, and concrete implementation tasks. Plans are tactical — they answer _how_, decomposed.
 
 ## Architecture (`docs/architecture/`)
 
