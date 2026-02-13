@@ -11,7 +11,7 @@ Every module, regardless of type, must contain:
 | Directory            | Purpose                                                    |
 | -------------------- | ---------------------------------------------------------- |
 | `docs/proposals/`    | RFC proposals with lifecycle management                    |
-| `docs/plans/`        | DDD implementation plans bridging proposals and decisions  |
+| `docs/plans/`        | DDD implementation plans implementing accepted decisions   |
 | `docs/decisions/`    | Architectural Decision Records (immutable post-acceptance) |
 | `docs/architecture/` | Living documentation of current design                     |
 

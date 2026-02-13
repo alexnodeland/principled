@@ -4,7 +4,7 @@ description: >
   Module documentation strategy for the Principled framework.
   Consult when working with proposals/, plans/, decisions/, architecture/ directories,
   README, CONTRIBUTING, CLAUDE, or INTERFACE files in any module.
-  Covers the proposals → plans → decisions pipeline, naming conventions,
+  Covers the proposals → decisions → plans pipeline, naming conventions,
   lifecycle rules, DDD decomposition, and audience definitions.
 user-invocable: false
 ---
@@ -46,7 +46,7 @@ Read these files for detailed guidance on specific topics:
 
 ### Pipeline Overview
 
-- **`diagrams/pipeline-overview.md`** — Visual representation of the Proposals → Plans → Decisions pipeline, lifecycle flows, data flow between stages, immutability boundaries, and module vs. root scope.
+- **`diagrams/pipeline-overview.md`** — Visual representation of the Proposals → Decisions → Plans pipeline, lifecycle flows, data flow between stages, immutability boundaries, and module vs. root scope.
 
 ## Key Principles
 

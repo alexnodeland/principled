@@ -1,10 +1,10 @@
 ---
 name: new-plan
 description: >
-  Create a DDD implementation plan from an accepted proposal.
-  Plans bridge proposals and decisions by decomposing work into
+  Create a DDD implementation plan from an accepted decision (ADR).
+  Plans implement decisions by decomposing work into
   bounded contexts, aggregates, and concrete tasks using
-  domain-driven development. Use when an accepted proposal needs
+  domain-driven development. Use when an accepted ADR needs
   a tactical implementation breakdown before work begins.
 allowed-tools: Read, Write, Bash(ls *), Bash(grep *), Bash(find *)
 user-invocable: true
@@ -12,31 +12,31 @@ user-invocable: true
 
 # New Plan — DDD Implementation Plan Creation
 
-Create a domain-driven implementation plan that bridges an accepted proposal and its resulting decisions.
+Create a domain-driven implementation plan that implements an accepted decision (ADR).
 
 ## Command
 
 ```
-/new-plan <short-title> --from-proposal NNN [--module <path>] [--root]
+/new-plan <short-title> --from-adr NNN [--module <path>] [--root]
 ```
 
 ## Arguments
 
-| Argument              | Required | Description                                                                       |
-| --------------------- | -------- | --------------------------------------------------------------------------------- |
-| `<short-title>`       | Yes      | Short, hyphenated title for the plan                                              |
-| `--from-proposal NNN` | **Yes**  | The number of the originating proposal. The proposal must have status `accepted`. |
-| `--module <path>`     | No       | Target module path                                                                |
-| `--root`              | No       | Create at repo root level                                                         |
+| Argument          | Required | Description                                                                  |
+| ----------------- | -------- | ---------------------------------------------------------------------------- |
+| `<short-title>`   | Yes      | Short, hyphenated title for the plan                                         |
+| `--from-adr NNN`  | **Yes**  | The number of the originating decision. The ADR must have status `accepted`. |
+| `--module <path>` | No       | Target module path                                                           |
+| `--root`          | No       | Create at repo root level                                                    |
 
 ## Workflow
 
-1. **Parse arguments.** Extract title and `--from-proposal NNN` from `$ARGUMENTS`. The `--from-proposal` flag is required — plans always originate from a proposal.
+1. **Parse arguments.** Extract title and `--from-adr NNN` from `$ARGUMENTS`. The `--from-adr` flag is required — plans always originate from an accepted decision.
 
-2. **Locate and verify the proposal.** Find the proposal matching NNN in the appropriate `docs/proposals/` directory. Read its frontmatter and verify:
-   - The proposal exists
+2. **Locate and verify the decision.** Find the ADR matching NNN in the appropriate `docs/decisions/` directory. Read its frontmatter and verify:
+   - The ADR exists
    - Its `status` is `accepted`
-   - If not accepted, report an error: _"Cannot create plan: proposal NNN has status '\<status\>'. Only accepted proposals can have implementation plans."_
+   - If not accepted, report an error: _"Cannot create plan: ADR NNN has status '\<status\>'. Only accepted decisions can have implementation plans."_
 
 3. **Get next sequence number.** Run:
 
@@ -50,26 +50,25 @@ Create a domain-driven implementation plan that bridges an accepted proposal and
 
 6. **Populate frontmatter:**
 
-   | Field                  | Value                                      |
-   | ---------------------- | ------------------------------------------ |
-   | `title`                | Derived from the short title               |
-   | `number`               | The NNN from step 3                        |
-   | `status`               | `active`                                   |
-   | `author`               | Git user name or prompt                    |
-   | `created`              | Today's date                               |
-   | `updated`              | Today's date                               |
-   | `originating_proposal` | The proposal number from `--from-proposal` |
+   | Field             | Value                            |
+   | ----------------- | -------------------------------- |
+   | `title`           | Derived from the short title     |
+   | `number`          | The NNN from step 3              |
+   | `status`          | `active`                         |
+   | `author`          | Git user name or prompt          |
+   | `created`         | Today's date                     |
+   | `updated`         | Today's date                     |
+   | `originating_adr` | The ADR number from `--from-adr` |
 
-7. **Pre-populate from proposal.** Read the originating proposal's content and use it to seed:
-   - The Objective section (link to proposal)
-   - Initial bounded contexts (derived from the proposal's scope)
+7. **Pre-populate from decision.** Read the originating ADR's content and use it to seed:
+   - The Objective section (link to ADR)
+   - Initial bounded contexts (derived from the decision's scope)
    - Known dependencies
-   - Anticipated decisions
+   - Implementation constraints from the decision
 
 8. **Confirm creation.** Report the created file and guide the user to:
    - Complete the domain analysis (bounded contexts, aggregates, domain events)
    - Define implementation tasks per the DDD guide
-   - Create ADRs for decisions made during implementation
 
 ## Plan Lifecycle
 

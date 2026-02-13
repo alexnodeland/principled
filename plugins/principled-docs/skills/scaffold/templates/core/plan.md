@@ -5,16 +5,16 @@ status: active
 author: { { AUTHOR } }
 created: { { DATE } }
 updated: { { DATE } }
-originating_proposal: { { PROPOSAL_NUMBER } }
+originating_adr: { { ADR_NUMBER } }
 ---
 
 # Plan-{{NUMBER}}: {{TITLE}}
 
 ## Objective
 
-<!-- What does this plan accomplish? Link to the originating proposal. -->
+<!-- What does this plan accomplish? Link to the originating decision. -->
 
-Implements [RFC-{{PROPOSAL_NUMBER}}](../proposals/{{PROPOSAL_NUMBER}}-{{PROPOSAL_SLUG}}.md).
+Implements [ADR-{{ADR_NUMBER}}](../decisions/{{ADR_NUMBER}}-{{ADR_SLUG}}.md).
 
 TODO
 
@@ -49,12 +49,6 @@ TODO
 ### Phase 2: TODO
 
 - [ ] TODO
-
-## Decisions Required
-
-<!-- What architectural decisions need to be made during implementation? Each should become an ADR. -->
-
-TODO
 
 ## Dependencies
 

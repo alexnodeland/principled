@@ -14,7 +14,7 @@ draft ──→ in-review ──→ accepted
 | ------------ | ----------------- | ----------------------------------------------------------------------------------- |
 | `draft`      | Yes               | Initial state. Author is actively writing the proposal.                             |
 | `in-review`  | Yes               | Proposal is complete and under team review.                                         |
-| `accepted`   | **No** (terminal) | Proposal was approved. Triggers plan creation.                                      |
+| `accepted`   | **No** (terminal) | Proposal was approved. Triggers ADR creation.                                       |
 | `rejected`   | **No** (terminal) | Proposal was declined with rationale.                                               |
 | `superseded` | **No** (terminal) | Replaced by a newer proposal. The `superseded_by` field identifies the replacement. |
 
@@ -32,7 +32,7 @@ draft ──→ in-review ──→ accepted
 - **No skipping states.** A proposal cannot go directly from `draft` to `accepted`.
 - **No transitions from terminal states.** Once a proposal is `accepted`, `rejected`, or `superseded`, it cannot be changed.
 - **Terminal proposals are frozen.** No edits are permitted to the content of a terminal proposal.
-- **On acceptance:** The system prompts the user to create an implementation plan via `/new-plan`.
+- **On acceptance:** The system prompts the user to create an ADR via `/new-adr --from-proposal NNN`.
 - **On supersession:** The `superseded_by` field must be set to the number of the superseding proposal.
 
 ## Plan Lifecycle
@@ -47,14 +47,14 @@ active ──→ complete
 | State       | Mutable? | Description                                                   |
 | ----------- | -------- | ------------------------------------------------------------- |
 | `active`    | Yes      | Implementation is in progress. Tasks are being completed.     |
-| `complete`  | No       | All tasks are done. Related ADRs have been created.           |
-| `abandoned` | No       | Plan was abandoned. The originating proposal may still stand. |
+| `complete`  | No       | All tasks are done.                                           |
+| `abandoned` | No       | Plan was abandoned. The originating decision may still stand. |
 
 ### Rules
 
 - Plans are mutable while `active`. Any section can be updated as implementation progresses.
-- Transitioning to `complete` should only happen when all implementation tasks are checked off and relevant ADRs have been recorded.
-- A plan always links back to its originating proposal via the `originating_proposal` frontmatter field.
+- Transitioning to `complete` should only happen when all implementation tasks are checked off.
+- A plan always links back to its originating decision via the `originating_adr` frontmatter field.
 
 ## ADR Lifecycle
 

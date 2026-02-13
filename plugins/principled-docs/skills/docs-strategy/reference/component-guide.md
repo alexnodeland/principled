@@ -13,17 +13,6 @@ Purpose, audience, and content expectations for every documentation component.
 
 **Content expectations:** A proposal describes _what_ is being proposed and _why_. It should articulate the problem, the proposed solution, alternatives considered, consequences, and architecture impact. Proposals are the entry point to the documentation pipeline.
 
-## Plans (`docs/plans/`)
-
-| Property       | Value                                                                                |
-| -------------- | ------------------------------------------------------------------------------------ |
-| **Nature**     | DDD implementation plans                                                             |
-| **Audience**   | Implementers, maintainers                                                            |
-| **Mutability** | Mutable during implementation (`active`); marked `complete` or `abandoned` when done |
-| **Naming**     | `NNN-short-title.md` (number matches originating proposal)                           |
-
-**Content expectations:** A plan bridges an accepted proposal and its resulting decisions. It decomposes the work using domain-driven development: bounded contexts, aggregates, domain events, and concrete implementation tasks. Plans are tactical — they answer _how_, decomposed.
-
 ## Decisions (`docs/decisions/`)
 
 | Property       | Value                                                                                                                       |
@@ -33,7 +22,18 @@ Purpose, audience, and content expectations for every documentation component.
 | **Mutability** | **Immutable** after acceptance. One exception: the `superseded_by` field may be updated when a new ADR supersedes this one. |
 | **Naming**     | `NNN-short-title.md` (matches originating proposal where applicable)                                                        |
 
-**Content expectations:** A decision records _what was decided_, the options considered, the consequences expected, and references to the originating proposal and related documents. ADRs are the permanent record of the project's architectural choices.
+**Content expectations:** A decision records _what was decided_, the options considered, the consequences expected, and references to the originating proposal and related documents. ADRs are the permanent record of the project's architectural choices. Once accepted, an ADR can be implemented via a DDD plan.
+
+## Plans (`docs/plans/`)
+
+| Property       | Value                                                                                |
+| -------------- | ------------------------------------------------------------------------------------ |
+| **Nature**     | DDD implementation plans                                                             |
+| **Audience**   | Implementers, maintainers                                                            |
+| **Mutability** | Mutable during implementation (`active`); marked `complete` or `abandoned` when done |
+| **Naming**     | `NNN-short-title.md` (number matches originating ADR)                                |
+
+**Content expectations:** A plan implements an accepted decision (ADR) by decomposing the work using domain-driven development: bounded contexts, aggregates, domain events, and concrete implementation tasks. Plans are tactical — they answer _how_, decomposed.
 
 ## Architecture (`docs/architecture/`)
 

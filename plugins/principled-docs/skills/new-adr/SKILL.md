@@ -5,13 +5,14 @@ description: >
   Use when recording an architectural decision, either standalone
   or linked to an accepted proposal. Handles numbering and cross-referencing.
   ADRs are immutable after acceptance except for the superseded_by field.
+  Once accepted, an ADR can be implemented via `/new-plan --from-adr NNN`.
 allowed-tools: Read, Write, Bash(ls *), Bash(grep *)
 user-invocable: true
 ---
 
 # New ADR — Architectural Decision Record Creation
 
-Create a new ADR, either standalone or linked to an accepted proposal.
+Create a new ADR, either standalone or linked to an accepted proposal. In the pipeline, ADRs sit between proposals and plans: proposals define intent, ADRs record decisions, and plans implement them.
 
 ## Command
 

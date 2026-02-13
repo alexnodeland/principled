@@ -8,7 +8,7 @@ related_adrs: [002, 003]
 
 ## Purpose
 
-Describes the three-stage documentation pipeline (Proposals → Plans → Decisions) that governs how changes flow from strategic intent to permanent architectural record. Intended for anyone working with the documentation system — authors, reviewers, and maintainers.
+Describes the three-stage documentation pipeline (Proposals → Decisions → Plans) that governs how changes flow from strategic intent through architectural decisions to tactical implementation. Intended for anyone working with the documentation system — authors, reviewers, and maintainers.
 
 ## Overview
 
@@ -16,24 +16,24 @@ Every significant change follows a three-stage pipeline:
 
 ```
 ┌─────────────┐       ┌─────────────┐       ┌─────────────┐
-│  PROPOSAL    │       │    PLAN      │       │  DECISION    │
-│   (RFC)      │──────▶│   (DDD)      │──────▶│   (ADR)      │
+│  PROPOSAL    │       │  DECISION    │       │    PLAN      │
+│   (RFC)      │──────▶│   (ADR)      │──────▶│   (DDD)      │
 │              │       │              │       │              │
-│ "what & why" │       │ "how"        │       │ "what was    │
-│              │       │              │       │  decided"    │
+│ "what & why" │       │ "what was    │       │ "how"        │
+│              │       │  decided"    │       │              │
 └─────────────┘       └─────────────┘       └─────────────┘
-  Strategic             Tactical              Permanent
-  docs/proposals/       docs/plans/           docs/decisions/
+  Strategic             Permanent              Tactical
+  docs/proposals/       docs/decisions/        docs/plans/
 ```
 
 Each stage has distinct characteristics:
 
-| Property       | Proposal               | Plan                               | Decision                   |
-| -------------- | ---------------------- | ---------------------------------- | -------------------------- |
-| **Focus**      | What and why           | How, decomposed                    | What was decided           |
-| **Method**     | RFC                    | DDD (bounded contexts, aggregates) | ADR                        |
-| **Audience**   | Maintainers, reviewers | Implementers                       | Future maintainers         |
-| **Mutability** | Mutable until terminal | Mutable while active               | Immutable after acceptance |
+| Property       | Proposal               | Decision                   | Plan                               |
+| -------------- | ---------------------- | -------------------------- | ---------------------------------- |
+| **Focus**      | What and why           | What was decided           | How, decomposed                    |
+| **Method**     | RFC                    | ADR                        | DDD (bounded contexts, aggregates) |
+| **Audience**   | Maintainers, reviewers | Future maintainers         | Implementers                       |
+| **Mutability** | Mutable until terminal | Immutable after acceptance | Mutable while active               |
 
 ## Key Abstractions
 
@@ -51,26 +51,11 @@ draft ──→ in-review ──→ accepted
 
 - Mutable in `draft` and `in-review`
 - Frozen in terminal states (`accepted`, `rejected`, `superseded`)
-- Acceptance triggers plan creation
-
-### Plans (DDD Decompositions)
-
-Plans bridge the gap between strategic intent (proposal) and concrete decisions (ADRs). They use domain-driven development to decompose work into bounded contexts, aggregates, domain events, and implementation tasks.
-
-**Lifecycle:**
-
-```
-active ──→ complete
-       ──→ abandoned
-```
-
-- Always linked to an accepted proposal via `originating_proposal`
-- Mutable while `active`
-- Provide the tactical roadmap that produces ADRs during implementation
+- Acceptance triggers decision (ADR) creation
 
 ### Decisions (ADRs)
 
-Decisions are the permanent record. They capture what was decided, what options were considered, and what consequences are expected. They are immutable after acceptance.
+Decisions are the permanent record. They capture what was decided, what options were considered, and what consequences are expected. They are immutable after acceptance. Decisions bridge the gap between strategic intent (proposal) and tactical implementation (plan).
 
 **Lifecycle:**
 
@@ -80,8 +65,24 @@ proposed ──→ accepted ──→ deprecated
 ```
 
 - Immutable after acceptance (one exception: `superseded_by` field)
-- May be standalone or linked to a proposal
+- May be standalone or linked to a proposal via `originating_proposal`
+- Acceptance enables plan creation
 - Referenced by architecture docs
+
+### Plans (DDD Decompositions)
+
+Plans decompose accepted decisions into concrete implementation work. They use domain-driven development to break down work into bounded contexts, aggregates, domain events, and implementation tasks.
+
+**Lifecycle:**
+
+```
+active ──→ complete
+       ──→ abandoned
+```
+
+- Always linked to an accepted decision via `originating_adr`
+- Mutable while `active`
+- Provide the tactical roadmap for implementing accepted decisions
 
 ### Architecture Docs (Living)
 
@@ -97,17 +98,16 @@ Proposal (accepted)
     │  originating_proposal: NNN
     │
     ▼
+Decision (ADR, accepted)
+    │
+    │  Permanent record
+    │  originating_adr: NNN
+    │
+    ▼
 Plan (active → complete)
     │
     │  During implementation:
-    │  ├── Decision needed? → Create ADR
     │  └── Task complete? → Check off
-    │
-    ▼
-Decision (ADR)
-    │
-    │  Permanent record
-    │  Referenced by architecture docs
     │
     ▼
 Architecture Doc (living)
@@ -120,9 +120,9 @@ Architecture Doc (living)
 
 | Document         | Links To                        | Via                                                  |
 | ---------------- | ------------------------------- | ---------------------------------------------------- |
-| Plan             | Originating proposal            | `originating_proposal` frontmatter + markdown link   |
 | ADR              | Originating proposal (optional) | `originating_proposal` frontmatter                   |
 | ADR              | Superseded ADR                  | `superseded_by` on old ADR                           |
+| Plan             | Originating decision            | `originating_adr` frontmatter + markdown link        |
 | Architecture doc | Related ADRs                    | `related_adrs` frontmatter + "Key Decisions" section |
 | Proposal         | Superseding proposal            | `superseded_by` frontmatter                          |
 
@@ -150,20 +150,19 @@ Both scopes use identical conventions, templates, lifecycle rules, and naming pa
 
 3. Reviewers approve
    → /proposal-status 001 accepted
-   → System prompts: "Create implementation plan?"
+   → System prompts: "Create an ADR?"
 
-4. Author creates DDD plan
+4. Author creates ADR for the key decision
+   → docs/decisions/001-use-kafka-for-event-store.md (status: proposed → accepted)
+
+5. Author creates DDD plan from the accepted ADR
    → docs/plans/001-switch-to-event-sourcing.md (status: active)
    → Bounded contexts, aggregates, domain events defined
    → Implementation tasks listed
 
-5. During implementation, key decision made
-   → docs/decisions/001-use-kafka-for-event-store.md (status: proposed → accepted)
-
 6. Plan completed
    → Plan status: complete
    → All tasks checked off
-   → All ADRs recorded
 
 7. Architecture doc created/updated
    → docs/architecture/event-sourcing-design.md
@@ -190,6 +189,6 @@ Numbers are never reused. Gaps are not backfilled.
 1. **Proposals cannot skip states.** `draft → in-review` is required before any terminal transition.
 2. **Terminal documents are frozen.** No edits to accepted/rejected/superseded proposals or accepted ADRs.
 3. **The `superseded_by` exception is the only mutation allowed on an accepted ADR.**
-4. **Plans require an accepted proposal.** No plan can be created without `--from-proposal` pointing to an accepted proposal.
+4. **Plans require an accepted decision.** No plan can be created without `--from-adr` pointing to an accepted ADR.
 5. **Architecture docs reference ADRs.** They are living documents that reflect decisions, not independent from them.
 6. **Independent numbering per scope.** Module-level and root-level sequences are independent. Proposal, plan, and decision sequences within the same scope are also independent.

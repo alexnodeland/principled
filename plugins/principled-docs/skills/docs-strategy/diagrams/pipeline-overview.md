@@ -1,41 +1,41 @@
-# Pipeline Overview: Proposals → Plans → Decisions
+# Pipeline Overview: Proposals → Decisions → Plans
 
 ## The Three-Stage Documentation Pipeline
 
 ```
 ┌─────────────────────┐     ┌─────────────────────┐     ┌─────────────────────┐
-│      PROPOSAL        │     │        PLAN          │     │      DECISION        │
-│       (RFC)          │     │   (DDD Breakdown)    │     │       (ADR)          │
+│      PROPOSAL        │     │      DECISION        │     │        PLAN          │
+│       (RFC)          │     │       (ADR)          │     │   (DDD Breakdown)    │
 │                      │     │                      │     │                      │
-│  "what and why"      │────▶│  "how, decomposed"   │────▶│  "what was decided"  │
+│  "what and why"      │────▶│  "what was decided"  │────▶│  "how, decomposed"   │
 │                      │     │                      │     │                      │
-│  Strategic intent    │     │  Tactical breakdown   │     │  Permanent record    │
+│  Strategic intent    │     │  Permanent record    │     │  Tactical breakdown   │
 └─────────────────────┘     └─────────────────────┘     └─────────────────────┘
         │                           │                           │
         ▼                           ▼                           ▼
-   docs/proposals/             docs/plans/               docs/decisions/
-   NNN-title.md                NNN-title.md              NNN-title.md
+   docs/proposals/             docs/decisions/             docs/plans/
+   NNN-title.md                NNN-title.md                NNN-title.md
 ```
 
 ## Lifecycle Flow
 
 ```
-  PROPOSAL                    PLAN                      DECISION
-  ────────                    ────                      ────────
+  PROPOSAL                    DECISION                    PLAN
+  ────────                    ────────                    ────
 
-  ┌───────┐                 ┌────────┐                ┌──────────┐
-  │ draft │                 │ active │                │ proposed │
-  └───┬───┘                 └───┬────┘                └────┬─────┘
-      │                         │                          │
-      ▼                         ├──▶ complete              ▼
-  ┌───────────┐                 │                     ┌──────────┐
-  │ in-review │                 └──▶ abandoned        │ accepted │
-  └───┬───────┘                                       └────┬─────┘
-      │                                                    │
-      ├──▶ accepted ─── triggers ──▶ Plan creation         ├──▶ deprecated
-      │                                                    │
-      ├──▶ rejected                                        └──▶ superseded
-      │
+  ┌───────┐                 ┌──────────┐               ┌────────┐
+  │ draft │                 │ proposed │               │ active │
+  └───┬───┘                 └────┬─────┘               └───┬────┘
+      │                          │                         │
+      ▼                          ▼                         ├──▶ complete
+  ┌───────────┐             ┌──────────┐                   │
+  │ in-review │             │ accepted │                   └──▶ abandoned
+  └───┬───────┘             └────┬─────┘
+      │                          │
+      ├──▶ accepted ── triggers ──▶ ADR creation
+      │                          ├──▶ deprecated
+      ├──▶ rejected              │
+      │                          └──▶ superseded
       └──▶ superseded
 ```
 
@@ -45,25 +45,28 @@
 Proposal (accepted)
     │
     ├── originating_proposal: NNN
-    │   (frontmatter field linking plan back to proposal)
+    │   (frontmatter field linking ADR back to proposal)
+    │
+    ▼
+Decision (ADR, accepted)
+    │
+    ├── originating_adr: NNN
+    │   (frontmatter field linking plan back to ADR)
     │
     ▼
 Plan (active)
     │
     ├── Bounded contexts, aggregates, domain events
     ├── Implementation tasks with checkboxes
-    ├── Decisions required (each becomes an ADR)
     │
     │   During implementation:
-    │   ├── Decision needed? ──▶ Create ADR
     │   └── Task complete? ──▶ Check off in plan
     │
     ▼
-Decision (ADR)
+Architecture Doc (living)
     │
-    ├── originating_proposal: NNN (if from proposal)
-    ├── Immutable after acceptance
-    └── superseded_by: NNN (only permitted mutation)
+    ├── related_adrs: [NNN, ...]
+    └── Updated as design evolves
 ```
 
 ## Immutability Boundaries
@@ -77,13 +80,13 @@ Decision (ADR)
   │  in-review)      │             │  rejected,       │
   │                  │             │  superseded)     │
   ├──────────────────┤             ├──────────────────┤
-  │ Plans            │             │ Plans            │
-  │ (active)         │             │ (complete,       │
-  │                  │             │  abandoned)      │
-  ├──────────────────┤             ├──────────────────┤
   │ ADRs             │             │ ADRs             │
   │ (proposed)       │             │ (accepted*)      │
   │                  │             │                  │
+  ├──────────────────┤             ├──────────────────┤
+  │ Plans            │             │ Plans            │
+  │ (active)         │             │ (complete,       │
+  │                  │             │  abandoned)      │
   └──────────────────┘             └──────────────────┘
 
   * Exception: superseded_by field may be updated on accepted ADRs
@@ -95,16 +98,16 @@ Decision (ADR)
 repo-root/
 ├── docs/                    ◄── Root-level (cross-cutting)
 │   ├── proposals/               Scope: affects entire system
-│   ├── plans/
 │   ├── decisions/
+│   ├── plans/
 │   └── architecture/
 │
 ├── packages/
 │   ├── module-a/
 │   │   └── docs/            ◄── Module-level
 │   │       ├── proposals/       Scope: affects this module only
-│   │       ├── plans/
 │   │       ├── decisions/
+│   │       ├── plans/
 │   │       └── architecture/
 │   │
 │   └── module-b/

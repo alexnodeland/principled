@@ -64,7 +64,7 @@ Create a new proposal (RFC) document with correct numbering, naming, and templat
 7. **Confirm creation.** Report the created file path and remind the user of next steps:
    - Fill in the proposal content
    - When ready for review: `/proposal-status NNN in-review`
-   - When accepted: `/proposal-status NNN accepted` (will prompt for plan creation)
+   - When accepted: `/proposal-status NNN accepted` (will prompt for ADR creation)
 
 ## Slug Rules
 

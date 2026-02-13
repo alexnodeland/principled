@@ -61,7 +61,7 @@ This implementation decomposes into **8 bounded contexts**, each representing a 
 | **NamingConventions** | `reference/naming-conventions.md` | `NNN-short-title.md` patterns, slug rules, zero-padding, sequence numbering.                                       |
 | **LifecycleRules**    | `reference/lifecycle-rules.md`    | Proposal state machine, plan lifecycle, ADR immutability contract with superseded_by exception.                    |
 | **DDDGuide**          | `reference/ddd-decomposition.md`  | How to identify bounded contexts, define aggregates, map domain events, and derive tasks for implementation plans. |
-| **PipelineDiagram**   | `diagrams/pipeline-overview.md`   | Visual representation of the Proposals → Plans → Decisions pipeline.                                               |
+| **PipelineDiagram**   | `diagrams/pipeline-overview.md`   | Visual representation of the Proposals → Decisions → Plans pipeline.                                               |
 
 #### BC-4: Scaffolding & Validation
 
@@ -77,16 +77,16 @@ This implementation decomposes into **8 bounded contexts**, each representing a 
 | ---------------------------- | ------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
 | **SequenceNumberer**         | `next-number.sh`                | Scans a target directory for `NNN-*.md` files and returns the next zero-padded sequence number. Shared via copy across proposal/plan/ADR skills. |
 | **ProposalAuthoring**        | `new-proposal/SKILL.md`         | Creates new RFC documents with correct numbering, frontmatter, and template population. Supports `--module` and `--root`.                        |
-| **PlanAuthoring**            | `new-plan/SKILL.md`             | Creates DDD implementation plans linked to accepted proposals. Reads DDD guide, pre-populates bounded contexts. Requires `--from-proposal`.      |
+| **PlanAuthoring**            | `new-plan/SKILL.md`             | Creates DDD implementation plans linked to accepted decisions. Reads DDD guide, pre-populates bounded contexts. Requires `--from-adr`.           |
 | **ADRAuthoring**             | `new-adr/SKILL.md`              | Creates ADRs either standalone or linked to proposals. Handles supersession cross-referencing.                                                   |
 | **ArchitectureDocAuthoring** | `new-architecture-doc/SKILL.md` | Creates architecture docs with auto-detected ADR cross-references.                                                                               |
 
 #### BC-6: Lifecycle Management
 
-| Aggregate                 | Root Entity                | Description                                                                                                                                            |
-| ------------------------- | -------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------ | -------- | ------------------------------------------------- |
-| **ProposalStateMachine**  | `valid-transitions.md`     | Defines legal state transitions: `draft → in-review → accepted                                                                                         | rejected | superseded`. No transitions from terminal states. |
-| **StatusTransitionSkill** | `proposal-status/SKILL.md` | Validates requested transition, updates frontmatter, triggers side-effects (plan creation prompt on acceptance, superseded_by prompt on supersession). |
+| Aggregate                 | Root Entity                | Description                                                                                                                                           |
+| ------------------------- | -------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- | -------- | ------------------------------------------------- |
+| **ProposalStateMachine**  | `valid-transitions.md`     | Defines legal state transitions: `draft → in-review → accepted                                                                                        | rejected | superseded`. No transitions from terminal states. |
+| **StatusTransitionSkill** | `proposal-status/SKILL.md` | Validates requested transition, updates frontmatter, triggers side-effects (ADR creation prompt on acceptance, superseded_by prompt on supersession). |
 
 #### BC-7: Enforcement Layer
 
@@ -216,7 +216,7 @@ Tasks are organized by phase, with each phase mapping to one or more bounded con
   - [ ] Task decomposition: deriving concrete implementation tasks from domain analysis
   - [ ] Practical examples relevant to documentation systems
 - [ ] **2.11** Write `skills/docs-strategy/diagrams/pipeline-overview.md`:
-  - [ ] ASCII/text diagram of Proposals → Plans → Decisions pipeline
+  - [ ] ASCII/text diagram of Proposals → Decisions → Plans pipeline
   - [ ] Key relationships and data flow
 - [ ] **2.12** Write `skills/new-plan/reference/ddd-guide.md`:
   - [ ] Practical guide for plan authors (more concise, action-oriented version of 2.10)
@@ -256,7 +256,7 @@ Tasks are organized by phase, with each phase mapping to one or more bounded con
   - [ ] Document `--module <path>` and `--root` flags
 - [ ] **4.2** Write `skills/new-plan/SKILL.md`:
   - [ ] Frontmatter per PRD §6.4 (user-invocable, allowed-tools)
-  - [ ] Workflow: parse title, require `--from-proposal NNN`, verify proposal is accepted, use matching number, read DDD guide, create from template, pre-populate bounded contexts
+  - [ ] Workflow: parse title, require `--from-adr NNN`, verify ADR is accepted, use matching number, read DDD guide, create from template, pre-populate bounded contexts
   - [ ] Reference `reference/ddd-guide.md` for decomposition guidance
   - [ ] Document plan lifecycle states: `active`, `complete`, `abandoned`
 - [ ] **4.3** Write `skills/new-adr/SKILL.md`:
@@ -271,7 +271,7 @@ Tasks are organized by phase, with each phase mapping to one or more bounded con
 - [ ] **4.5** Write `skills/proposal-status/SKILL.md`:
   - [ ] Frontmatter per PRD §6.6 (user-invocable, allowed-tools)
   - [ ] Workflow: parse identifier and target status, load current status, validate against state machine, update frontmatter
-  - [ ] Side-effects: prompt for plan creation on acceptance, prompt for superseding proposal on supersession
+  - [ ] Side-effects: prompt for ADR creation on acceptance, prompt for superseding proposal on supersession
   - [ ] Reference `reference/valid-transitions.md`
 - [ ] **4.6** Write `skills/proposal-status/reference/valid-transitions.md`:
   - [ ] Full state machine: `draft → in-review → accepted|rejected|superseded`
@@ -362,10 +362,10 @@ Architectural decisions that should become ADRs during or after implementation:
 - [ ] `/scaffold --root` creates repo-level docs structure and passes `/validate --root`
 - [ ] `/new-proposal test-feature --module packages/test-module` creates `001-test-feature.md` with correct frontmatter and template content
 - [ ] `/new-proposal cross-cutting-change --root` creates proposal at repo root level
-- [ ] `/proposal-status 001 in-review` updates frontmatter; `/proposal-status 001 accepted` updates and prompts for plan
+- [ ] `/proposal-status 001 in-review` updates frontmatter; `/proposal-status 001 accepted` updates and prompts for ADR
 - [ ] `/proposal-status 001 accepted` from `draft` fails (cannot skip `in-review`)
-- [ ] `/new-plan test-feature --from-proposal 001` creates `001-test-feature.md` plan with DDD sections pre-populated
-- [ ] `/new-plan` without `--from-proposal` to accepted proposal fails
+- [ ] `/new-plan test-feature --from-adr 001` creates `001-test-feature.md` plan with DDD sections pre-populated
+- [ ] `/new-plan` without `--from-adr` to accepted decision fails
 - [ ] `/new-adr use-postgres --from-proposal 001` creates ADR linked to proposal
 - [ ] `/new-adr standalone-decision` creates ADR without proposal link
 - [ ] Editing an accepted ADR is blocked by the immutability hook (exit code 2)
