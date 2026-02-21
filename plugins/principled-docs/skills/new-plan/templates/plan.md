@@ -6,6 +6,7 @@ author: { { AUTHOR } }
 created: { { DATE } }
 updated: { { DATE } }
 originating_proposal: { { PROPOSAL_NUMBER } }
+related_adrs: { { ADR_NUMBERS } }
 ---
 
 # Plan-{{NUMBER}}: {{TITLE}}
@@ -15,6 +16,12 @@ originating_proposal: { { PROPOSAL_NUMBER } }
 <!-- What does this plan accomplish? Link to the originating proposal. -->
 
 Implements [RFC-{{PROPOSAL_NUMBER}}](../proposals/{{PROPOSAL_NUMBER}}-{{PROPOSAL_SLUG}}.md).
+
+TODO
+
+## Related Decisions
+
+<!-- ADRs that inform this plan. Created before the plan as part of the PRD → ADR → DDD flow. -->
 
 TODO
 
@@ -49,12 +56,6 @@ TODO
 ### Phase 2: TODO
 
 - [ ] TODO
-
-## Decisions Required
-
-<!-- What architectural decisions need to be made during implementation? Each should become an ADR. -->
-
-TODO
 
 ## Dependencies
 

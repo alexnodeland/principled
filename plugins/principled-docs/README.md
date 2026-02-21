@@ -15,7 +15,7 @@
 
 ---
 
-A Claude Code plugin that **scaffolds**, **authors**, and **enforces** module documentation structure. Every module gets a consistent, audience-driven documentation set — from RFC proposals through DDD implementation plans to immutable architectural decision records.
+A Claude Code plugin that **scaffolds**, **authors**, and **enforces** module documentation structure. Every module gets a consistent, audience-driven documentation set — from RFC proposals through immutable architectural decision records to DDD implementation plans.
 
 ## 🔭 The Pipeline
 
@@ -24,15 +24,15 @@ Every significant change follows three stages:
 ```mermaid
 flowchart LR
     P["📋 <b>Proposal</b> (RFC)<br/><i>what &amp; why</i><br/><br/>Strategic · Mutable"]
-    L["🗺️ <b>Plan</b> (DDD)<br/><i>how</i><br/><br/>Tactical · Mutable"]
     D["📌 <b>Decision</b> (ADR)<br/><i>what was decided</i><br/><br/>Permanent · Immutable*"]
+    L["🗺️ <b>Plan</b> (DDD)<br/><i>how</i><br/><br/>Tactical · Mutable"]
 
-    P --> L --> D
+    P --> D --> L
 ```
 
 > \* Immutable except `superseded_by`
 
-**Proposals** define intent. **Plans** decompose work via bounded contexts and aggregates. **Decisions** are the permanent record — immutable after acceptance.
+**Proposals** define intent. **Decisions** are the permanent record — immutable after acceptance. **Plans** decompose work via bounded contexts and aggregates to implement accepted decisions.
 
 ## ⚡ Quick Start
 
@@ -116,13 +116,14 @@ module/
 
 # 2. Write the proposal content, then move through lifecycle
 /proposal-status 001 in-review
-/proposal-status 001 accepted        # → prompts for plan creation
+/proposal-status 001 accepted        # → prompts for ADR creation
 
-# 3. Create an implementation plan (DDD decomposition)
-/new-plan switch-to-event-sourcing --from-proposal 001
-
-# 4. During implementation, record architectural decisions
+# 3. Record architectural decisions
 /new-adr use-kafka-for-event-store --from-proposal 001
+/new-adr cqrs-read-model-strategy --from-proposal 001
+
+# 4. Create an implementation plan (DDD decomposition, informed by ADRs)
+/new-plan switch-to-event-sourcing --from-proposal 001
 
 # 5. Document the resulting architecture
 /new-architecture-doc event-sourcing-design --module packages/payments

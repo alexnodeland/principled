@@ -20,11 +20,11 @@ draft ──→ in-review ──→ accepted
 
 ### `in-review` → `accepted`
 
-| Property                | Value                                                        |
-| ----------------------- | ------------------------------------------------------------ |
-| **Condition**           | Reviewers approve the proposal                               |
-| **Side-effects**        | Prompt user to create an implementation plan via `/new-plan` |
-| **Frontmatter changes** | `status: accepted`, `updated: <today>`                       |
+| Property                | Value                                                           |
+| ----------------------- | --------------------------------------------------------------- |
+| **Condition**           | Reviewers approve the proposal                                  |
+| **Side-effects**        | Prompt user to create an ADR via `/new-adr --from-proposal NNN` |
+| **Frontmatter changes** | `status: accepted`, `updated: <today>`                          |
 
 ### `in-review` → `rejected`
 

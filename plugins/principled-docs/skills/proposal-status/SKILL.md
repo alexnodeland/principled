@@ -3,7 +3,7 @@ name: proposal-status
 description: >
   Transition a proposal through its lifecycle states.
   Valid transitions: draft → in-review → accepted|rejected|superseded.
-  On acceptance, prompts to create a corresponding implementation plan.
+  On acceptance, prompts to create a corresponding ADR.
 allowed-tools: Read, Write, Bash(ls *), Bash(grep *), Bash(sed *)
 user-invocable: true
 ---
@@ -53,7 +53,7 @@ Transition a proposal through its lifecycle states with validation and side-effe
 6. **Handle side-effects:**
 
    **On `accepted`:**
-   - Prompt the user: _"Proposal NNN has been accepted. Create an implementation plan? Use `/new-plan <title> --from-proposal NNN`."_
+   - Prompt the user: _"Proposal NNN has been accepted. Create an architectural decision record? Use `/new-adr <title> --from-proposal NNN`."_
 
    **On `superseded`:**
    - Prompt for the superseding proposal number

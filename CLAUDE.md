@@ -92,11 +92,11 @@ This repo installs the principled-docs plugin from `plugins/principled-docs/` (v
 
 ## Pipeline
 
-Proposals → Plans → Decisions.
+Proposals → Decisions → Plans.
 
 - **Proposals** are strategic (what/why). Status: `draft → in-review → accepted|rejected|superseded`.
-- **Plans** are tactical (how, via DDD). Status: `active → complete|abandoned`. Require an accepted proposal.
 - **Decisions** are the permanent record. Status: `proposed → accepted → deprecated|superseded`. Immutable after acceptance.
+- **Plans** are tactical (how, via DDD). Status: `active → complete|abandoned`. Require an accepted proposal (`--from-proposal NNN`).
 
 ## Important Constraints
 

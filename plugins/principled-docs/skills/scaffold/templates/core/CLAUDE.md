@@ -19,15 +19,15 @@ This module follows the Principled docs strategy:
 
 ## Pipeline
 
-Proposals → Plans → Decisions. Proposals are strategic (what/why). Plans are tactical
-(how, decomposed via DDD). Decisions are the permanent record (what was decided).
+Proposals → Decisions → Plans. Proposals are strategic (what/why). Decisions are the
+permanent record (what was decided). Plans are tactical (how, decomposed via DDD).
 
 ## Important Constraints
 
 - Proposals with terminal status (accepted/rejected/superseded) must NOT be modified.
 - ADRs with status `accepted` must NOT be modified (exception: `superseded_by` field).
 - Plans require an accepted proposal (`--from-proposal NNN`).
-- New architectural decisions follow the pipeline: proposal → plan → ADR.
+- New changes follow the pipeline: proposal → ADR → plan.
 
 ## Testing
 
