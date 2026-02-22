@@ -11,6 +11,19 @@
       "Bash(git *)"
     ]
   },
+  "extraKnownMarketplaces": {
+    "principled-marketplace": {
+      "source": {
+        "source": "directory",
+        "path": "."
+      }
+    }
+  },
+  "enabledPlugins": {
+    "principled-docs@principled-marketplace": true,
+    "principled-implementation@principled-marketplace": true,
+    "principled-github@principled-marketplace": true
+  },
   "env": {
     "CLAUDE_PLUGIN_ROOT": "./plugins/principled-docs"
   }

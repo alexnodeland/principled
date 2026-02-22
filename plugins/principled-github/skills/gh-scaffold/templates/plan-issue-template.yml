@@ -1,0 +1,61 @@
+name: "Plan (DDD Implementation)"
+description: "Track execution of a DDD implementation plan."
+title: "Plan: "
+labels: ["type:plan", "plan:active"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## Implementation Plan Tracking
+
+        This issue tracks the execution of a DDD implementation plan.
+        Create the plan document with `/new-plan` and link it here.
+
+  - type: input
+    id: title
+    attributes:
+      label: "Plan Title"
+      description: "Title of the implementation plan"
+      placeholder: "e.g., Switch to Event Sourcing"
+    validations:
+      required: true
+
+  - type: input
+    id: proposal-ref
+    attributes:
+      label: "Originating Proposal"
+      description: "The RFC number this plan implements"
+      placeholder: "RFC-001"
+    validations:
+      required: true
+
+  - type: input
+    id: doc-link
+    attributes:
+      label: "Plan Document"
+      description: "Path to the plan document"
+      placeholder: "docs/plans/NNN-short-title.md"
+    validations:
+      required: true
+
+  - type: textarea
+    id: phases
+    attributes:
+      label: "Phases"
+      description: "List the implementation phases and their tasks"
+      placeholder: |
+        ## Phase 1: Foundation
+        - [ ] Task 1.1: Description
+        - [ ] Task 1.2: Description
+
+        ## Phase 2: Core
+        - [ ] Task 2.1: Description
+    validations:
+      required: true
+
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: "Acceptance Criteria"
+      description: "What defines successful completion of this plan?"
+      placeholder: "List acceptance criteria..."

@@ -1,0 +1,46 @@
+name: Principled Labels
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - ".github/labels.json"
+
+jobs:
+  sync-labels:
+    name: Sync Labels
+    runs-on: ubuntu-latest
+    permissions:
+      issues: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Sync labels
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          if [ ! -f ".github/labels.json" ]; then
+            echo "No .github/labels.json found, skipping"
+            exit 0
+          fi
+
+          # Read label definitions and sync
+          while IFS= read -r label; do
+            name="$(echo "$label" | jq -r '.name')"
+            color="$(echo "$label" | jq -r '.color')"
+            description="$(echo "$label" | jq -r '.description')"
+
+            # Try to create the label, update if it already exists
+            if gh label create "$name" \
+              --color "$color" \
+              --description "$description" 2>/dev/null; then
+              echo "Created: $name"
+            else
+              gh label edit "$name" \
+                --color "$color" \
+                --description "$description" 2>/dev/null \
+                && echo "Updated: $name" \
+                || echo "Skipped: $name"
+            fi
+          done < <(jq -c '.[]' .github/labels.json)

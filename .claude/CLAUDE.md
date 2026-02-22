@@ -4,7 +4,7 @@ This file supplements the root `CLAUDE.md` with development-specific guidance fo
 
 ## Dogfooding
 
-This repo installs both first-party plugins (via `.claude/settings.json`). This means:
+This repo installs all three first-party plugins (via `.claude/settings.json`). This means:
 
 ### principled-docs
 
@@ -18,6 +18,15 @@ This repo installs both first-party plugins (via `.claude/settings.json`). This 
 - The `impl-worker` agent is available for worktree-isolated task execution
 - The manifest integrity advisory hook is active
 - Use `/orchestrate` against DDD plans in `docs/plans/` to execute implementation tasks
+
+### principled-github
+
+- All 9 plugin skills (`/triage`, `/ingest-issue`, `/sync-issues`, `/pr-describe`, `/gh-scaffold`, `/gen-codeowners`, `/sync-labels`, `/pr-check`) are available as slash commands
+- The PR reference advisory hook is active
+- Use `/triage` to batch-process all open untriaged issues into the principled pipeline
+- Use `/ingest-issue` to pull a single GitHub issue into the pipeline (normalizes metadata, creates proposals/plans)
+- Use `/sync-issues` to push proposals/plans to GitHub issues
+- Use `/gh-scaffold` to set up `.github/` directory with principled-aligned templates
 
 ## Common Pitfalls
 
@@ -51,6 +60,19 @@ This repo installs both first-party plugins (via `.claude/settings.json`). This 
 - Run `bash plugins/principled-implementation/scripts/check-template-drift.sh` to verify zero drift.
 - Forgetting to propagate = CI failure.
 
+### Editing Hook Scripts (principled-github)
+
+- Uses stdin JSON with `tool_input.command`: `echo '{"tool_input":{"command":"gh pr create ..."}}' | bash plugins/principled-github/hooks/scripts/check-pr-references.sh`
+- Advisory only --- always exits 0. Never blocks.
+
+### Modifying Scripts (principled-github)
+
+- **Always edit the canonical version first:**
+  - `check-gh-cli.sh` -> canonical in `plugins/principled-github/skills/sync-issues/scripts/`
+- Then propagate copies to `sync-labels`, `pr-check`, `gh-scaffold`, `ingest-issue`, `triage`, and `pr-describe`.
+- Run `bash plugins/principled-github/scripts/check-template-drift.sh` to verify zero drift.
+- Forgetting to propagate = CI failure.
+
 ### Changing Frontmatter Schema
 
 - Any changes to frontmatter field names or status values must be reflected in `plugins/principled-docs/hooks/scripts/parse-frontmatter.sh` and the guard scripts that consume it.
@@ -64,11 +86,11 @@ This repo installs both first-party plugins (via `.claude/settings.json`). This 
 
 1. Run `/lint` or `pre-commit run --all-files` to check formatting and lint
 2. Run `/validate --root` to check root structure (plugin skill, from dogfooding)
-3. If you modified templates or scripts, propagate copies first and run drift checks for both plugins
+3. If you modified templates or scripts, propagate copies first and run drift checks for all three plugins
 
 ## Dev Skills
 
-These supplement the 15 plugin skills available via dogfooding:
+These supplement the 24 plugin skills available via dogfooding:
 
 | Skill                 | Command                | What It Does                                                   |
 | --------------------- | ---------------------- | -------------------------------------------------------------- |

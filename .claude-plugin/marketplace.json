@@ -38,6 +38,23 @@
         "ddd",
         "automation"
       ]
+    },
+    {
+      "name": "principled-github",
+      "source": "./plugins/principled-github",
+      "description": "Integrate the Principled specification-first workflow with GitHub native features: issues, pull requests, templates, actions, CODEOWNERS, and labels.",
+      "version": "0.1.0",
+      "category": "integration",
+      "keywords": [
+        "github",
+        "issues",
+        "pull-requests",
+        "templates",
+        "codeowners",
+        "labels",
+        "workflow",
+        "integration"
+      ]
     }
   ]
 }

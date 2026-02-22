@@ -1,0 +1,17 @@
+{
+  "name": "principled-github",
+  "version": "0.1.0",
+  "description": "Integrate the Principled specification-first workflow with GitHub native features: issues, pull requests, templates, actions, CODEOWNERS, and labels.",
+  "author": "Alex Nodeland",
+  "homepage": "https://github.com/alexnodeland/principled",
+  "keywords": [
+    "github",
+    "issues",
+    "pull-requests",
+    "templates",
+    "codeowners",
+    "labels",
+    "workflow",
+    "integration"
+  ]
+}

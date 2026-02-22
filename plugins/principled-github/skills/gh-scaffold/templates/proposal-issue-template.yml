@@ -1,0 +1,78 @@
+name: "Proposal (RFC)"
+description: "Propose a change, new feature, or architectural decision for team review."
+title: "RFC: "
+labels: ["type:rfc", "proposal:draft"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## New Proposal
+
+        Use this template to propose a significant change. For detailed specifications,
+        create a proposal document with `/new-proposal` and link it here.
+
+  - type: input
+    id: title
+    attributes:
+      label: "Proposal Title"
+      description: "A clear, descriptive title for the proposal"
+      placeholder: "e.g., Switch to Event Sourcing for Payment Service"
+    validations:
+      required: true
+
+  - type: textarea
+    id: context
+    attributes:
+      label: "Context"
+      description: "What is the current situation? Why is a change needed?"
+      placeholder: "Describe the current state and the problem or opportunity..."
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposal
+    attributes:
+      label: "Proposal"
+      description: "What change do you propose? Be specific about the approach."
+      placeholder: "Describe the proposed change..."
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: "Alternatives Considered"
+      description: "What other approaches were considered and why were they rejected?"
+      placeholder: "List alternatives and their trade-offs..."
+
+  - type: textarea
+    id: impact
+    attributes:
+      label: "Architecture Impact"
+      description: "What existing systems, modules, or documents would be affected?"
+      placeholder: "List affected modules, services, or documentation..."
+
+  - type: input
+    id: doc-link
+    attributes:
+      label: "Proposal Document"
+      description: "Link to the proposal document (if already created with /new-proposal)"
+      placeholder: "docs/proposals/NNN-short-title.md"
+
+  - type: dropdown
+    id: scope
+    attributes:
+      label: "Scope"
+      description: "Is this a module-level or cross-cutting proposal?"
+      options:
+        - "Module-level"
+        - "Cross-cutting (root)"
+    validations:
+      required: true
+
+  - type: input
+    id: module
+    attributes:
+      label: "Target Module"
+      description: "If module-level, which module does this affect?"
+      placeholder: "e.g., packages/payment-gateway"

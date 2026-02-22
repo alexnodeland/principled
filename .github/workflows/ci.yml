@@ -58,6 +58,9 @@ jobs:
       - name: Check principled-implementation template drift
         run: bash plugins/principled-implementation/scripts/check-template-drift.sh
 
+      - name: Check principled-github template drift
+        run: bash plugins/principled-github/scripts/check-template-drift.sh
+
       - name: Validate root structure
         run: bash plugins/principled-docs/skills/scaffold/scripts/validate-structure.sh --root
 
@@ -196,3 +199,25 @@ jobs:
             exit 1
           fi
           echo "PASS: unrelated file correctly passed through (exit 0)"
+
+      - name: Smoke-test PR reference hook
+        run: |
+          # Test: gh pr create without references should warn but allow (exit 0)
+          result=0
+          echo '{"tool_input":{"command":"gh pr create --title test --body test"}}' \
+            | bash plugins/principled-github/hooks/scripts/check-pr-references.sh || result=$?
+          if [ "$result" -ne 0 ]; then
+            echo "FAIL: expected exit 0 for gh pr create, got $result"
+            exit 1
+          fi
+          echo "PASS: gh pr create correctly allowed with advisory (exit 0)"
+
+          # Test: unrelated command should pass silently (exit 0)
+          result=0
+          echo '{"tool_input":{"command":"git status"}}' \
+            | bash plugins/principled-github/hooks/scripts/check-pr-references.sh || result=$?
+          if [ "$result" -ne 0 ]; then
+            echo "FAIL: expected exit 0 for unrelated command, got $result"
+            exit 1
+          fi
+          echo "PASS: unrelated command correctly passed through (exit 0)"
