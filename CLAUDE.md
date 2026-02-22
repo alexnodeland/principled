@@ -1,4 +1,4 @@
-# principled-docs — Claude Code Context
+# principled — Claude Code Context
 
 ## Module Type
 
@@ -6,22 +6,26 @@ core
 
 ## What This Is
 
-This repo is the **Principled methodology plugin marketplace** (v1.0.0). It hosts Claude Code plugins for specification-first development, organized as a curated directory with two tiers: first-party plugins in `plugins/` and community plugins in `external_plugins/`. The flagship plugin is `principled-docs` (v0.3.1), which scaffolds, authors, and enforces module documentation structure for monorepos.
+This repo is the **Principled methodology plugin marketplace** (v1.0.0). It hosts Claude Code plugins for specification-first development, organized as a curated directory with two tiers: first-party plugins in `plugins/` and community plugins in `external_plugins/`. Two first-party plugins ship today:
+
+- **principled-docs** (v0.3.1) — Scaffold, author, and enforce module documentation structure for monorepos.
+- **principled-implementation** (v0.1.0) — Orchestrate DDD plan execution via worktree-isolated Claude Code agents.
 
 ## Architecture
 
-Four layers, top to bottom:
+Five layers, top to bottom:
 
-| Layer              | Location                                                           | Role                                                                                                                 |
-| ------------------ | ------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------- |
-| **Marketplace**    | `.claude-plugin/marketplace.json`, `plugins/`, `external_plugins/` | Plugin catalog, directory structure, plugin discovery and distribution                                               |
-| **Plugin: Skills** | `plugins/principled-docs/skills/` (9 directories)                  | Generative workflows — each skill is a slash command with its own `SKILL.md`, templates, scripts, and reference docs |
-| **Plugin: Hooks**  | `plugins/principled-docs/hooks/`                                   | Deterministic guardrails — `hooks.json` declares PreToolUse/PostToolUse triggers that run shell scripts              |
-| **Dev DX**         | `.claude/`, config files, `.github/workflows/`                     | Project-level Claude Code settings, dev skills, CI pipeline, linting config                                          |
+| Layer                   | Location                                                           | Role                                                                                                                 |
+| ----------------------- | ------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------- |
+| **Marketplace**         | `.claude-plugin/marketplace.json`, `plugins/`, `external_plugins/` | Plugin catalog, directory structure, plugin discovery and distribution                                               |
+| **Docs: Skills**        | `plugins/principled-docs/skills/` (9 directories)                  | Generative workflows — each skill is a slash command with its own `SKILL.md`, templates, scripts, and reference docs |
+| **Docs: Hooks**         | `plugins/principled-docs/hooks/`                                   | Deterministic guardrails — `hooks.json` declares PreToolUse/PostToolUse triggers that run shell scripts              |
+| **Implementation: All** | `plugins/principled-implementation/`                               | Skills (6), hooks (1), agents (1) for plan execution via worktree-isolated sub-agents                                |
+| **Dev DX**              | `.claude/`, config files, `.github/workflows/`                     | Project-level Claude Code settings, dev skills, CI pipeline, linting config                                          |
 
 ## Skills
 
-The principled-docs plugin provides 9 skills:
+### principled-docs (9 skills)
 
 | Skill                  | Command                                  | Category   |
 | ---------------------- | ---------------------------------------- | ---------- |
@@ -35,22 +39,51 @@ The principled-docs plugin provides 9 skills:
 | `new-architecture-doc` | `/new-architecture-doc <title>`          | Generative |
 | `proposal-status`      | `/proposal-status NNN <status>`          | Analytical |
 
+### principled-implementation (6 skills)
+
+| Skill           | Command                                             | Category      |
+| --------------- | --------------------------------------------------- | ------------- |
+| `impl-strategy` | _(background — not user-invocable)_                 | Knowledge     |
+| `decompose`     | `/decompose <plan-path>`                            | Analytical    |
+| `spawn`         | `/spawn <task-id>`                                  | Orchestration |
+| `check-impl`    | `/check-impl [--task <id>] [--all]`                 | Analytical    |
+| `merge-work`    | `/merge-work <task-id> [--force] [--no-cleanup]`    | Orchestration |
+| `orchestrate`   | `/orchestrate <plan-path> [--phase N] [--continue]` | Orchestration |
+
 Each skill directory is **self-contained**. No cross-skill imports. If a template or script is needed by multiple skills, each maintains its own copy.
+
+## Agents
+
+The principled-implementation plugin defines one agent:
+
+| Agent         | Isolation  | Description                                                    |
+| ------------- | ---------- | -------------------------------------------------------------- |
+| `impl-worker` | `worktree` | Executes a single task from a DDD plan in an isolated worktree |
+
+The `spawn` skill delegates to `impl-worker` via `context: fork` + `agent: impl-worker` frontmatter. The orchestrator invokes `/spawn` from inline context (no fork) to coordinate multiple sub-agent spawns sequentially.
 
 ## Key Conventions
 
-### Template Duplication
+### Template Duplication (principled-docs)
 
 - Canonical templates live in `plugins/principled-docs/skills/scaffold/templates/{core,lib,app}/`.
 - Consuming skills (new-proposal, new-plan, new-adr, new-architecture-doc) keep byte-identical copies.
 - `plugins/principled-docs/skills/scaffold/scripts/check-template-drift.sh` verifies copies match canonical. Drift = CI failure.
 - When updating a template, update the canonical version first, then propagate to all copies.
 
-### Script Duplication
+### Script Duplication (principled-docs)
 
 - `next-number.sh` is canonical in `plugins/principled-docs/skills/new-proposal/scripts/`, copied to `new-plan` and `new-adr`.
 - `validate-structure.sh` is canonical in `plugins/principled-docs/skills/scaffold/scripts/`, copied to `plugins/principled-docs/skills/validate/scripts/`.
 - Same drift rules apply — copies must be byte-identical.
+
+### Script/Template Duplication (principled-implementation)
+
+- `task-manifest.sh` is canonical in `plugins/principled-implementation/skills/decompose/scripts/`, copied to `spawn`, `check-impl`, `merge-work`, and `orchestrate`.
+- `parse-plan.sh` is canonical in `plugins/principled-implementation/skills/decompose/scripts/`, copied to `orchestrate`.
+- `run-checks.sh` is canonical in `plugins/principled-implementation/skills/check-impl/scripts/`, copied to `orchestrate`.
+- `claude-task.md` is canonical in `plugins/principled-implementation/skills/spawn/templates/`, copied to `orchestrate`.
+- `plugins/principled-implementation/scripts/check-template-drift.sh` verifies all 7 pairs. Drift = CI failure.
 
 ### Naming Patterns
 
@@ -83,20 +116,26 @@ This repo uses its own documentation pipeline at the root level (governing the m
 See `CONTRIBUTING.md` for the full contributor guide. Key points:
 
 - **Pre-commit hooks** enforce shell and Markdown lint on every commit (`pre-commit install`)
-- **CI pipeline** (`.github/workflows/ci.yml`) runs shell lint, Markdown lint, template drift, structure validation, and marketplace/plugin manifest validation on every PR
+- **CI pipeline** (`.github/workflows/ci.yml`) runs shell lint, Markdown lint, template drift (both plugins), structure validation, and marketplace/plugin manifest validation on every PR
 - **`.claude/` directory** provides project-level Claude Code settings and dev skills (`/lint`, `/test-hooks`, `/propagate-templates`, `/check-ci`)
 
 ## Dogfooding
 
-This repo installs the principled-docs plugin from `plugins/principled-docs/` (via `.claude/settings.json`). All 9 skills and enforcement hooks are active during development. See `.claude/CLAUDE.md` for development-specific context.
+This repo installs both first-party plugins (via `.claude/settings.json`):
+
+- **principled-docs** — All 9 skills and 3 enforcement hooks are active during development.
+- **principled-implementation** — All 6 skills, the `impl-worker` agent, and 1 advisory hook are active during development.
+
+See `.claude/CLAUDE.md` for development-specific context.
 
 ## Pipeline
 
-Proposals → Decisions → Plans.
+Proposals → Decisions → Plans → Implementation.
 
 - **Proposals** are strategic (what/why). Status: `draft → in-review → accepted|rejected|superseded`.
 - **Decisions** are the permanent record. Status: `proposed → accepted → deprecated|superseded`. Immutable after acceptance.
 - **Plans** are tactical (how, via DDD). Status: `active → complete|abandoned`. Require an accepted proposal (`--from-proposal NNN`).
+- **Implementation** is automated execution. `/orchestrate` decomposes a plan, spawns worktree-isolated agents, validates results, and merges back.
 
 ## Important Constraints
 
@@ -107,8 +146,12 @@ Proposals → Decisions → Plans.
 - **Guard scripts default to allow.** They only block when they can positively confirm a violation.
 - **Guard exit codes:** `0` = allow, `2` = block.
 - **jq is optional.** Hook scripts fall back to `grep` for JSON parsing when `jq` is unavailable.
+- **Subagents cannot spawn subagents.** The orchestrator runs inline to coordinate multiple `/spawn` calls sequentially.
+- **Worktree agents cannot access main worktree files.** Task details are embedded in the agent prompt via `!` backtick pre-fork commands.
 
 ## Enforcement Hooks
+
+### principled-docs
 
 Declared in `plugins/principled-docs/hooks/hooks.json`:
 
@@ -120,12 +163,24 @@ Declared in `plugins/principled-docs/hooks/hooks.json`:
 
 Both guard scripts depend on `plugins/principled-docs/hooks/scripts/parse-frontmatter.sh` for YAML field extraction.
 
+### principled-implementation
+
+Declared in `plugins/principled-implementation/hooks/hooks.json`:
+
+| Hook                        | Event                    | Script                                                                        | Timeout |
+| --------------------------- | ------------------------ | ----------------------------------------------------------------------------- | ------- |
+| Manifest Integrity Advisory | PreToolUse (Edit\|Write) | `plugins/principled-implementation/hooks/scripts/check-manifest-integrity.sh` | 10s     |
+
+Advisory only — warns when `.impl/manifest.json` is being edited directly but never blocks (always exits 0).
+
 ## Testing
 
-- **Template drift:** `plugins/principled-docs/skills/scaffold/scripts/check-template-drift.sh` — exits non-zero if any copy diverges from canonical.
+- **Template drift (docs):** `plugins/principled-docs/skills/scaffold/scripts/check-template-drift.sh` — exits non-zero if any copy diverges from canonical.
+- **Template drift (impl):** `plugins/principled-implementation/scripts/check-template-drift.sh` — exits non-zero if any of 7 pairs diverge.
 - **Structure validation:** `plugins/principled-docs/skills/scaffold/scripts/validate-structure.sh --module-path <path> [--type <type>] [--strict] [--json]` — checks a module's docs structure.
 - **Root validation:** `plugins/principled-docs/skills/scaffold/scripts/validate-structure.sh --root` — checks repo-level docs structure.
-- **Hook testing:** Feed JSON with `tool_input.file_path` to guard scripts via stdin. Exit 0 = allow, exit 2 = block.
+- **Hook testing (docs):** Feed JSON with `tool_input.file_path` to guard scripts via stdin. Exit 0 = allow, exit 2 = block.
+- **Hook testing (impl):** Feed JSON with `tool_input.file_path` to `check-manifest-integrity.sh` via stdin. Always exits 0 (advisory).
 - **Shell lint:** `shellcheck --shell=bash` and `shfmt -i 2 -bn -sr -d` on all `.sh` files.
 - **Markdown lint:** `npx markdownlint-cli2 '**/*.md'` and `npx prettier --check '**/*.md'`.
 - **Marketplace validation:** Verify `.claude-plugin/marketplace.json` is valid and all plugin source directories exist.
@@ -133,9 +188,9 @@ Both guard scripts depend on `plugins/principled-docs/hooks/scripts/parse-frontm
 
 ## Dependencies
 
-- **Claude Code v2.1.3+** (skills/commands unification)
+- **Claude Code v2.1.3+** (skills/commands unification, agent support)
 - **Bash** (all plugin scripts are pure bash)
-- **Git** (for repository context)
+- **Git** (for repository context and worktree management)
 - **jq** (optional — scripts fall back to grep-based extraction)
 - **Node.js 18+** (dev tooling only — markdownlint-cli2, prettier)
 - **ShellCheck** (dev tooling — shell script static analysis)
