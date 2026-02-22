@@ -2,6 +2,10 @@
 
 {{SUMMARY}}
 
+## Related Issues
+
+{{ISSUE_REFS}}
+
 ## Context
 
 - **Plan:** {{PLAN_REF}}

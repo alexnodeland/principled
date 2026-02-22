@@ -9,6 +9,7 @@
 #     - PR body contains a Summary section
 #     - PR body contains a Test plan or Checklist section
 #   Recommended (warnings, errors in --strict):
+#     - PR body references at least one GitHub issue (#N)
 #     - PR references a plan or proposal
 #     - PR has at least one principled label
 #     - Branch follows recognized convention
@@ -105,6 +106,13 @@ if echo "$DECODED_BODY" | grep -qiE '^#{1,3}\s*(test plan|checklist|testing|veri
   check "error" "has-test-plan" "true" "PR has a Test plan section"
 else
   check "error" "has-test-plan" "false" "PR is missing a Test plan or Checklist section"
+fi
+
+# Recommended: references at least one GitHub issue (#N) for provenance
+if echo "$DECODED_BODY" | grep -qE '(Closes|Fixes|Resolves|Relates to|Part of)\s+#[0-9]+'; then
+  check "warn" "references-issue" "true" "PR references a GitHub issue"
+else
+  check "warn" "references-issue" "false" "PR does not reference a GitHub issue (use Closes #N, Fixes #N, or Relates to #N)"
 fi
 
 # Recommended: references a plan or proposal

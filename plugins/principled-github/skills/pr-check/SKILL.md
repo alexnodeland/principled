@@ -61,6 +61,7 @@ Validate that a pull request follows principled conventions for cross-referencin
    - PR body contains a `## Test plan` or `## Checklist` section
 
    **Recommended (warnings, errors in `--strict`):**
+   - PR body references at least one GitHub issue (`Closes #N`, `Fixes #N`, `Relates to #N`)
    - PR references a plan (`Plan-NNN`) or proposal (`RFC-NNN`)
    - PR has at least one principled label (`type:*`, `plan:*`, `proposal:*`)
    - Branch name follows a recognized convention (`impl/`, `feat/`, `fix/`)

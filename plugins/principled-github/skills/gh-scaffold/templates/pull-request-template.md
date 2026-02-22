@@ -2,14 +2,18 @@
 
 <!-- Describe your changes in 1-3 sentences -->
 
-## Context
+## Related Issues
 
-<!-- Reference related principled documents -->
+<!-- Link every PR to at least one issue for provenance. Use closing keywords so
+     GitHub auto-closes issues when this PR merges. -->
+
+- Closes #<!-- issue number -->
+
+## Context
 
 - **Plan:** <!-- Plan-NNN (if implementing from a plan) -->
 - **Task:** <!-- Task X.Y (if from a decomposed plan) -->
 - **Proposal:** <!-- RFC-NNN (if related to a proposal) -->
-- **ADRs:** <!-- ADR-NNN (if related to architectural decisions) -->
 
 ## Changes
 

@@ -35,6 +35,11 @@ jobs:
             echo "::warning::PR description is missing a Test plan section"
           fi
 
+          # Check: references at least one GitHub issue for provenance
+          if ! echo "$PR_BODY" | grep -qE '(Closes|Fixes|Resolves|Relates to|Part of)\s+#[0-9]+'; then
+            echo "::warning::PR does not reference a GitHub issue (use Closes #N, Fixes #N, or Relates to #N)"
+          fi
+
           # Check: references a plan or proposal (advisory)
           if ! echo "$PR_BODY" | grep -qiE '(Plan-[0-9]{3}|RFC-[0-9]{3})'; then
             echo "::notice::PR does not reference a Plan or RFC document"

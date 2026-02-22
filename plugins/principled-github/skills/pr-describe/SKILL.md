@@ -71,6 +71,7 @@ Generate a structured PR description from a DDD plan task, with full cross-refer
 
 6. **Generate the PR description.** Read `templates/pr-body.md` and populate:
    - Summary from commit messages and task description
+   - Related issue references (`Closes #N` or `Relates to #N`) --- look up the tracking issue for the plan or proposal via `gh issue list --label type:plan` or `gh issue list --label type:rfc` and match by document number in the title
    - Plan and task references
    - Proposal and ADR references
    - Files changed summary
