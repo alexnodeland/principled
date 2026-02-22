@@ -47,7 +47,10 @@ claude plugin add <path-to-principled-github>
 # Sync labels to GitHub
 /sync-labels
 
-# Ingest a GitHub issue into the principled pipeline
+# Triage all open issues into the principled pipeline
+/triage
+
+# Or ingest a single issue
 /ingest-issue 42
 
 # Sync a proposal to a GitHub issue
@@ -65,13 +68,14 @@ claude plugin add <path-to-principled-github>
 
 ## Skills
 
-8 skills, each a slash command. Each skill is self-contained --- its own templates, scripts, and reference docs.
+10 skills, each a slash command. Each skill is self-contained --- its own templates, scripts, and reference docs.
 
-### Ingestion
+### Triage & Ingestion
 
-| Command                  | Description                                              |
-| ------------------------ | -------------------------------------------------------- |
-| `/ingest-issue <number>` | Pull a GitHub issue into the principled pipeline as docs |
+| Command                                  | Description                                            |
+| ---------------------------------------- | ------------------------------------------------------ |
+| `/triage [--limit N] [--label <filter>]` | Batch-process open issues into the principled pipeline |
+| `/ingest-issue <number>`                 | Pull a single GitHub issue into the pipeline as docs   |
 
 ### Sync
 
@@ -113,7 +117,7 @@ The plugin is built in three layers:
 ```
 ┌─────────────────────────────────────────────────┐
 │          SKILLS — integration workflows          │
-│  8 skills, each self-contained                   │
+│  10 skills, each self-contained                  │
 ├─────────────────────────────────────────────────┤
 │          HOOKS — advisory guardrails             │
 │  PR reference nudge · always advisory            │
@@ -158,9 +162,9 @@ Following the principled convention, shared scripts are duplicated across consum
 bash plugins/principled-github/scripts/check-template-drift.sh
 ```
 
-| Canonical                             | Copies To                                                            |
-| ------------------------------------- | -------------------------------------------------------------------- |
-| `sync-issues/scripts/check-gh-cli.sh` | `sync-labels/`, `pr-check/`, `gh-scaffold/`, `ingest-issue/` scripts |
+| Canonical                             | Copies To                                                                       |
+| ------------------------------------- | ------------------------------------------------------------------------------- |
+| `sync-issues/scripts/check-gh-cli.sh` | `sync-labels/`, `pr-check/`, `gh-scaffold/`, `ingest-issue/`, `triage/` scripts |
 
 ## CI Integration
 

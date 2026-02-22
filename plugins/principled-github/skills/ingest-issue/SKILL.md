@@ -59,7 +59,29 @@ Ingest a GitHub issue into the principled documentation pipeline. Automatically 
 
    If documents already exist, report them and ask if the user wants to update or create additional ones.
 
-4. **Classify the issue.** Analyze the issue to determine what documents to create. Read `reference/classification-guide.md` for guidance. Consider:
+4. **Normalize issue metadata.** Before classifying, ensure the issue has complete, well-structured metadata. Read `reference/classification-guide.md` for label conventions. Fix any gaps directly on GitHub:
+
+   **Labels:** If the issue has no labels, or only generic labels (e.g., just `bug` with no component/priority), analyze the issue content and apply appropriate labels:
+
+   ```bash
+   gh issue edit <issue-number> --add-label "<labels>"
+   ```
+
+   - Add a **type label** if missing (`bug`, `enhancement`, `feature`, etc.) based on issue content
+   - Add **component/scope labels** if the issue clearly affects specific modules or areas
+   - Add **priority labels** if urgency is evident from the issue text
+
+   **Title:** If the issue title is vague, overly broad, or unclear (e.g., "fix thing", "it's broken", "update"), edit it to be descriptive:
+
+   ```bash
+   gh issue edit <issue-number> --title "<improved-title>"
+   ```
+
+   **Body:** If the issue body is empty or minimal but the title implies a concrete task, do not modify the body --- the created documents will provide the structure. If the body has useful content but no clear sections, that is fine --- the classification step will parse it.
+
+   Report any metadata changes made to the user.
+
+5. **Classify the issue.** Analyze the issue to determine what documents to create. Read `reference/classification-guide.md` for guidance. Consider:
    - **Issue labels** — `bug`, `enhancement`, `feature`, etc.
    - **Issue body length and complexity** — longer, more detailed issues suggest larger scope
    - **Mentions of architecture, API changes, or cross-cutting concerns** — suggest an RFC is needed
@@ -69,14 +91,14 @@ Ingest a GitHub issue into the principled documentation pipeline. Automatically 
    - **Plan only**: The issue describes well-scoped work where the approach is clear and doesn't need design review. Bug fixes with known root cause, small improvements with obvious implementation.
    - Report the classification to the user and proceed.
 
-5. **Determine target directory.** Based on arguments:
+6. **Determine target directory.** Based on arguments:
    - If `--root`: target is `docs/` at the repo root
    - If `--module <path>`: target is `<path>/docs/`
    - Otherwise: determine from current working context
 
-6. **Get the next sequence number(s).** For each document type to create, determine the next available NNN in the target directory.
+7. **Get the next sequence number(s).** For each document type to create, determine the next available NNN in the target directory.
 
-7. **Create documents.** For each document type:
+8. **Create documents.** For each document type:
 
    **If creating a proposal (RFC):**
    - Read `templates/ingested-proposal.md`
@@ -92,7 +114,7 @@ Ingest a GitHub issue into the principled documentation pipeline. Automatically 
    - Add an ingest marker: `<!-- principled-ingested-from: #<issue-number> -->`
    - Write to `<target>/plans/NNN-<slug>.md`
 
-8. **Comment on the GitHub issue.** Add a comment linking to the created documents:
+9. **Comment on the GitHub issue.** Add a comment linking to the created documents:
 
    ```bash
    gh issue comment <issue-number> --body "$(cat <<'EOF'
@@ -110,16 +132,17 @@ Ingest a GitHub issue into the principled documentation pipeline. Automatically 
    )"
    ```
 
-9. **Apply labels.** Add principled lifecycle labels to the issue:
+10. **Apply labels.** Add principled lifecycle labels to the issue:
 
-   ```bash
-   gh issue edit <issue-number> --add-label "type:rfc,proposal:draft"
-   ```
+    ```bash
+    gh issue edit <issue-number> --add-label "type:rfc,proposal:draft"
+    ```
 
-10. **Report results.** Summarize what was created:
+11. **Report results.** Summarize what was created:
     - Document paths and types
     - Issue comment link
     - Labels applied
+    - Metadata changes made (title, labels added during normalization)
     - Next steps: review and flesh out the generated documents
 
 ## Slug Rules

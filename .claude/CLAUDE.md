@@ -21,9 +21,10 @@ This repo installs all three first-party plugins (via `.claude/settings.json`). 
 
 ### principled-github
 
-- All 8 plugin skills (`/ingest-issue`, `/sync-issues`, `/pr-describe`, `/gh-scaffold`, `/gen-codeowners`, `/sync-labels`, `/pr-check`) are available as slash commands
+- All 10 plugin skills (`/triage`, `/ingest-issue`, `/sync-issues`, `/pr-describe`, `/gh-scaffold`, `/gen-codeowners`, `/sync-labels`, `/pr-check`) are available as slash commands
 - The PR reference advisory hook is active
-- Use `/ingest-issue` to pull a GitHub issue into the principled pipeline (creates proposals/plans from issue content)
+- Use `/triage` to batch-process all open untriaged issues into the principled pipeline
+- Use `/ingest-issue` to pull a single GitHub issue into the pipeline (normalizes metadata, creates proposals/plans)
 - Use `/sync-issues` to push proposals/plans to GitHub issues
 - Use `/gh-scaffold` to set up `.github/` directory with principled-aligned templates
 
@@ -68,7 +69,7 @@ This repo installs all three first-party plugins (via `.claude/settings.json`). 
 
 - **Always edit the canonical version first:**
   - `check-gh-cli.sh` -> canonical in `plugins/principled-github/skills/sync-issues/scripts/`
-- Then propagate copies to `sync-labels`, `pr-check`, `gh-scaffold`, and `ingest-issue`.
+- Then propagate copies to `sync-labels`, `pr-check`, `gh-scaffold`, `ingest-issue`, and `triage`.
 - Run `bash plugins/principled-github/scripts/check-template-drift.sh` to verify zero drift.
 - Forgetting to propagate = CI failure.
 
@@ -89,7 +90,7 @@ This repo installs all three first-party plugins (via `.claude/settings.json`). 
 
 ## Dev Skills
 
-These supplement the 23 plugin skills available via dogfooding:
+These supplement the 25 plugin skills available via dogfooding:
 
 | Skill                 | Command                | What It Does                                                   |
 | --------------------- | ---------------------- | -------------------------------------------------------------- |
