@@ -1,7 +1,7 @@
 ---
 title: "Principled Quality Plugin"
 number: 003
-status: draft
+status: accepted
 author: Alex
 created: 2026-02-22
 updated: 2026-02-22
@@ -213,10 +213,10 @@ Use PreToolUse hooks to block PR merges that lack a review checklist, rather tha
 - **[Plugin System Architecture](../architecture/plugin-system.md)** — Add principled-quality as a first-party plugin. Document the `quality` category and the review workflow pattern.
 - **[Documentation Pipeline](../architecture/documentation-pipeline.md)** — Extend the pipeline diagram to include the review stage between implementation and merge. Document how review checklists link back to plan tasks.
 
-## Open Questions
+## Open Questions (Resolved)
 
-1. **Checklist persistence.** Should review checklists be stored as PR comments, local files in a `.review/` directory, or both? PR comments are visible to all reviewers but ephemeral. Local files are version-controlled but add repository clutter.
+1. **Checklist persistence.** ~~Should review checklists be stored as PR comments, local files in a `.review/` directory, or both?~~ **Resolved: Both.** Checklists are posted as PR comments for reviewer visibility and saved as local files in `.review/` for version-controlled audit trail. PR comments are the primary interface; local files provide persistence beyond the PR lifecycle.
 
-2. **Cross-plugin script sharing.** `check-gh-cli.sh` is canonical in principled-github. Should principled-quality copy it (following the existing drift convention) or should a shared scripts mechanism be established? This is the first case of cross-plugin script reuse.
+2. **Cross-plugin script sharing.** ~~Should principled-quality copy `check-gh-cli.sh` or establish a shared scripts mechanism?~~ **Resolved: Copy with drift check.** Follow the existing convention — copy `check-gh-cli.sh` from principled-github into principled-quality and add cross-plugin drift pairs to the drift check script. This maintains plugin self-containment and consistency with all three existing plugins.
 
-3. **Review-to-plan feedback loop.** When `/review-coverage` finds uncovered checklist items, should it be able to update the plan's task status or add notes? This would create a write dependency on principled-docs document formats.
+3. **Review-to-plan feedback loop.** ~~Should `/review-coverage` be able to update plan task status?~~ **Resolved: No write-back.** `/review-coverage` is read-only and advisory. It reports gaps but does not modify plan documents. This avoids creating a write dependency on principled-docs formats. Users can manually update plans based on coverage reports.
