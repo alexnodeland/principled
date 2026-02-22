@@ -44,31 +44,94 @@ FORCE=false
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
-    --init) OPERATION="init"; shift ;;
-    --add-task) OPERATION="add-task"; shift ;;
-    --get-task) OPERATION="get-task"; shift ;;
-    --get-plan-path) OPERATION="get-plan-path"; shift ;;
-    --update-status) OPERATION="update-status"; shift ;;
-    --list-tasks) OPERATION="list-tasks"; shift ;;
-    --phase-status) OPERATION="phase-status"; shift ;;
-    --summary) OPERATION="summary"; shift ;;
-    --plan-path) PLAN_PATH="$2"; shift 2 ;;
-    --plan-number) PLAN_NUMBER="$2"; shift 2 ;;
-    --plan-title) PLAN_TITLE="$2"; shift 2 ;;
-    --task-id) TASK_ID="$2"; shift 2 ;;
-    --phase) PHASE="$2"; shift 2 ;;
-    --description) DESCRIPTION="$2"; shift 2 ;;
-    --depends-on) DEPENDS_ON="$2"; shift 2 ;;
-    --bounded-contexts) BOUNDED_CONTEXTS="$2"; shift 2 ;;
-    --status) STATUS="$2"; shift 2 ;;
-    --branch) BRANCH="$2"; shift 2 ;;
-    --check-results) CHECK_RESULTS="$2"; shift 2 ;;
-    --error) ERROR_MSG="$2"; shift 2 ;;
-    --force) FORCE=true; shift ;;
-    *)
-      echo "Unknown argument: $1" >&2
-      exit 1
-      ;;
+  --init)
+    OPERATION="init"
+    shift
+    ;;
+  --add-task)
+    OPERATION="add-task"
+    shift
+    ;;
+  --get-task)
+    OPERATION="get-task"
+    shift
+    ;;
+  --get-plan-path)
+    OPERATION="get-plan-path"
+    shift
+    ;;
+  --update-status)
+    OPERATION="update-status"
+    shift
+    ;;
+  --list-tasks)
+    OPERATION="list-tasks"
+    shift
+    ;;
+  --phase-status)
+    OPERATION="phase-status"
+    shift
+    ;;
+  --summary)
+    OPERATION="summary"
+    shift
+    ;;
+  --plan-path)
+    PLAN_PATH="$2"
+    shift 2
+    ;;
+  --plan-number)
+    PLAN_NUMBER="$2"
+    shift 2
+    ;;
+  --plan-title)
+    PLAN_TITLE="$2"
+    shift 2
+    ;;
+  --task-id)
+    TASK_ID="$2"
+    shift 2
+    ;;
+  --phase)
+    PHASE="$2"
+    shift 2
+    ;;
+  --description)
+    DESCRIPTION="$2"
+    shift 2
+    ;;
+  --depends-on)
+    DEPENDS_ON="$2"
+    shift 2
+    ;;
+  --bounded-contexts)
+    BOUNDED_CONTEXTS="$2"
+    shift 2
+    ;;
+  --status)
+    STATUS="$2"
+    shift 2
+    ;;
+  --branch)
+    BRANCH="$2"
+    shift 2
+    ;;
+  --check-results)
+    CHECK_RESULTS="$2"
+    shift 2
+    ;;
+  --error)
+    ERROR_MSG="$2"
+    shift 2
+    ;;
+  --force)
+    FORCE=true
+    shift
+    ;;
+  *)
+    echo "Unknown argument: $1" >&2
+    exit 1
+    ;;
   esac
 done
 
@@ -89,11 +152,11 @@ fi
 validate_status() {
   local s="$1"
   case "$s" in
-    pending | in_progress | validating | passed | failed | merged | abandoned | conflict) ;;
-    *)
-      echo "Error: invalid status '$s'. Valid: pending, in_progress, validating, passed, failed, merged, abandoned, conflict" >&2
-      exit 1
-      ;;
+  pending | in_progress | validating | passed | failed | merged | abandoned | conflict) ;;
+  *)
+    echo "Error: invalid status '$s'. Valid: pending, in_progress, validating, passed, failed, merged, abandoned, conflict" >&2
+    exit 1
+    ;;
   esac
 }
 
@@ -196,7 +259,7 @@ if [[ "$OPERATION" == "add-task" ]]; then
       BCS_ARRAY="$(echo "$BOUNDED_CONTEXTS" | tr ',' '\n' | jq -R '.' | jq -s '.')"
     fi
     jq --arg id "$TASK_ID" --arg phase "$PHASE" --arg desc "$DESCRIPTION" \
-       --argjson bcs "$BCS_ARRAY" --arg now "$NOW" \
+      --argjson bcs "$BCS_ARRAY" --arg now "$NOW" \
       '.tasks += [{
         "id": $id,
         "phase": ($phase | tonumber),

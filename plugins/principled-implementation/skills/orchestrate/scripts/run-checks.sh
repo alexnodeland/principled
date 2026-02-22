@@ -23,16 +23,22 @@ CHECK_TIMEOUT=300
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
-    --discover) MODE="discover"; shift ;;
-    --execute) MODE="execute"; shift ;;
-    --cwd)
-      CWD="$2"
-      shift 2
-      ;;
-    *)
-      echo "Unknown argument: $1" >&2
-      exit 1
-      ;;
+  --discover)
+    MODE="discover"
+    shift
+    ;;
+  --execute)
+    MODE="execute"
+    shift
+    ;;
+  --cwd)
+    CWD="$2"
+    shift 2
+    ;;
+  *)
+    echo "Unknown argument: $1" >&2
+    exit 1
+    ;;
   esac
 done
 
@@ -61,26 +67,26 @@ discover_checks() {
       scripts="$(jq -r '.scripts // {} | keys[]' "$dir/package.json" 2> /dev/null || echo "")"
       for script in $scripts; do
         case "$script" in
-          test)
-            CHECK_NAMES+=("test")
-            CHECK_COMMANDS+=("npm test")
-            CHECK_SOURCES+=("package.json")
-            ;;
-          lint)
-            CHECK_NAMES+=("lint")
-            CHECK_COMMANDS+=("npm run lint")
-            CHECK_SOURCES+=("package.json")
-            ;;
-          typecheck | type-check)
-            CHECK_NAMES+=("typecheck")
-            CHECK_COMMANDS+=("npm run $script")
-            CHECK_SOURCES+=("package.json")
-            ;;
-          build)
-            CHECK_NAMES+=("build")
-            CHECK_COMMANDS+=("npm run build")
-            CHECK_SOURCES+=("package.json")
-            ;;
+        test)
+          CHECK_NAMES+=("test")
+          CHECK_COMMANDS+=("npm test")
+          CHECK_SOURCES+=("package.json")
+          ;;
+        lint)
+          CHECK_NAMES+=("lint")
+          CHECK_COMMANDS+=("npm run lint")
+          CHECK_SOURCES+=("package.json")
+          ;;
+        typecheck | type-check)
+          CHECK_NAMES+=("typecheck")
+          CHECK_COMMANDS+=("npm run $script")
+          CHECK_SOURCES+=("package.json")
+          ;;
+        build)
+          CHECK_NAMES+=("build")
+          CHECK_COMMANDS+=("npm run build")
+          CHECK_SOURCES+=("package.json")
+          ;;
         esac
       done
     else
@@ -194,7 +200,7 @@ FAILED=0
 for i in "${!CHECK_NAMES[@]}"; do
   name="${CHECK_NAMES[$i]}"
   cmd="${CHECK_COMMANDS[$i]}"
-  source="${CHECK_SOURCES[$i]}"
+  _source="${CHECK_SOURCES[$i]}" # Used for diagnostics if needed
 
   START_TIME="$(date +%s)"
 

@@ -20,26 +20,26 @@ MODE=""
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
-    --file)
-      FILE="$2"
-      shift 2
-      ;;
-    --metadata)
-      MODE="metadata"
-      shift
-      ;;
-    --tasks)
-      MODE="tasks"
-      shift
-      ;;
-    --task-ids)
-      MODE="task-ids"
-      shift
-      ;;
-    *)
-      echo "Unknown argument: $1" >&2
-      exit 1
-      ;;
+  --file)
+    FILE="$2"
+    shift 2
+    ;;
+  --metadata)
+    MODE="metadata"
+    shift
+    ;;
+  --tasks)
+    MODE="tasks"
+    shift
+    ;;
+  --task-ids)
+    MODE="task-ids"
+    shift
+    ;;
+  *)
+    echo "Unknown argument: $1" >&2
+    exit 1
+    ;;
   esac
 done
 
@@ -133,7 +133,7 @@ while IFS= read -r line; do
     if [[ "$local_title" =~ \(([^\)]+)\) ]]; then
       CURRENT_BCS="${BASH_REMATCH[1]}"
       # Normalize: remove spaces after commas
-      CURRENT_BCS="$(echo "$CURRENT_BCS" | sed 's/, */,/g')"
+      CURRENT_BCS="${CURRENT_BCS//, /,}"
     else
       CURRENT_BCS=""
     fi
