@@ -1,5 +1,5 @@
 <p align="center">
-  <strong>principled-github</strong>
+  <strong>🔗 principled-github</strong>
 </p>
 
 <p align="center">
@@ -17,25 +17,24 @@
 
 A Claude Code plugin that bridges the **Principled methodology** with **GitHub native features**. It maps proposals to issues, plans to tracking issues, tasks to PRs, and lifecycle stages to labels --- keeping principled documents as the source of truth while GitHub serves as the collaboration layer.
 
-## The Integration Model
+## 🔭 The Integration Model
 
-```
-Principled Documents          GitHub Features
-─────────────────────         ─────────────────────
-Proposal (RFC)        ──────► GitHub Issue
-  status lifecycle    ──────► Labels (proposal:*)
-Plan (DDD)            ──────► Tracking Issue
-  task checklist      ──────► Linked PRs
-Plan Task             ──────► Pull Request
-  description         ──────► PR body (structured)
-Module boundaries     ──────► CODEOWNERS
-Lifecycle stages      ──────► Label taxonomy
-Document templates    ──────► Issue/PR templates
+```mermaid
+flowchart LR
+    P["📋 <b>Proposal</b> (RFC)<br/><i>what &amp; why</i>"]
+    I["🐛 <b>Issue</b><br/><i>GitHub native</i>"]
+    L["🏷️ <b>Labels</b><br/><i>lifecycle state</i>"]
+    PR["🔀 <b>Pull Request</b><br/><i>implementation</i>"]
+
+    P -->|sync| I
+    P -->|status| L
+    I -->|ingest| P
+    L -->|track| PR
 ```
 
 **Documents are always the source of truth.** GitHub issues and PRs reference principled documents --- never the reverse.
 
-## Quick Start
+## ⚡ Quick Start
 
 ```bash
 # Install the plugin
@@ -66,65 +65,61 @@ claude plugin add <path-to-principled-github>
 /gen-codeowners
 ```
 
-## Skills
+## 🛠️ Skills
 
 10 skills, each a slash command. Each skill is self-contained --- its own templates, scripts, and reference docs.
 
 ### Triage & Ingestion
 
-| Command                                  | Description                                            |
-| ---------------------------------------- | ------------------------------------------------------ |
-| `/triage [--limit N] [--label <filter>]` | Batch-process open issues into the principled pipeline |
-| `/ingest-issue <number>`                 | Pull a single GitHub issue into the pipeline as docs   |
+| Command                                  | Description                                               |
+| ---------------------------------------- | --------------------------------------------------------- |
+| `/triage [--limit N] [--label <filter>]` | 📥 Batch-process open issues into the principled pipeline |
+| `/ingest-issue <number>`                 | 📋 Pull a single GitHub issue into the pipeline as docs   |
 
 ### Sync
 
-| Command                                  | Description                                        |
-| ---------------------------------------- | -------------------------------------------------- |
-| `/sync-issues [<doc>] [--all-proposals]` | Sync proposals/plans to GitHub issues              |
-| `/sync-labels [--dry-run] [--prune]`     | Create and sync GitHub labels for lifecycle stages |
+| Command                                  | Description                                           |
+| ---------------------------------------- | ----------------------------------------------------- |
+| `/sync-issues [<doc>] [--all-proposals]` | 🔄 Sync proposals/plans to GitHub issues              |
+| `/sync-labels [--dry-run] [--prune]`     | 🏷️ Create and sync GitHub labels for lifecycle stages |
 
 ### Generation
 
-| Command                                            | Description                                           |
-| -------------------------------------------------- | ----------------------------------------------------- |
-| `/pr-describe [<task-id>] [--plan <path>]`         | Generate structured PR description from a plan task   |
-| `/gh-scaffold [--templates] [--workflows] [--all]` | Scaffold .github/ directory with principled templates |
-| `/gen-codeowners [--modules-dir <path>]`           | Generate CODEOWNERS from module structure             |
+| Command                                            | Description                                              |
+| -------------------------------------------------- | -------------------------------------------------------- |
+| `/pr-describe [<task-id>] [--plan <path>]`         | 📝 Generate structured PR description from a plan task   |
+| `/gh-scaffold [--templates] [--workflows] [--all]` | 🏗️ Scaffold .github/ directory with principled templates |
+| `/gen-codeowners [--modules-dir <path>]`           | 👥 Generate CODEOWNERS from module structure             |
 
 ### Validation
 
-| Command                              | Description                                |
-| ------------------------------------ | ------------------------------------------ |
-| `/pr-check [<pr-number>] [--strict]` | Validate PR follows principled conventions |
+| Command                              | Description                                   |
+| ------------------------------------ | --------------------------------------------- |
+| `/pr-check [<pr-number>] [--strict]` | ✅ Validate PR follows principled conventions |
 
 ### Background Knowledge
 
 `github-strategy` --- not directly invocable. Gives Claude Code deep understanding of the GitHub-principled mapping model, label taxonomy, and template conventions. Activates automatically when working with GitHub integration.
 
-## Enforcement Hooks
+## 🔒 Enforcement Hooks
 
 One advisory hook --- no manual action required.
 
-| Hook                   | Trigger            | Behavior                                                                             |
-| ---------------------- | ------------------ | ------------------------------------------------------------------------------------ |
-| **PR Reference Nudge** | PostToolUse `Bash` | Advisory reminder when `gh pr create` is run without principled document references. |
+| Hook                   | Trigger            | Behavior                                                                                |
+| ---------------------- | ------------------ | --------------------------------------------------------------------------------------- |
+| **PR Reference Nudge** | PostToolUse `Bash` | 💡 Advisory reminder when `gh pr create` is run without principled document references. |
 
-## Architecture
+## 🏗️ Architecture
 
 The plugin is built in three layers:
 
-```
-┌─────────────────────────────────────────────────┐
-│          SKILLS — integration workflows          │
-│  10 skills, each self-contained                  │
-├─────────────────────────────────────────────────┤
-│          HOOKS — advisory guardrails             │
-│  PR reference nudge · always advisory            │
-├─────────────────────────────────────────────────┤
-│          FOUNDATION — scripts, templates          │
-│  1 canonical script · issue/PR/workflow templates │
-└─────────────────────────────────────────────────┘
+```mermaid
+flowchart TB
+    S["🛠️ <b>SKILLS</b> — integration workflows<br/>10 skills, each self-contained"]
+    H["🔒 <b>HOOKS</b> — advisory guardrails<br/>PR reference nudge · always advisory"]
+    F["🧱 <b>FOUNDATION</b> — scripts, templates<br/>1 canonical script · issue/PR/workflow templates"]
+
+    S --> H --> F
 ```
 
 ### Label Taxonomy
@@ -154,7 +149,7 @@ The `/gh-scaffold` skill creates:
 | `.github/workflows/principled-pr-check.yml` | PR validation workflow                |
 | `.github/workflows/principled-labels.yml`   | Label sync workflow                   |
 
-## Script Duplication
+## 🔄 Script Duplication
 
 Following the principled convention, shared scripts are duplicated across consuming skills with byte-identical copies. A drift check verifies all copies match:
 
@@ -166,7 +161,7 @@ bash plugins/principled-github/scripts/check-template-drift.sh
 | ------------------------------------- | ------------------------------------------------------------------------------- |
 | `sync-issues/scripts/check-gh-cli.sh` | `sync-labels/`, `pr-check/`, `gh-scaffold/`, `ingest-issue/`, `triage/` scripts |
 
-## CI Integration
+## 🚀 CI Integration
 
 ### Template Drift Check
 
@@ -192,7 +187,7 @@ Exits non-zero if any script copy has diverged from canonical.
 
 Both must exit 0 --- the hook is advisory only.
 
-## Prerequisites
+## 📦 Prerequisites
 
 - **Claude Code v2.1.3+** (skills/commands unification)
 - **Bash** (all scripts are pure bash)
@@ -203,5 +198,5 @@ Both must exit 0 --- the hook is advisory only.
 ---
 
 <p align="center">
-  <sub>Built with the <a href="https://docs.anthropic.com/en/docs/claude-code">Claude Code</a> plugin system &middot; Principled specification-first methodology</sub>
+  <sub>Built with the <a href="https://docs.anthropic.com/en/docs/claude-code">Claude Code</a> plugin system · Principled specification-first methodology</sub>
 </p>
