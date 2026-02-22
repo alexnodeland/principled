@@ -1,0 +1,46 @@
+name: Principled PR Check
+
+on:
+  pull_request:
+    types: [opened, edited, synchronize, labeled, unlabeled]
+
+jobs:
+  pr-check:
+    name: Validate PR
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check PR description
+        env:
+          PR_BODY: ${{ github.event.pull_request.body }}
+          PR_LABELS: ${{ join(github.event.pull_request.labels.*.name, ',') }}
+          PR_BRANCH: ${{ github.head_ref }}
+        run: |
+          ERRORS=0
+
+          # Check: PR body is not empty
+          if [ -z "$PR_BODY" ]; then
+            echo "::error::PR description is empty"
+            ERRORS=$((ERRORS + 1))
+          fi
+
+          # Check: Summary section exists
+          if ! echo "$PR_BODY" | grep -qiE '^#{1,3}\s*(summary|overview)'; then
+            echo "::warning::PR description is missing a Summary section"
+          fi
+
+          # Check: Test plan section exists
+          if ! echo "$PR_BODY" | grep -qiE '^#{1,3}\s*(test plan|checklist|testing)'; then
+            echo "::warning::PR description is missing a Test plan section"
+          fi
+
+          # Check: references a plan or proposal (advisory)
+          if ! echo "$PR_BODY" | grep -qiE '(Plan-[0-9]{3}|RFC-[0-9]{3})'; then
+            echo "::notice::PR does not reference a Plan or RFC document"
+          fi
+
+          if [ "$ERRORS" -gt 0 ]; then
+            echo "::error::PR check failed with $ERRORS error(s)"
+            exit 1
+          fi

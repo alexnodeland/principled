@@ -6,10 +6,11 @@ core
 
 ## What This Is
 
-This repo is the **Principled methodology plugin marketplace** (v1.0.0). It hosts Claude Code plugins for specification-first development, organized as a curated directory with two tiers: first-party plugins in `plugins/` and community plugins in `external_plugins/`. Two first-party plugins ship today:
+This repo is the **Principled methodology plugin marketplace** (v1.0.0). It hosts Claude Code plugins for specification-first development, organized as a curated directory with two tiers: first-party plugins in `plugins/` and community plugins in `external_plugins/`. Three first-party plugins ship today:
 
 - **principled-docs** (v0.3.1) — Scaffold, author, and enforce module documentation structure for monorepos.
 - **principled-implementation** (v0.1.0) — Orchestrate DDD plan execution via worktree-isolated Claude Code agents.
+- **principled-github** (v0.1.0) — Integrate the principled workflow with GitHub native features: issues, PRs, templates, actions, CODEOWNERS, and labels.
 
 ## Architecture
 
@@ -21,6 +22,7 @@ Five layers, top to bottom:
 | **Docs: Skills**        | `plugins/principled-docs/skills/` (9 directories)                  | Generative workflows — each skill is a slash command with its own `SKILL.md`, templates, scripts, and reference docs |
 | **Docs: Hooks**         | `plugins/principled-docs/hooks/`                                   | Deterministic guardrails — `hooks.json` declares PreToolUse/PostToolUse triggers that run shell scripts              |
 | **Implementation: All** | `plugins/principled-implementation/`                               | Skills (6), hooks (1), agents (1) for plan execution via worktree-isolated sub-agents                                |
+| **GitHub: All**         | `plugins/principled-github/`                                       | Skills (7), hooks (1) for GitHub integration: issues, PRs, templates, CODEOWNERS, labels                             |
 | **Dev DX**              | `.claude/`, config files, `.github/workflows/`                     | Project-level Claude Code settings, dev skills, CI pipeline, linting config                                          |
 
 ## Skills
@@ -49,6 +51,18 @@ Five layers, top to bottom:
 | `check-impl`    | `/check-impl [--task <id>] [--all]`                 | Analytical    |
 | `merge-work`    | `/merge-work <task-id> [--force] [--no-cleanup]`    | Orchestration |
 | `orchestrate`   | `/orchestrate <plan-path> [--phase N] [--continue]` | Orchestration |
+
+### principled-github (7 skills)
+
+| Skill             | Command                                            | Category   |
+| ----------------- | -------------------------------------------------- | ---------- |
+| `github-strategy` | _(background — not user-invocable)_                | Knowledge  |
+| `sync-issues`     | `/sync-issues [<doc-path>] [--all-proposals]`      | Sync       |
+| `pr-describe`     | `/pr-describe [<task-id>] [--plan <path>]`         | Generative |
+| `gh-scaffold`     | `/gh-scaffold [--templates] [--workflows] [--all]` | Generative |
+| `gen-codeowners`  | `/gen-codeowners [--modules-dir <path>]`           | Generative |
+| `sync-labels`     | `/sync-labels [--dry-run] [--prune]`               | Sync       |
+| `pr-check`        | `/pr-check [<pr-number>] [--strict]`               | Analytical |
 
 Each skill directory is **self-contained**. No cross-skill imports. If a template or script is needed by multiple skills, each maintains its own copy.
 
@@ -85,6 +99,11 @@ The `spawn` skill delegates to `impl-worker` via `context: fork` + `agent: impl-
 - `claude-task.md` is canonical in `plugins/principled-implementation/skills/spawn/templates/`, copied to `orchestrate`.
 - `plugins/principled-implementation/scripts/check-template-drift.sh` verifies all 7 pairs. Drift = CI failure.
 
+### Script Duplication (principled-github)
+
+- `check-gh-cli.sh` is canonical in `plugins/principled-github/skills/sync-issues/scripts/`, copied to `sync-labels`, `pr-check`, and `gh-scaffold`.
+- `plugins/principled-github/scripts/check-template-drift.sh` verifies all 3 pairs. Drift = CI failure.
+
 ### Naming Patterns
 
 - Documents: `NNN-short-title.md` (e.g., `001-switch-to-event-sourcing.md`)
@@ -116,15 +135,16 @@ This repo uses its own documentation pipeline at the root level (governing the m
 See `CONTRIBUTING.md` for the full contributor guide. Key points:
 
 - **Pre-commit hooks** enforce shell and Markdown lint on every commit (`pre-commit install`)
-- **CI pipeline** (`.github/workflows/ci.yml`) runs shell lint, Markdown lint, template drift (both plugins), structure validation, and marketplace/plugin manifest validation on every PR
+- **CI pipeline** (`.github/workflows/ci.yml`) runs shell lint, Markdown lint, template drift (all three plugins), structure validation, and marketplace/plugin manifest validation on every PR
 - **`.claude/` directory** provides project-level Claude Code settings and dev skills (`/lint`, `/test-hooks`, `/propagate-templates`, `/check-ci`)
 
 ## Dogfooding
 
-This repo installs both first-party plugins (via `.claude/settings.json`):
+This repo installs all three first-party plugins (via `.claude/settings.json`):
 
 - **principled-docs** — All 9 skills and 3 enforcement hooks are active during development.
 - **principled-implementation** — All 6 skills, the `impl-worker` agent, and 1 advisory hook are active during development.
+- **principled-github** — All 7 skills and 1 advisory hook are active during development.
 
 See `.claude/CLAUDE.md` for development-specific context.
 
@@ -173,14 +193,26 @@ Declared in `plugins/principled-implementation/hooks/hooks.json`:
 
 Advisory only — warns when `.impl/manifest.json` is being edited directly but never blocks (always exits 0).
 
+### principled-github
+
+Declared in `plugins/principled-github/hooks/hooks.json`:
+
+| Hook               | Event              | Script                                                           | Timeout |
+| ------------------ | ------------------ | ---------------------------------------------------------------- | ------- |
+| PR Reference Nudge | PostToolUse (Bash) | `plugins/principled-github/hooks/scripts/check-pr-references.sh` | 10s     |
+
+Advisory only — reminds when `gh pr create` is run without principled document references (always exits 0).
+
 ## Testing
 
 - **Template drift (docs):** `plugins/principled-docs/skills/scaffold/scripts/check-template-drift.sh` — exits non-zero if any copy diverges from canonical.
 - **Template drift (impl):** `plugins/principled-implementation/scripts/check-template-drift.sh` — exits non-zero if any of 7 pairs diverge.
+- **Template drift (github):** `plugins/principled-github/scripts/check-template-drift.sh` — exits non-zero if any of 3 pairs diverge.
 - **Structure validation:** `plugins/principled-docs/skills/scaffold/scripts/validate-structure.sh --module-path <path> [--type <type>] [--strict] [--json]` — checks a module's docs structure.
 - **Root validation:** `plugins/principled-docs/skills/scaffold/scripts/validate-structure.sh --root` — checks repo-level docs structure.
 - **Hook testing (docs):** Feed JSON with `tool_input.file_path` to guard scripts via stdin. Exit 0 = allow, exit 2 = block.
 - **Hook testing (impl):** Feed JSON with `tool_input.file_path` to `check-manifest-integrity.sh` via stdin. Always exits 0 (advisory).
+- **Hook testing (github):** Feed JSON with `tool_input.command` to `check-pr-references.sh` via stdin. Always exits 0 (advisory).
 - **Shell lint:** `shellcheck --shell=bash` and `shfmt -i 2 -bn -sr -d` on all `.sh` files.
 - **Markdown lint:** `npx markdownlint-cli2 '**/*.md'` and `npx prettier --check '**/*.md'`.
 - **Marketplace validation:** Verify `.claude-plugin/marketplace.json` is valid and all plugin source directories exist.
@@ -192,6 +224,7 @@ Advisory only — warns when `.impl/manifest.json` is being edited directly but 
 - **Bash** (all plugin scripts are pure bash)
 - **Git** (for repository context and worktree management)
 - **jq** (optional — scripts fall back to grep-based extraction)
+- **gh CLI** (optional — required for principled-github plugin operations)
 - **Node.js 18+** (dev tooling only — markdownlint-cli2, prettier)
 - **ShellCheck** (dev tooling — shell script static analysis)
 - **shfmt** (dev tooling — shell script formatting)
