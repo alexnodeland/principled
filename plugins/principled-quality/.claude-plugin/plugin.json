@@ -1,0 +1,15 @@
+{
+  "name": "principled-quality",
+  "version": "0.1.0",
+  "description": "Connect code reviews to the principled documentation pipeline with spec-driven checklists, context surfacing, coverage assessment, and structured review summaries.",
+  "author": "Alex Nodeland",
+  "homepage": "https://github.com/alexnodeland/principled",
+  "keywords": [
+    "code-review",
+    "quality",
+    "checklist",
+    "specification-first",
+    "review-coverage",
+    "review-summary"
+  ]
+}

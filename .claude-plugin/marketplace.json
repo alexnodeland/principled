@@ -55,6 +55,20 @@
         "workflow",
         "integration"
       ]
+    },
+    {
+      "name": "principled-quality",
+      "source": "./plugins/principled-quality",
+      "description": "Connect code reviews to the principled documentation pipeline with spec-driven checklists and review tracking.",
+      "version": "0.1.0",
+      "category": "quality",
+      "keywords": [
+        "code-review",
+        "quality",
+        "checklist",
+        "specification-first",
+        "review-coverage"
+      ]
     }
   ]
 }
