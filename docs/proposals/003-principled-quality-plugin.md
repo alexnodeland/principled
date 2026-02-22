@@ -71,13 +71,13 @@ plugins/principled-quality/
 
 ### 2. Skills
 
-| Skill              | Command                                         | Category  | Description                                                                                                      |
-| ------------------ | ----------------------------------------------- | --------- | ---------------------------------------------------------------------------------------------------------------- |
-| `quality-strategy` | _(background — not user-invocable)_             | Knowledge | Provides context about review standards and the quality plugin's conventions                                     |
+| Skill              | Command                                         | Category   | Description                                                                                                     |
+| ------------------ | ----------------------------------------------- | ---------- | --------------------------------------------------------------------------------------------------------------- |
+| `quality-strategy` | _(background — not user-invocable)_             | Knowledge  | Provides context about review standards and the quality plugin's conventions                                    |
 | `review-checklist` | `/review-checklist <pr-number> [--plan <path>]` | Generative | Generate a review checklist from a plan's acceptance criteria and relevant ADRs; output as a PR comment or file |
 | `review-context`   | `/review-context <pr-number>`                   | Analytical | Surface the proposals, plans, and ADRs relevant to the files changed in a PR                                    |
-| `review-coverage`  | `/review-coverage <pr-number>`                  | Analytical | Assess whether a PR's review comments address the generated checklist items                                      |
-| `review-summary`   | `/review-summary <pr-number>`                   | Generative | Generate a structured review summary linking review findings to spec items                                       |
+| `review-coverage`  | `/review-coverage <pr-number>`                  | Analytical | Assess whether a PR's review comments address the generated checklist items                                     |
+| `review-summary`   | `/review-summary <pr-number>`                   | Generative | Generate a structured review summary linking review findings to spec items                                      |
 
 #### `/review-checklist`
 
@@ -124,9 +124,9 @@ Generates a structured summary after review. Given a PR number, it:
 
 ### 3. Hooks
 
-| Hook                      | Event                | Script                              | Timeout | Behavior |
-| ------------------------- | -------------------- | ----------------------------------- | ------- | -------- |
-| Review Checklist Advisory | PostToolUse (Bash)   | `check-review-checklist.sh`         | 10s     | Advisory |
+| Hook                      | Event              | Script                      | Timeout | Behavior |
+| ------------------------- | ------------------ | --------------------------- | ------- | -------- |
+| Review Checklist Advisory | PostToolUse (Bash) | `check-review-checklist.sh` | 10s     | Advisory |
 
 The hook triggers when `gh pr review` or `gh pr merge` commands are detected. It reminds the user to generate or check a review checklist if one hasn't been created for the PR. Advisory only — always exits 0.
 

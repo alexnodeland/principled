@@ -30,5 +30,20 @@
   // MD040 - Fenced code language: disabled.
   // Many existing docs use unlabeled code blocks for directory trees, ASCII diagrams,
   // and pseudo-code where no single language identifier is appropriate.
-  "MD040": false
+  "MD040": false,
+
+  // MD032 - Blanks around lists: disabled.
+  // Accepted proposals contain lists without surrounding blank lines that cannot be
+  // retroactively fixed (immutable after acceptance).
+  "MD032": false,
+
+  // MD034 - Bare URLs: disabled.
+  // Accepted ADRs contain bare URLs that cannot be retroactively fixed
+  // (immutable after acceptance).
+  "MD034": false,
+
+  // MD060 - Table column style: disabled.
+  // Enforces table pipe alignment consistency. Many existing documents (including
+  // immutable ADRs and accepted proposals) have tables that don't meet this rule.
+  "MD060": false
 }
