@@ -5,7 +5,7 @@
 #
 # An issue is "untriaged" if it:
 #   1. Is open
-#   2. Does not have principled lifecycle labels (proposal:*, plan:*, type:rfc, type:plan)
+#   2. Does not have principled labels (proposal:*, plan:*, type:rfc, type:plan)
 #
 # Note: comment-body detection (principled-ingest-comment markers) is not possible
 # via gh issue list, which does not return comment bodies. Label-based detection is
@@ -75,11 +75,8 @@ JQ_FILTER='
       ([.labels[].name] | any(
         startswith("proposal:") or
         startswith("plan:") or
-        startswith("decision:") or
-        startswith("task:") or
         . == "type:rfc" or
-        . == "type:plan" or
-        . == "type:adr"
+        . == "type:plan"
       )) | not
     )
   ] | .[] | "\(.number)\t\(.title)"
@@ -99,7 +96,7 @@ else
   while IFS= read -r line; do
     number="$(echo "$line" | grep -oP '"number":\s*\K[0-9]+')" || continue
     title="$(echo "$line" | grep -oP '"title":\s*"\K[^"]*')" || continue
-    if echo "$line" | grep -qE '"name":\s*"(proposal:|plan:|decision:|task:|type:rfc|type:plan|type:adr)'; then
+    if echo "$line" | grep -qE '"name":\s*"(proposal:|plan:|type:rfc|type:plan)'; then
       continue
     fi
     if [[ -n "$UNTRIAGED" ]]; then

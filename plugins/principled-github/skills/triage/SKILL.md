@@ -50,7 +50,7 @@ Process open GitHub issues through the principled pipeline. Finds untriaged issu
 
    An issue is considered **untriaged** if it:
    - Is open
-   - Does not have principled lifecycle labels (`proposal:*`, `plan:*`, `decision:*`, `task:*`, `type:rfc`, `type:plan`, `type:adr`)
+   - Does not have principled labels (`proposal:*`, `plan:*`, `type:rfc`, `type:plan`)
 
    Label-based detection is the primary signal. Issues ingested via `/ingest-issue` always receive lifecycle labels in step 10, so this is reliable for the common case.
 

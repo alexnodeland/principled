@@ -62,7 +62,7 @@ Validate that a pull request follows principled conventions for cross-referencin
 
    **Recommended (warnings, errors in `--strict`):**
    - PR references a plan (`Plan-NNN`) or proposal (`RFC-NNN`)
-   - PR has at least one principled label (`type:*`, `task:*`, `plan:*`, `proposal:*`)
+   - PR has at least one principled label (`type:*`, `plan:*`, `proposal:*`)
    - Branch name follows a recognized convention (`impl/`, `feat/`, `fix/`)
    - Files changed include tests if source files were modified
 

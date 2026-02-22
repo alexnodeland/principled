@@ -117,7 +117,7 @@ fi
 # Recommended: has principled labels
 HAS_PRINCIPLED_LABEL=false
 if [[ -n "$PR_LABELS" ]]; then
-  for prefix in "type:" "task:" "plan:" "proposal:" "decision:"; do
+  for prefix in "type:" "plan:" "proposal:"; do
     if [[ "$PR_LABELS" == *"${prefix}"* ]]; then
       HAS_PRINCIPLED_LABEL=true
       break

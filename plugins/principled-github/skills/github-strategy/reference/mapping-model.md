@@ -34,15 +34,17 @@ The principled pipeline maps to GitHub entities as follows:
 
 ### Tasks to Pull Requests
 
-| Task Status   | PR State      | Labels                            |
-| ------------- | ------------- | --------------------------------- |
-| `pending`     | (not created) | ---                               |
-| `in_progress` | Open (draft)  | `task:in-progress`                |
-| `validating`  | Open          | `task:validating`                 |
-| `passed`      | Open          | `task:passed`, `ready-for-review` |
-| `failed`      | Open          | `task:failed`                     |
-| `merged`      | Merged        | `task:merged`                     |
-| `abandoned`   | Closed        | `task:abandoned`                  |
+| Task Status   | PR State      |
+| ------------- | ------------- |
+| `pending`     | (not created) |
+| `in_progress` | Open (draft)  |
+| `validating`  | Open          |
+| `passed`      | Open          |
+| `failed`      | Open          |
+| `merged`      | Merged        |
+| `abandoned`   | Closed        |
+
+Task lifecycle is tracked in the implementation manifest (`.impl/manifest.json`), not via GitHub labels. PR state (draft, open, merged, closed) is the GitHub-native signal.
 
 ## Issue Body Structure
 
