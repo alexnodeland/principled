@@ -52,8 +52,11 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Check template drift
+      - name: Check principled-docs template drift
         run: bash plugins/principled-docs/skills/scaffold/scripts/check-template-drift.sh
+
+      - name: Check principled-implementation template drift
+        run: bash plugins/principled-implementation/scripts/check-template-drift.sh
 
       - name: Validate root structure
         run: bash plugins/principled-docs/skills/scaffold/scripts/validate-structure.sh --root

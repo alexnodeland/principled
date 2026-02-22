@@ -1,0 +1,16 @@
+{
+  "name": "principled-implementation",
+  "version": "0.1.0",
+  "description": "Orchestrate DDD plan execution via worktree-isolated Claude Code agents. Decomposes plans into tasks, spawns agents in git worktrees, validates implementations, and merges results.",
+  "author": "Alex Nodeland",
+  "homepage": "https://github.com/alexnodeland/principled",
+  "keywords": [
+    "implementation",
+    "orchestration",
+    "worktree",
+    "sub-agent",
+    "ddd",
+    "automation"
+  ],
+  "agents": "./agents/"
+}
