@@ -1,7 +1,7 @@
 ---
 title: "Principled Quality Plugin"
 number: 003
-status: draft
+status: in-review
 author: Alex
 created: 2026-02-22
 updated: 2026-02-22
