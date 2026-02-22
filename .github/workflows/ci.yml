@@ -61,6 +61,9 @@ jobs:
       - name: Check principled-github template drift
         run: bash plugins/principled-github/scripts/check-template-drift.sh
 
+      - name: Check principled-quality template drift
+        run: bash plugins/principled-quality/scripts/check-template-drift.sh
+
       - name: Validate root structure
         run: bash plugins/principled-docs/skills/scaffold/scripts/validate-structure.sh --root
 
@@ -216,6 +219,38 @@ jobs:
           result=0
           echo '{"tool_input":{"command":"git status"}}' \
             | bash plugins/principled-github/hooks/scripts/check-pr-references.sh || result=$?
+          if [ "$result" -ne 0 ]; then
+            echo "FAIL: expected exit 0 for unrelated command, got $result"
+            exit 1
+          fi
+          echo "PASS: unrelated command correctly passed through (exit 0)"
+
+      - name: Smoke-test review checklist hook
+        run: |
+          # Test: gh pr review command should warn but allow (exit 0)
+          result=0
+          echo '{"tool_input":{"command":"gh pr review 42"}}' \
+            | bash plugins/principled-quality/hooks/scripts/check-review-checklist.sh || result=$?
+          if [ "$result" -ne 0 ]; then
+            echo "FAIL: expected exit 0 for gh pr review, got $result"
+            exit 1
+          fi
+          echo "PASS: gh pr review correctly allowed with advisory (exit 0)"
+
+          # Test: gh pr merge command should warn but allow (exit 0)
+          result=0
+          echo '{"tool_input":{"command":"gh pr merge 42"}}' \
+            | bash plugins/principled-quality/hooks/scripts/check-review-checklist.sh || result=$?
+          if [ "$result" -ne 0 ]; then
+            echo "FAIL: expected exit 0 for gh pr merge, got $result"
+            exit 1
+          fi
+          echo "PASS: gh pr merge correctly allowed with advisory (exit 0)"
+
+          # Test: unrelated command should pass silently (exit 0)
+          result=0
+          echo '{"tool_input":{"command":"git status"}}' \
+            | bash plugins/principled-quality/hooks/scripts/check-review-checklist.sh || result=$?
           if [ "$result" -ne 0 ]; then
             echo "FAIL: expected exit 0 for unrelated command, got $result"
             exit 1

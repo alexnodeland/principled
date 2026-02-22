@@ -4,7 +4,7 @@ This file supplements the root `CLAUDE.md` with development-specific guidance fo
 
 ## Dogfooding
 
-This repo installs all three first-party plugins (via `.claude/settings.json`). This means:
+This repo installs all four first-party plugins (via `.claude/settings.json`). This means:
 
 ### principled-docs
 
@@ -27,6 +27,15 @@ This repo installs all three first-party plugins (via `.claude/settings.json`). 
 - Use `/ingest-issue` to pull a single GitHub issue into the pipeline (normalizes metadata, creates proposals/plans)
 - Use `/sync-issues` to push proposals/plans to GitHub issues
 - Use `/gh-scaffold` to set up `.github/` directory with principled-aligned templates
+
+### principled-quality
+
+- All 5 plugin skills (`/review-checklist`, `/review-context`, `/review-coverage`, `/review-summary`) are available as slash commands
+- The review checklist advisory hook is active
+- Use `/review-checklist` to generate spec-driven review checklists for PRs
+- Use `/review-context` to surface relevant specifications for a PR's changed files
+- Use `/review-coverage` to assess review completeness against checklist items
+- Use `/review-summary` to generate structured review summaries
 
 ## Common Pitfalls
 
@@ -70,8 +79,16 @@ This repo installs all three first-party plugins (via `.claude/settings.json`). 
 - **Always edit the canonical version first:**
   - `check-gh-cli.sh` -> canonical in `plugins/principled-github/skills/sync-issues/scripts/`
 - Then propagate copies to `sync-labels`, `pr-check`, `gh-scaffold`, `ingest-issue`, `triage`, and `pr-describe`.
-- Run `bash plugins/principled-github/scripts/check-template-drift.sh` to verify zero drift.
+- **Also propagate to principled-quality:** `review-checklist`, `review-context`, `review-coverage`, and `review-summary`.
+- Run `bash plugins/principled-github/scripts/check-template-drift.sh` to verify zero drift within principled-github.
+- Run `bash plugins/principled-quality/scripts/check-template-drift.sh` to verify zero cross-plugin drift.
 - Forgetting to propagate = CI failure.
+
+### Editing Hook Scripts (principled-quality)
+
+- Uses stdin JSON with `tool_input.command`: `echo '{"tool_input":{"command":"gh pr review 42"}}' | bash plugins/principled-quality/hooks/scripts/check-review-checklist.sh`
+- Advisory only --- always exits 0. Never blocks.
+- Triggers on `gh pr review` and `gh pr merge` commands.
 
 ### Changing Frontmatter Schema
 
@@ -86,11 +103,11 @@ This repo installs all three first-party plugins (via `.claude/settings.json`). 
 
 1. Run `/lint` or `pre-commit run --all-files` to check formatting and lint
 2. Run `/validate --root` to check root structure (plugin skill, from dogfooding)
-3. If you modified templates or scripts, propagate copies first and run drift checks for all three plugins
+3. If you modified templates or scripts, propagate copies first and run drift checks for all four plugins
 
 ## Dev Skills
 
-These supplement the 24 plugin skills available via dogfooding:
+These supplement the 29 plugin skills available via dogfooding:
 
 | Skill                 | Command                | What It Does                                                   |
 | --------------------- | ---------------------- | -------------------------------------------------------------- |
