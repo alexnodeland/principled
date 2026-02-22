@@ -8,7 +8,8 @@
 #
 # Canonical sources:
 #   check-gh-cli.sh — canonical in sync-issues/scripts/
-#     → copies: sync-labels/scripts/, pr-check/scripts/, gh-scaffold/scripts/
+#     → copies: sync-labels/scripts/, pr-check/scripts/, gh-scaffold/scripts/,
+#               ingest-issue/scripts/
 #
 #   extract-doc-metadata.sh — canonical in sync-issues/scripts/
 #     (no copies — single location)
@@ -56,6 +57,10 @@ compare \
 compare \
   "$PLUGIN_ROOT/skills/sync-issues/scripts/check-gh-cli.sh" \
   "$PLUGIN_ROOT/skills/gh-scaffold/scripts/check-gh-cli.sh"
+
+compare \
+  "$PLUGIN_ROOT/skills/sync-issues/scripts/check-gh-cli.sh" \
+  "$PLUGIN_ROOT/skills/ingest-issue/scripts/check-gh-cli.sh"
 
 echo ""
 echo "Checked $CHECKED file pairs."

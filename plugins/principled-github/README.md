@@ -47,6 +47,9 @@ claude plugin add <path-to-principled-github>
 # Sync labels to GitHub
 /sync-labels
 
+# Ingest a GitHub issue into the principled pipeline
+/ingest-issue 42
+
 # Sync a proposal to a GitHub issue
 /sync-issues docs/proposals/001-my-feature.md
 
@@ -62,7 +65,13 @@ claude plugin add <path-to-principled-github>
 
 ## Skills
 
-7 skills, each a slash command. Each skill is self-contained --- its own templates, scripts, and reference docs.
+8 skills, each a slash command. Each skill is self-contained --- its own templates, scripts, and reference docs.
+
+### Ingestion
+
+| Command                  | Description                                              |
+| ------------------------ | -------------------------------------------------------- |
+| `/ingest-issue <number>` | Pull a GitHub issue into the principled pipeline as docs |
 
 ### Sync
 
@@ -104,7 +113,7 @@ The plugin is built in three layers:
 ```
 ┌─────────────────────────────────────────────────┐
 │          SKILLS — integration workflows          │
-│  7 skills, each self-contained                   │
+│  8 skills, each self-contained                   │
 ├─────────────────────────────────────────────────┤
 │          HOOKS — advisory guardrails             │
 │  PR reference nudge · always advisory            │
@@ -149,9 +158,9 @@ Following the principled convention, shared scripts are duplicated across consum
 bash plugins/principled-github/scripts/check-template-drift.sh
 ```
 
-| Canonical                             | Copies To                                           |
-| ------------------------------------- | --------------------------------------------------- |
-| `sync-issues/scripts/check-gh-cli.sh` | `sync-labels/`, `pr-check/`, `gh-scaffold/` scripts |
+| Canonical                             | Copies To                                                            |
+| ------------------------------------- | -------------------------------------------------------------------- |
+| `sync-issues/scripts/check-gh-cli.sh` | `sync-labels/`, `pr-check/`, `gh-scaffold/`, `ingest-issue/` scripts |
 
 ## CI Integration
 
