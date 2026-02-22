@@ -80,14 +80,14 @@ plugins/principled-release/
 
 ### 2. Skills
 
-| Skill              | Command                                                  | Category      | Description                                                                              |
-| ------------------ | -------------------------------------------------------- | ------------- | ---------------------------------------------------------------------------------------- |
-| `release-strategy` | _(background — not user-invocable)_                      | Knowledge     | Provides context about release conventions and the release plugin's approach              |
-| `changelog`        | `/changelog [--since <tag>] [--module <path>]`           | Generative    | Generate changelog entries from proposals, plans, and ADRs merged since the last release |
-| `release-ready`    | `/release-ready [--tag <version>] [--strict]`            | Analytical    | Verify all plans are complete, no draft proposals are referenced, and docs are consistent |
-| `version-bump`     | `/version-bump [--module <path>] [--type major\|minor\|patch]` | Generative    | Coordinate version bumps across module manifests (package.json, Cargo.toml, etc.)       |
-| `release-plan`     | `/release-plan [--since <tag>]`                          | Generative    | Draft a release plan summarizing all changes, grouped by module and category             |
-| `tag-release`      | `/tag-release <version> [--dry-run]`                     | Orchestration | Validate, tag, and finalize a release with generated release notes                       |
+| Skill              | Command                                                        | Category      | Description                                                                               |
+| ------------------ | -------------------------------------------------------------- | ------------- | ----------------------------------------------------------------------------------------- |
+| `release-strategy` | _(background — not user-invocable)_                            | Knowledge     | Provides context about release conventions and the release plugin's approach              |
+| `changelog`        | `/changelog [--since <tag>] [--module <path>]`                 | Generative    | Generate changelog entries from proposals, plans, and ADRs merged since the last release  |
+| `release-ready`    | `/release-ready [--tag <version>] [--strict]`                  | Analytical    | Verify all plans are complete, no draft proposals are referenced, and docs are consistent |
+| `version-bump`     | `/version-bump [--module <path>] [--type major\|minor\|patch]` | Generative    | Coordinate version bumps across module manifests (package.json, Cargo.toml, etc.)         |
+| `release-plan`     | `/release-plan [--since <tag>]`                                | Generative    | Draft a release plan summarizing all changes, grouped by module and category              |
+| `tag-release`      | `/tag-release <version> [--dry-run]`                           | Orchestration | Validate, tag, and finalize a release with generated release notes                        |
 
 #### `/changelog`
 
@@ -177,9 +177,9 @@ The final orchestration step:
 
 ### 3. Hooks
 
-| Hook                       | Event              | Script                          | Timeout | Behavior |
-| -------------------------- | ------------------ | ------------------------------- | ------- | -------- |
-| Release Readiness Advisory | PostToolUse (Bash) | `check-release-readiness.sh`    | 10s     | Advisory |
+| Hook                       | Event              | Script                       | Timeout | Behavior |
+| -------------------------- | ------------------ | ---------------------------- | ------- | -------- |
+| Release Readiness Advisory | PostToolUse (Bash) | `check-release-readiness.sh` | 10s     | Advisory |
 
 The hook triggers when `git tag` commands are detected. It reminds the user to run `/release-ready` before tagging if readiness hasn't been verified. Advisory only — always exits 0.
 

@@ -24,71 +24,71 @@ Build the `principled-implementation` Claude Code plugin end-to-end: plugin infr
 
 This implementation decomposes into **6 bounded contexts**, each representing a distinct area of domain responsibility within the plugin:
 
-| #    | Bounded Context           | Responsibility                                                                                  | Key Artifacts                                                |
-| ---- | ------------------------- | ----------------------------------------------------------------------------------------------- | ------------------------------------------------------------ |
-| BC-1 | **Plugin Infrastructure** | Plugin manifest, directory skeleton, marketplace integration                                    | `plugin.json`, directory tree, marketplace.json entry        |
-| BC-2 | **Plan Parsing**          | Extract metadata, phases, tasks, and dependencies from DDD plan markdown                        | `parse-plan.sh`, `decompose/SKILL.md`                        |
-| BC-3 | **Manifest Management**   | Initialize, read, update, and query the `.impl/manifest.json` state file                       | `task-manifest.sh`, manifest schema, advisory hook           |
-| BC-4 | **Agent & Spawning**      | Worktree-isolated sub-agent definition and task delegation                                      | `impl-worker.md`, `spawn/SKILL.md`, `claude-task.md`        |
-| BC-5 | **Validation**            | Discover and execute project checks against worktree implementations                            | `run-checks.sh`, `check-impl/SKILL.md`, check-discovery ref |
-| BC-6 | **Orchestration**         | End-to-end lifecycle: decompose → spawn → validate → merge, with retry and error recovery      | `orchestrate/SKILL.md`, `merge-work/SKILL.md`               |
+| #    | Bounded Context           | Responsibility                                                                            | Key Artifacts                                               |
+| ---- | ------------------------- | ----------------------------------------------------------------------------------------- | ----------------------------------------------------------- |
+| BC-1 | **Plugin Infrastructure** | Plugin manifest, directory skeleton, marketplace integration                              | `plugin.json`, directory tree, marketplace.json entry       |
+| BC-2 | **Plan Parsing**          | Extract metadata, phases, tasks, and dependencies from DDD plan markdown                  | `parse-plan.sh`, `decompose/SKILL.md`                       |
+| BC-3 | **Manifest Management**   | Initialize, read, update, and query the `.impl/manifest.json` state file                  | `task-manifest.sh`, manifest schema, advisory hook          |
+| BC-4 | **Agent & Spawning**      | Worktree-isolated sub-agent definition and task delegation                                | `impl-worker.md`, `spawn/SKILL.md`, `claude-task.md`        |
+| BC-5 | **Validation**            | Discover and execute project checks against worktree implementations                      | `run-checks.sh`, `check-impl/SKILL.md`, check-discovery ref |
+| BC-6 | **Orchestration**         | End-to-end lifecycle: decompose → spawn → validate → merge, with retry and error recovery | `orchestrate/SKILL.md`, `merge-work/SKILL.md`               |
 
 ### Aggregates
 
 #### BC-1: Plugin Infrastructure
 
-| Aggregate          | Root Entity   | Description                                                               |
-| ------------------ | ------------- | ------------------------------------------------------------------------- |
-| **PluginManifest** | `plugin.json` | Plugin identity, version, metadata, agent directory reference             |
-| **DirectoryTree**  | Plugin root   | Complete directory skeleton for all skills, agents, hooks, and scripts    |
+| Aggregate          | Root Entity   | Description                                                            |
+| ------------------ | ------------- | ---------------------------------------------------------------------- |
+| **PluginManifest** | `plugin.json` | Plugin identity, version, metadata, agent directory reference          |
+| **DirectoryTree**  | Plugin root   | Complete directory skeleton for all skills, agents, hooks, and scripts |
 
 #### BC-2: Plan Parsing
 
-| Aggregate       | Root Entity      | Description                                                                                |
-| --------------- | ---------------- | ------------------------------------------------------------------------------------------ |
-| **PlanParser**  | `parse-plan.sh`  | Extracts YAML frontmatter metadata and structured task data from DDD plan markdown files   |
-| **DecomposeSkill** | `decompose/SKILL.md` | User-facing skill that invokes plan parsing and manifest initialization              |
+| Aggregate          | Root Entity          | Description                                                                              |
+| ------------------ | -------------------- | ---------------------------------------------------------------------------------------- |
+| **PlanParser**     | `parse-plan.sh`      | Extracts YAML frontmatter metadata and structured task data from DDD plan markdown files |
+| **DecomposeSkill** | `decompose/SKILL.md` | User-facing skill that invokes plan parsing and manifest initialization                  |
 
 #### BC-3: Manifest Management
 
-| Aggregate          | Root Entity         | Description                                                                         |
-| ------------------ | ------------------- | ----------------------------------------------------------------------------------- |
-| **ManifestEngine** | `task-manifest.sh`  | CRUD interface for `.impl/manifest.json`: init, add-task, get-task, update-status, list-tasks, phase-status, summary |
-| **ManifestGuard**  | `check-manifest-integrity.sh` | Advisory hook that warns against direct manifest edits                   |
-| **KnowledgeBase**  | `impl-strategy/SKILL.md` | Background knowledge for orchestration strategy, lifecycle, and manifest schema |
+| Aggregate          | Root Entity                   | Description                                                                                                          |
+| ------------------ | ----------------------------- | -------------------------------------------------------------------------------------------------------------------- |
+| **ManifestEngine** | `task-manifest.sh`            | CRUD interface for `.impl/manifest.json`: init, add-task, get-task, update-status, list-tasks, phase-status, summary |
+| **ManifestGuard**  | `check-manifest-integrity.sh` | Advisory hook that warns against direct manifest edits                                                               |
+| **KnowledgeBase**  | `impl-strategy/SKILL.md`      | Background knowledge for orchestration strategy, lifecycle, and manifest schema                                      |
 
 #### BC-4: Agent & Spawning
 
-| Aggregate        | Root Entity        | Description                                                                         |
-| ---------------- | ------------------ | ----------------------------------------------------------------------------------- |
-| **AgentDef**     | `impl-worker.md`   | Worktree-isolated agent with tools and skills for implementing a single plan task   |
-| **TaskTemplate** | `claude-task.md`    | Sub-agent instruction template with placeholders for task context                   |
-| **SpawnSkill**   | `spawn/SKILL.md`   | Delegates a task to the `impl-worker` agent with pre-fork context injection         |
+| Aggregate        | Root Entity      | Description                                                                       |
+| ---------------- | ---------------- | --------------------------------------------------------------------------------- |
+| **AgentDef**     | `impl-worker.md` | Worktree-isolated agent with tools and skills for implementing a single plan task |
+| **TaskTemplate** | `claude-task.md` | Sub-agent instruction template with placeholders for task context                 |
+| **SpawnSkill**   | `spawn/SKILL.md` | Delegates a task to the `impl-worker` agent with pre-fork context injection       |
 
 #### BC-5: Validation
 
-| Aggregate         | Root Entity        | Description                                                                        |
-| ----------------- | ------------------ | ---------------------------------------------------------------------------------- |
-| **CheckRunner**   | `run-checks.sh`    | Discovers and executes project checks (Node, Python, Rust, Go, Make, pre-commit)   |
-| **CheckImplSkill** | `check-impl/SKILL.md` | User-facing skill that runs checks and updates manifest status                 |
+| Aggregate          | Root Entity           | Description                                                                      |
+| ------------------ | --------------------- | -------------------------------------------------------------------------------- |
+| **CheckRunner**    | `run-checks.sh`       | Discovers and executes project checks (Node, Python, Rust, Go, Make, pre-commit) |
+| **CheckImplSkill** | `check-impl/SKILL.md` | User-facing skill that runs checks and updates manifest status                   |
 
 #### BC-6: Orchestration
 
-| Aggregate           | Root Entity           | Description                                                                    |
-| -------------------- | --------------------- | ------------------------------------------------------------------------------ |
-| **MergeWorkSkill**   | `merge-work/SKILL.md` | Merges validated branches, handles conflicts, cleans up worktrees             |
+| Aggregate            | Root Entity            | Description                                                                           |
+| -------------------- | ---------------------- | ------------------------------------------------------------------------------------- |
+| **MergeWorkSkill**   | `merge-work/SKILL.md`  | Merges validated branches, handles conflicts, cleans up worktrees                     |
 | **OrchestrateSkill** | `orchestrate/SKILL.md` | End-to-end lifecycle: decomposes plan, iterates phases, spawns/validates/merges tasks |
 
 ### Domain Events
 
-| Event                     | Source Context            | Target Context(s)        | Description                                                      |
-| ------------------------- | ------------------------- | ------------------------ | ---------------------------------------------------------------- |
-| **PlanDecomposed**        | BC-2 (Plan Parsing)       | BC-3, BC-6               | Plan parsed into manifest; tasks ready for execution             |
-| **ManifestInitialized**   | BC-3 (Manifest)           | BC-4, BC-5, BC-6         | Manifest created; spawning and validation can begin              |
-| **TaskSpawned**           | BC-4 (Agent & Spawning)   | BC-5 (Validation)        | Agent completed task; branch ready for validation                |
-| **TaskValidated**         | BC-5 (Validation)         | BC-6 (Orchestration)     | Checks passed/failed; orchestrator decides on merge or retry     |
-| **TaskMerged**            | BC-6 (Orchestration)      | BC-3 (Manifest)          | Branch merged; manifest updates to terminal state                |
-| **TaskFailed**            | BC-5 (Validation)         | BC-6 (Orchestration)     | Checks failed; orchestrator decides on retry or abandon          |
+| Event                   | Source Context          | Target Context(s)    | Description                                                  |
+| ----------------------- | ----------------------- | -------------------- | ------------------------------------------------------------ |
+| **PlanDecomposed**      | BC-2 (Plan Parsing)     | BC-3, BC-6           | Plan parsed into manifest; tasks ready for execution         |
+| **ManifestInitialized** | BC-3 (Manifest)         | BC-4, BC-5, BC-6     | Manifest created; spawning and validation can begin          |
+| **TaskSpawned**         | BC-4 (Agent & Spawning) | BC-5 (Validation)    | Agent completed task; branch ready for validation            |
+| **TaskValidated**       | BC-5 (Validation)       | BC-6 (Orchestration) | Checks passed/failed; orchestrator decides on merge or retry |
+| **TaskMerged**          | BC-6 (Orchestration)    | BC-3 (Manifest)      | Branch merged; manifest updates to terminal state            |
+| **TaskFailed**          | BC-5 (Validation)       | BC-6 (Orchestration) | Checks failed; orchestrator decides on retry or abandon      |
 
 ---
 
@@ -196,14 +196,14 @@ Architectural decisions resolved during implementation:
 
 ## Dependencies
 
-| Dependency                          | Required By              | Status             |
-| ----------------------------------- | ------------------------ | ------------------ |
-| Claude Code v2.1.3+ (agents, fork) | spawn, impl-worker       | Available          |
-| Bash shell                          | All scripts              | Available          |
-| Git (worktrees, branches)           | spawn, merge-work        | Available          |
-| jq (optional, with sed fallback)    | task-manifest.sh         | Optional           |
-| principled-docs plan format         | parse-plan.sh            | Stable (v0.3.1)    |
-| Marketplace structure (RFC-002)     | Plugin location           | Complete (Plan-002) |
+| Dependency                         | Required By        | Status              |
+| ---------------------------------- | ------------------ | ------------------- |
+| Claude Code v2.1.3+ (agents, fork) | spawn, impl-worker | Available           |
+| Bash shell                         | All scripts        | Available           |
+| Git (worktrees, branches)          | spawn, merge-work  | Available           |
+| jq (optional, with sed fallback)   | task-manifest.sh   | Optional            |
+| principled-docs plan format        | parse-plan.sh      | Stable (v0.3.1)     |
+| Marketplace structure (RFC-002)    | Plugin location    | Complete (Plan-002) |
 
 ---
 

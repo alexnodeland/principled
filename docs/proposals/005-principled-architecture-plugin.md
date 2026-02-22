@@ -78,14 +78,14 @@ plugins/principled-architecture/
 
 ### 2. Skills
 
-| Skill           | Command                                                 | Category   | Description                                                                       |
-| --------------- | ------------------------------------------------------- | ---------- | --------------------------------------------------------------------------------- |
-| `arch-strategy` | _(background — not user-invocable)_                     | Knowledge  | Provides context about architecture governance conventions                        |
-| `arch-map`      | `/arch-map [--module <path>] [--output <path>]`         | Analytical | Generate a map linking modules to their governing ADRs and architecture docs      |
-| `arch-drift`    | `/arch-drift [--module <path>] [--strict]`              | Analytical | Detect violations of architectural decisions in the codebase                      |
-| `arch-audit`    | `/arch-audit [--module <path>]`                         | Analytical | Audit ADR coverage — identify modules without explicit architectural governance   |
-| `arch-sync`     | `/arch-sync [--doc <path>] [--all]`                     | Generative | Update architecture documents to reflect current codebase state                   |
-| `arch-query`    | `/arch-query "<question>"`                              | Analytical | Answer questions about the architecture by cross-referencing code and decisions    |
+| Skill           | Command                                         | Category   | Description                                                                     |
+| --------------- | ----------------------------------------------- | ---------- | ------------------------------------------------------------------------------- |
+| `arch-strategy` | _(background — not user-invocable)_             | Knowledge  | Provides context about architecture governance conventions                      |
+| `arch-map`      | `/arch-map [--module <path>] [--output <path>]` | Analytical | Generate a map linking modules to their governing ADRs and architecture docs    |
+| `arch-drift`    | `/arch-drift [--module <path>] [--strict]`      | Analytical | Detect violations of architectural decisions in the codebase                    |
+| `arch-audit`    | `/arch-audit [--module <path>]`                 | Analytical | Audit ADR coverage — identify modules without explicit architectural governance |
+| `arch-sync`     | `/arch-sync [--doc <path>] [--all]`             | Generative | Update architecture documents to reflect current codebase state                 |
+| `arch-query`    | `/arch-query "<question>"`                      | Analytical | Answer questions about the architecture by cross-referencing code and decisions |
 
 #### `/arch-map`
 
@@ -188,9 +188,9 @@ This skill is deliberately open-ended — it leverages Claude's ability to searc
 
 ### 3. Hooks
 
-| Hook                          | Event                    | Script                            | Timeout | Behavior |
-| ----------------------------- | ------------------------ | --------------------------------- | ------- | -------- |
-| Boundary Violation Advisory   | PostToolUse (Write)      | `check-boundary-violation.sh`     | 10s     | Advisory |
+| Hook                        | Event               | Script                        | Timeout | Behavior |
+| --------------------------- | ------------------- | ----------------------------- | ------- | -------- |
+| Boundary Violation Advisory | PostToolUse (Write) | `check-boundary-violation.sh` | 10s     | Advisory |
 
 The hook triggers when a file is written in a module directory. It performs a lightweight check: does the file contain imports from modules it shouldn't depend on (based on module type conventions: `app` can depend on `lib` and `core`, `lib` can depend on `core`, `core` should have no internal module dependencies). Advisory only — always exits 0. It warns rather than blocks because import analysis from file content alone has limited accuracy.
 
@@ -198,11 +198,11 @@ The hook triggers when a file is written in a module directory. It performs a li
 
 Based on ADR-003's module type declarations, the plugin enforces these dependency direction rules:
 
-| Module Type | Can Depend On    | Cannot Depend On |
-| ----------- | ---------------- | ---------------- |
-| `app`       | `lib`, `core`    | other `app`      |
-| `lib`       | `core`           | `app`, other `lib` (unless declared) |
-| `core`      | _(none internal)_ | `app`, `lib`     |
+| Module Type | Can Depend On     | Cannot Depend On                     |
+| ----------- | ----------------- | ------------------------------------ |
+| `app`       | `lib`, `core`     | other `app`                          |
+| `lib`       | `core`            | `app`, other `lib` (unless declared) |
+| `core`      | _(none internal)_ | `app`, `lib`                         |
 
 These are default rules. Teams can override them by declaring explicit dependency allowances in their module's `CLAUDE.md`.
 

@@ -24,82 +24,82 @@ Build the `principled-github` Claude Code plugin end-to-end: plugin infrastructu
 
 This implementation decomposes into **7 bounded contexts**, each representing a distinct area of domain responsibility within the plugin:
 
-| #    | Bounded Context              | Responsibility                                                                           | Key Artifacts                                                    |
-| ---- | ---------------------------- | ---------------------------------------------------------------------------------------- | ---------------------------------------------------------------- |
-| BC-1 | **Plugin Infrastructure**    | Plugin manifest, directory skeleton, marketplace integration                             | `plugin.json`, directory tree, marketplace.json entry            |
-| BC-2 | **Knowledge System**         | Background knowledge on GitHub-principled mapping, label taxonomy, sync model            | `github-strategy/` skill with reference docs                     |
-| BC-3 | **Issue Pipeline**           | Ingest issues into principled pipeline, triage in batch, sync documents to issues        | `ingest-issue/`, `triage/`, `sync-issues/` skills                |
-| BC-4 | **PR Integration**           | Generate structured PR descriptions, validate PR conventions                             | `pr-describe/`, `pr-check/` skills                               |
-| BC-5 | **Repository Scaffolding**   | Scaffold `.github/` with templates, workflows, and CODEOWNERS                            | `gh-scaffold/`, `gen-codeowners/` skills                         |
-| BC-6 | **Label Management**         | Define and sync the principled label taxonomy to GitHub                                  | `sync-labels/` skill                                             |
-| BC-7 | **Enforcement & Drift**      | Advisory hook for PR references, script drift detection                                  | `check-pr-references.sh`, `check-template-drift.sh`             |
+| #    | Bounded Context            | Responsibility                                                                    | Key Artifacts                                         |
+| ---- | -------------------------- | --------------------------------------------------------------------------------- | ----------------------------------------------------- |
+| BC-1 | **Plugin Infrastructure**  | Plugin manifest, directory skeleton, marketplace integration                      | `plugin.json`, directory tree, marketplace.json entry |
+| BC-2 | **Knowledge System**       | Background knowledge on GitHub-principled mapping, label taxonomy, sync model     | `github-strategy/` skill with reference docs          |
+| BC-3 | **Issue Pipeline**         | Ingest issues into principled pipeline, triage in batch, sync documents to issues | `ingest-issue/`, `triage/`, `sync-issues/` skills     |
+| BC-4 | **PR Integration**         | Generate structured PR descriptions, validate PR conventions                      | `pr-describe/`, `pr-check/` skills                    |
+| BC-5 | **Repository Scaffolding** | Scaffold `.github/` with templates, workflows, and CODEOWNERS                     | `gh-scaffold/`, `gen-codeowners/` skills              |
+| BC-6 | **Label Management**       | Define and sync the principled label taxonomy to GitHub                           | `sync-labels/` skill                                  |
+| BC-7 | **Enforcement & Drift**    | Advisory hook for PR references, script drift detection                           | `check-pr-references.sh`, `check-template-drift.sh`   |
 
 ### Aggregates
 
 #### BC-1: Plugin Infrastructure
 
-| Aggregate          | Root Entity   | Description                                                             |
-| ------------------ | ------------- | ----------------------------------------------------------------------- |
-| **PluginManifest** | `plugin.json` | Plugin identity, version, metadata                                      |
+| Aggregate          | Root Entity   | Description                                                               |
+| ------------------ | ------------- | ------------------------------------------------------------------------- |
+| **PluginManifest** | `plugin.json` | Plugin identity, version, metadata                                        |
 | **DirectoryTree**  | Plugin root   | Complete directory skeleton for all skills, hooks, scripts, and templates |
 
 #### BC-2: Knowledge System
 
-| Aggregate            | Root Entity               | Description                                                               |
-| -------------------- | ------------------------- | ------------------------------------------------------------------------- |
-| **GitHubMapping**    | `github-mapping.md`       | How principled concepts map to GitHub features                            |
-| **LabelTaxonomy**    | `label-taxonomy.md`       | Standard label set with names, colors, descriptions for lifecycle stages  |
-| **SyncModel**        | `sync-model.md`           | Bidirectional sync rules: documents as source of truth, conflict handling |
+| Aggregate         | Root Entity         | Description                                                               |
+| ----------------- | ------------------- | ------------------------------------------------------------------------- |
+| **GitHubMapping** | `github-mapping.md` | How principled concepts map to GitHub features                            |
+| **LabelTaxonomy** | `label-taxonomy.md` | Standard label set with names, colors, descriptions for lifecycle stages  |
+| **SyncModel**     | `sync-model.md`     | Bidirectional sync rules: documents as source of truth, conflict handling |
 
 #### BC-3: Issue Pipeline
 
-| Aggregate            | Root Entity              | Description                                                              |
-| -------------------- | ------------------------ | ------------------------------------------------------------------------ |
-| **IssueIngester**    | `ingest-issue/SKILL.md`  | Fetches a GitHub issue and creates principled documents from it          |
-| **BatchTriager**     | `triage/SKILL.md`        | Processes multiple open issues through the pipeline in one invocation    |
-| **IssueSyncer**      | `sync-issues/SKILL.md`   | Pushes document state to GitHub issues, maintaining bidirectional refs   |
-| **MetadataExtractor** | `extract-doc-metadata.sh` | Extracts frontmatter fields from documents for sync operations          |
+| Aggregate             | Root Entity               | Description                                                            |
+| --------------------- | ------------------------- | ---------------------------------------------------------------------- |
+| **IssueIngester**     | `ingest-issue/SKILL.md`   | Fetches a GitHub issue and creates principled documents from it        |
+| **BatchTriager**      | `triage/SKILL.md`         | Processes multiple open issues through the pipeline in one invocation  |
+| **IssueSyncer**       | `sync-issues/SKILL.md`    | Pushes document state to GitHub issues, maintaining bidirectional refs |
+| **MetadataExtractor** | `extract-doc-metadata.sh` | Extracts frontmatter fields from documents for sync operations         |
 
 #### BC-4: PR Integration
 
-| Aggregate          | Root Entity             | Description                                                                |
-| ------------------ | ----------------------- | -------------------------------------------------------------------------- |
-| **PRDescriber**    | `pr-describe/SKILL.md`  | Generates structured PR descriptions with spec cross-references            |
-| **PRChecker**      | `pr-check/SKILL.md`     | Validates PRs against principled conventions (references, labels, sections) |
+| Aggregate       | Root Entity            | Description                                                                 |
+| --------------- | ---------------------- | --------------------------------------------------------------------------- |
+| **PRDescriber** | `pr-describe/SKILL.md` | Generates structured PR descriptions with spec cross-references             |
+| **PRChecker**   | `pr-check/SKILL.md`    | Validates PRs against principled conventions (references, labels, sections) |
 
 #### BC-5: Repository Scaffolding
 
-| Aggregate             | Root Entity               | Description                                                            |
-| --------------------- | ------------------------- | ---------------------------------------------------------------------- |
-| **GHScaffolder**      | `gh-scaffold/SKILL.md`    | Creates `.github/` directory with templates, workflows, CODEOWNERS     |
-| **IssueTemplates**    | `templates/issue-templates/` | Bug report, feature request, and proposal issue templates           |
-| **PRTemplate**        | `templates/pull-request-template.md` | PR template with principled sections                        |
-| **CIWorkflow**        | `templates/workflows/`    | GitHub Actions workflow for PR validation                              |
-| **CODEOWNERSGen**     | `gen-codeowners/SKILL.md` | Generates CODEOWNERS from module structure and git history             |
+| Aggregate          | Root Entity                          | Description                                                        |
+| ------------------ | ------------------------------------ | ------------------------------------------------------------------ |
+| **GHScaffolder**   | `gh-scaffold/SKILL.md`               | Creates `.github/` directory with templates, workflows, CODEOWNERS |
+| **IssueTemplates** | `templates/issue-templates/`         | Bug report, feature request, and proposal issue templates          |
+| **PRTemplate**     | `templates/pull-request-template.md` | PR template with principled sections                               |
+| **CIWorkflow**     | `templates/workflows/`               | GitHub Actions workflow for PR validation                          |
+| **CODEOWNERSGen**  | `gen-codeowners/SKILL.md`            | Generates CODEOWNERS from module structure and git history         |
 
 #### BC-6: Label Management
 
-| Aggregate          | Root Entity             | Description                                                              |
-| ------------------ | ----------------------- | ------------------------------------------------------------------------ |
-| **LabelSyncer**    | `sync-labels/SKILL.md`  | Creates, updates, and optionally prunes GitHub labels to match taxonomy  |
+| Aggregate       | Root Entity            | Description                                                             |
+| --------------- | ---------------------- | ----------------------------------------------------------------------- |
+| **LabelSyncer** | `sync-labels/SKILL.md` | Creates, updates, and optionally prunes GitHub labels to match taxonomy |
 
 #### BC-7: Enforcement & Drift
 
-| Aggregate            | Root Entity                  | Description                                                     |
-| -------------------- | ---------------------------- | --------------------------------------------------------------- |
-| **PRReferenceNudge** | `check-pr-references.sh`     | Advisory hook reminding about principled references in PRs      |
-| **GHCLICheck**       | `check-gh-cli.sh`            | Verifies gh CLI availability, duplicated across 7 skills        |
-| **DriftChecker**     | `check-template-drift.sh`    | Verifies all 6 script copies match canonical source             |
+| Aggregate            | Root Entity               | Description                                                |
+| -------------------- | ------------------------- | ---------------------------------------------------------- |
+| **PRReferenceNudge** | `check-pr-references.sh`  | Advisory hook reminding about principled references in PRs |
+| **GHCLICheck**       | `check-gh-cli.sh`         | Verifies gh CLI availability, duplicated across 7 skills   |
+| **DriftChecker**     | `check-template-drift.sh` | Verifies all 6 script copies match canonical source        |
 
 ### Domain Events
 
-| Event                       | Source Context             | Target Context(s)        | Description                                                        |
-| --------------------------- | -------------------------- | ------------------------ | ------------------------------------------------------------------ |
-| **IssueIngested**           | BC-3 (Issue Pipeline)      | BC-6 (Label Mgmt)       | Issue converted to document; labels should be applied              |
-| **BatchTriageComplete**     | BC-3 (Issue Pipeline)      | BC-6 (Label Mgmt)       | All qualifying issues processed; summary labels updated            |
-| **DocumentSynced**          | BC-3 (Issue Pipeline)      | BC-6 (Label Mgmt)       | Document pushed to GitHub issue; lifecycle labels updated          |
-| **PRDescriptionGenerated**  | BC-4 (PR Integration)      | BC-7 (Enforcement)      | PR created with references; hook should not fire                   |
-| **RepositoryScaffolded**    | BC-5 (Repo Scaffolding)    | BC-6 (Label Mgmt)       | GitHub config created; labels should be synced                     |
+| Event                      | Source Context          | Target Context(s)  | Description                                               |
+| -------------------------- | ----------------------- | ------------------ | --------------------------------------------------------- |
+| **IssueIngested**          | BC-3 (Issue Pipeline)   | BC-6 (Label Mgmt)  | Issue converted to document; labels should be applied     |
+| **BatchTriageComplete**    | BC-3 (Issue Pipeline)   | BC-6 (Label Mgmt)  | All qualifying issues processed; summary labels updated   |
+| **DocumentSynced**         | BC-3 (Issue Pipeline)   | BC-6 (Label Mgmt)  | Document pushed to GitHub issue; lifecycle labels updated |
+| **PRDescriptionGenerated** | BC-4 (PR Integration)   | BC-7 (Enforcement) | PR created with references; hook should not fire          |
+| **RepositoryScaffolded**   | BC-5 (Repo Scaffolding) | BC-6 (Label Mgmt)  | GitHub config created; labels should be synced            |
 
 ---
 
@@ -192,14 +192,14 @@ Architectural decisions resolved during implementation:
 
 ## Dependencies
 
-| Dependency                          | Required By                 | Status             |
-| ----------------------------------- | --------------------------- | ------------------ |
-| gh CLI (installed and authenticated) | All skills except gen-codeowners | Required        |
-| Bash shell                           | All scripts                 | Available          |
-| Git                                  | gen-codeowners, pr-describe | Available          |
-| jq (optional, with grep fallback)    | check-pr-references.sh      | Optional           |
-| principled-docs document format      | sync-issues, pr-describe    | Stable (v0.3.1)    |
-| Marketplace structure (RFC-002)      | Plugin location              | Complete (Plan-002) |
+| Dependency                           | Required By                      | Status              |
+| ------------------------------------ | -------------------------------- | ------------------- |
+| gh CLI (installed and authenticated) | All skills except gen-codeowners | Required            |
+| Bash shell                           | All scripts                      | Available           |
+| Git                                  | gen-codeowners, pr-describe      | Available           |
+| jq (optional, with grep fallback)    | check-pr-references.sh           | Optional            |
+| principled-docs document format      | sync-issues, pr-describe         | Stable (v0.3.1)     |
+| Marketplace structure (RFC-002)      | Plugin location                  | Complete (Plan-002) |
 
 ---
 

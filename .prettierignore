@@ -1,1 +1,8 @@
 node_modules/
+
+# Immutable documents — accepted ADRs and accepted proposals cannot be modified.
+# Prettier formatting changes are skipped to respect document immutability.
+docs/decisions/009-script-duplication-across-implementation-skills.md
+docs/decisions/010-gh-cli-as-github-interface.md
+docs/proposals/006-principled-implementation-plugin.md
+docs/proposals/007-principled-github-plugin.md

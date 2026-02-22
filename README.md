@@ -20,10 +20,10 @@ A Claude Code plugin marketplace hosting first-party and community plugins for t
 
 ### First-Party
 
-| Plugin                                                                       | Category       | Description                                                                                                                    |
-| ---------------------------------------------------------------------------- | -------------- | ------------------------------------------------------------------------------------------------------------------------------ |
-| [**principled-docs**](plugins/principled-docs/README.md)                     | documentation  | Scaffold, author, and enforce module documentation structure following the Principled specification-first methodology (v0.3.1) |
-| [**principled-implementation**](plugins/principled-implementation/README.md) | implementation | Orchestrate DDD plan execution via worktree-isolated Claude Code agents (v0.1.0)                                               |
+| Plugin                                                                       | Category       | Description                                                                                                                     |
+| ---------------------------------------------------------------------------- | -------------- | ------------------------------------------------------------------------------------------------------------------------------- |
+| [**principled-docs**](plugins/principled-docs/README.md)                     | documentation  | Scaffold, author, and enforce module documentation structure following the Principled specification-first methodology (v0.3.1)  |
+| [**principled-implementation**](plugins/principled-implementation/README.md) | implementation | Orchestrate DDD plan execution via worktree-isolated Claude Code agents (v0.1.0)                                                |
 | [**principled-github**](plugins/principled-github/README.md)                 | workflow       | Integrate the principled workflow with GitHub native features: issues, PRs, templates, actions, CODEOWNERS, and labels (v0.1.0) |
 
 ### Community
