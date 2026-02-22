@@ -32,7 +32,7 @@ fi
 
 # Check if the command includes principled references
 HAS_REFERENCE=false
-if echo "$COMMAND" | grep -qiE '(Plan-[0-9]{3}|RFC-[0-9]{3}|ADR-[0-9]{3})'; then
+if echo "$COMMAND" | grep -qiE '(Plan-[0-9]{3,}|RFC-[0-9]{3,}|ADR-[0-9]{3,})'; then
   HAS_REFERENCE=true
 fi
 

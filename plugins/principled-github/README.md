@@ -67,7 +67,7 @@ claude plugin add <path-to-principled-github>
 
 ## 🛠️ Skills
 
-10 skills, each a slash command. Each skill is self-contained --- its own templates, scripts, and reference docs.
+9 skills, each a slash command. Each skill is self-contained --- its own templates, scripts, and reference docs.
 
 ### Triage & Ingestion
 
@@ -115,7 +115,7 @@ The plugin is built in three layers:
 
 ```mermaid
 flowchart TB
-    S["🛠️ <b>SKILLS</b> — integration workflows<br/>10 skills, each self-contained"]
+    S["🛠️ <b>SKILLS</b> — integration workflows<br/>9 skills, each self-contained"]
     H["🔒 <b>HOOKS</b> — advisory guardrails<br/>PR reference nudge · always advisory"]
     F["🧱 <b>FOUNDATION</b> — scripts, templates<br/>1 canonical script · issue/PR/workflow templates"]
 
@@ -157,9 +157,9 @@ Following the principled convention, shared scripts are duplicated across consum
 bash plugins/principled-github/scripts/check-template-drift.sh
 ```
 
-| Canonical                             | Copies To                                                                       |
-| ------------------------------------- | ------------------------------------------------------------------------------- |
-| `sync-issues/scripts/check-gh-cli.sh` | `sync-labels/`, `pr-check/`, `gh-scaffold/`, `ingest-issue/`, `triage/` scripts |
+| Canonical                             | Copies To                                                                                       |
+| ------------------------------------- | ----------------------------------------------------------------------------------------------- |
+| `sync-issues/scripts/check-gh-cli.sh` | `sync-labels/`, `pr-check/`, `gh-scaffold/`, `ingest-issue/`, `triage/`, `pr-describe/` scripts |
 
 ## 🚀 CI Integration
 

@@ -50,10 +50,11 @@ Process open GitHub issues through the principled pipeline. Finds untriaged issu
 
    An issue is considered **untriaged** if it:
    - Is open
-   - Does not have a `principled-ingest-comment` marker in its comments (has not been through `/ingest-issue`)
-   - Does not already have principled lifecycle labels (`proposal:*`, `plan:*`, `type:rfc`, `type:plan`)
+   - Does not have principled lifecycle labels (`proposal:*`, `plan:*`, `decision:*`, `task:*`, `type:rfc`, `type:plan`, `type:adr`)
 
-   Returns a list of issue numbers, one per line.
+   Label-based detection is the primary signal. Issues ingested via `/ingest-issue` always receive lifecycle labels in step 10, so this is reliable for the common case.
+
+   Returns tab-separated `<number>\t<title>`, one issue per line.
 
 3. **Report the triage queue.** Show the user how many issues are queued and list them with titles:
 
@@ -66,7 +67,9 @@ Process open GitHub issues through the principled pipeline. Finds untriaged issu
 
    If `--limit` is set, show only the first N.
 
-4. **Process each issue sequentially.** For each issue in the queue, invoke the `/ingest-issue` workflow. This means each issue gets the full treatment:
+   If `--dry-run` is set, stop here. Report the queue and what _would_ happen (estimated classification for each issue based on title/labels) without making any changes. Do not proceed to step 4.
+
+4. **Process each issue sequentially.** For each issue in the queue, follow the `/ingest-issue` SKILL.md workflow inline (steps 2–11). This means each issue gets the full treatment:
    - **Metadata normalization** — missing labels, vague titles are fixed on GitHub
    - **Classification** — determines RFC + Plan vs Plan only
    - **Document creation** — proposals and/or plans created, pre-populated from issue content

@@ -59,17 +59,7 @@ Ingest a GitHub issue into the principled documentation pipeline. Automatically 
 
    If documents already exist, report them and ask if the user wants to update or create additional ones.
 
-4. **Normalize issue metadata.** Before classifying, ensure the issue has complete, well-structured metadata. Read `reference/classification-guide.md` for label conventions. Fix any gaps directly on GitHub:
-
-   **Labels:** If the issue has no labels, or only generic labels (e.g., just `bug` with no component/priority), analyze the issue content and apply appropriate labels:
-
-   ```bash
-   gh issue edit <issue-number> --add-label "<labels>"
-   ```
-
-   - Add a **type label** if missing (`bug`, `enhancement`, `feature`, etc.) based on issue content
-   - Add **component/scope labels** if the issue clearly affects specific modules or areas
-   - Add **priority labels** if urgency is evident from the issue text
+4. **Normalize issue metadata.** Before classifying, ensure the issue has well-structured metadata. Fix gaps directly on GitHub:
 
    **Title:** If the issue title is vague, overly broad, or unclear (e.g., "fix thing", "it's broken", "update"), edit it to be descriptive:
 
@@ -77,12 +67,22 @@ Ingest a GitHub issue into the principled documentation pipeline. Automatically 
    gh issue edit <issue-number> --title "<improved-title>"
    ```
 
-   **Body:** If the issue body is empty or minimal but the title implies a concrete task, do not modify the body --- the created documents will provide the structure. If the body has useful content but no clear sections, that is fine --- the classification step will parse it.
+   **Component/scope labels:** If the issue clearly affects specific modules or areas, add component labels. If urgency is evident, add priority labels:
+
+   ```bash
+   gh issue edit <issue-number> --add-label "<labels>"
+   ```
+
+   Do **not** add type labels (`bug`, `enhancement`, `feature`) in this step --- type classification happens in step 5 based on issue content analysis, and principled lifecycle labels are applied in step 10. Adding type labels here would create a feedback loop where step 5 classifies based on labels the agent just invented rather than human intent.
+
+   **Body:** If the issue body is empty or minimal but the title implies a concrete task, do not modify the body --- the created documents will provide the structure.
 
    Report any metadata changes made to the user.
 
-5. **Classify the issue.** Analyze the issue to determine what documents to create. Read `reference/classification-guide.md` for guidance. Consider:
-   - **Issue labels** — `bug`, `enhancement`, `feature`, etc.
+   If `--dry-run` is set, report what changes _would_ be made and stop. Do not proceed to step 5.
+
+5. **Classify the issue.** Analyze the issue to determine what documents to create. Read `reference/classification-guide.md` for guidance. Classify based on issue content --- the body text and any _pre-existing_ human-applied labels. Consider:
+   - **Pre-existing issue labels** — `bug`, `enhancement`, `feature`, etc. (only labels that were present _before_ step 4)
    - **Issue body length and complexity** — longer, more detailed issues suggest larger scope
    - **Mentions of architecture, API changes, or cross-cutting concerns** — suggest an RFC is needed
 
@@ -132,10 +132,18 @@ Ingest a GitHub issue into the principled documentation pipeline. Automatically 
    )"
    ```
 
-10. **Apply labels.** Add principled lifecycle labels to the issue:
+10. **Apply labels.** Add principled lifecycle labels to the issue based on what was created:
+
+    **If RFC + Plan were created:**
 
     ```bash
     gh issue edit <issue-number> --add-label "type:rfc,proposal:draft"
+    ```
+
+    **If Plan only was created:**
+
+    ```bash
+    gh issue edit <issue-number> --add-label "type:plan,plan:active"
     ```
 
 11. **Report results.** Summarize what was created:

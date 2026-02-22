@@ -22,7 +22,7 @@ Five layers, top to bottom:
 | **Docs: Skills**        | `plugins/principled-docs/skills/` (9 directories)                  | Generative workflows — each skill is a slash command with its own `SKILL.md`, templates, scripts, and reference docs |
 | **Docs: Hooks**         | `plugins/principled-docs/hooks/`                                   | Deterministic guardrails — `hooks.json` declares PreToolUse/PostToolUse triggers that run shell scripts              |
 | **Implementation: All** | `plugins/principled-implementation/`                               | Skills (6), hooks (1), agents (1) for plan execution via worktree-isolated sub-agents                                |
-| **GitHub: All**         | `plugins/principled-github/`                                       | Skills (10), hooks (1) for GitHub integration: issues, PRs, templates, CODEOWNERS, labels                            |
+| **GitHub: All**         | `plugins/principled-github/`                                       | Skills (9), hooks (1) for GitHub integration: issues, PRs, templates, CODEOWNERS, labels                             |
 | **Dev DX**              | `.claude/`, config files, `.github/workflows/`                     | Project-level Claude Code settings, dev skills, CI pipeline, linting config                                          |
 
 ## Skills
@@ -52,7 +52,7 @@ Five layers, top to bottom:
 | `merge-work`    | `/merge-work <task-id> [--force] [--no-cleanup]`    | Orchestration |
 | `orchestrate`   | `/orchestrate <plan-path> [--phase N] [--continue]` | Orchestration |
 
-### principled-github (10 skills)
+### principled-github (9 skills)
 
 | Skill             | Command                                            | Category      |
 | ----------------- | -------------------------------------------------- | ------------- |
@@ -103,8 +103,8 @@ The `spawn` skill delegates to `impl-worker` via `context: fork` + `agent: impl-
 
 ### Script Duplication (principled-github)
 
-- `check-gh-cli.sh` is canonical in `plugins/principled-github/skills/sync-issues/scripts/`, copied to `sync-labels`, `pr-check`, `gh-scaffold`, `ingest-issue`, and `triage`.
-- `plugins/principled-github/scripts/check-template-drift.sh` verifies all 5 pairs. Drift = CI failure.
+- `check-gh-cli.sh` is canonical in `plugins/principled-github/skills/sync-issues/scripts/`, copied to `sync-labels`, `pr-check`, `gh-scaffold`, `ingest-issue`, `triage`, and `pr-describe`.
+- `plugins/principled-github/scripts/check-template-drift.sh` verifies all 6 pairs. Drift = CI failure.
 
 ### Naming Patterns
 
@@ -146,7 +146,7 @@ This repo installs all three first-party plugins (via `.claude/settings.json`):
 
 - **principled-docs** — All 9 skills and 3 enforcement hooks are active during development.
 - **principled-implementation** — All 6 skills, the `impl-worker` agent, and 1 advisory hook are active during development.
-- **principled-github** — All 10 skills and 1 advisory hook are active during development.
+- **principled-github** — All 9 skills and 1 advisory hook are active during development.
 
 See `.claude/CLAUDE.md` for development-specific context.
 
@@ -209,7 +209,7 @@ Advisory only — reminds when `gh pr create` is run without principled document
 
 - **Template drift (docs):** `plugins/principled-docs/skills/scaffold/scripts/check-template-drift.sh` — exits non-zero if any copy diverges from canonical.
 - **Template drift (impl):** `plugins/principled-implementation/scripts/check-template-drift.sh` — exits non-zero if any of 7 pairs diverge.
-- **Template drift (github):** `plugins/principled-github/scripts/check-template-drift.sh` — exits non-zero if any of 3 pairs diverge.
+- **Template drift (github):** `plugins/principled-github/scripts/check-template-drift.sh` — exits non-zero if any of 6 pairs diverge.
 - **Structure validation:** `plugins/principled-docs/skills/scaffold/scripts/validate-structure.sh --module-path <path> [--type <type>] [--strict] [--json]` — checks a module's docs structure.
 - **Root validation:** `plugins/principled-docs/skills/scaffold/scripts/validate-structure.sh --root` — checks repo-level docs structure.
 - **Hook testing (docs):** Feed JSON with `tool_input.file_path` to guard scripts via stdin. Exit 0 = allow, exit 2 = block.

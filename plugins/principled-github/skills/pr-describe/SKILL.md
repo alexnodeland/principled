@@ -35,25 +35,33 @@ Generate a structured PR description from a DDD plan task, with full cross-refer
 
 ## Workflow
 
-1. **Detect context.** Determine the task and plan:
+1. **Verify prerequisites.** Check that `gh` is available and authenticated:
+
+   ```bash
+   bash scripts/check-gh-cli.sh
+   ```
+
+   If not available, report: _"The `gh` CLI is required. Install it from <https://cli.github.com/>."_
+
+2. **Detect context.** Determine the task and plan:
    - If `<task-id>` provided: use it directly
    - If branch name matches `impl/<plan-number>/<task-id>`: extract task ID and plan number
    - If `.impl/manifest.json` exists: look up task details
    - If no context found: prompt user for the plan path
 
-2. **Extract plan metadata.** Read the plan file for:
+3. **Extract plan metadata.** Read the plan file for:
    - Plan title and number
    - Originating proposal reference
    - Related ADRs
    - Bounded contexts
 
-3. **Extract task details.** If manifest exists:
+4. **Extract task details.** If manifest exists:
 
    ```bash
    bash scripts/task-manifest.sh --get-task --task-id <task-id>
    ```
 
-4. **Analyze the branch.** Determine changes:
+5. **Analyze the branch.** Determine changes:
 
    ```bash
    bash scripts/analyze-branch.sh --branch <branch>
@@ -61,14 +69,14 @@ Generate a structured PR description from a DDD plan task, with full cross-refer
 
    Returns: files changed, commit messages, diff summary.
 
-5. **Generate the PR description.** Read `templates/pr-body.md` and populate:
+6. **Generate the PR description.** Read `templates/pr-body.md` and populate:
    - Summary from commit messages and task description
    - Plan and task references
    - Proposal and ADR references
    - Files changed summary
    - Checklist items
 
-6. **Output or create.**
+7. **Output or create.**
    - Without `--create`: output the PR body for review
    - With `--create`: create the PR via `gh pr create`
 
@@ -78,6 +86,7 @@ The skill recognizes the `impl/<plan-number>/<task-id>` branch naming convention
 
 ## Scripts
 
+- `scripts/check-gh-cli.sh` --- Verify gh CLI availability and auth status (copy from sync-issues)
 - `scripts/task-manifest.sh` --- Read task details from manifest (copy from principled-implementation)
 - `scripts/analyze-branch.sh` --- Analyze branch changes for PR description
 
