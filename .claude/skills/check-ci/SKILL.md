@@ -46,25 +46,43 @@ npx markdownlint-cli2 '**/*.md'
 npx prettier --check '**/*.md'
 ```
 
-### 5. Template Drift (validate)
+### 5. Template Drift — principled-docs (validate)
 
 ```bash
 bash plugins/principled-docs/skills/scaffold/scripts/check-template-drift.sh
 ```
 
-### 6. Root Structure Validation (validate)
+### 6. Template Drift — principled-implementation (validate)
+
+```bash
+bash plugins/principled-implementation/scripts/check-template-drift.sh
+```
+
+### 7. Root Structure Validation (validate)
 
 ```bash
 bash plugins/principled-docs/skills/scaffold/scripts/validate-structure.sh --root
 ```
 
-### 7. Marketplace Manifest Validation (validate)
+### 8. Marketplace Manifest Validation (validate)
 
 Verify `.claude-plugin/marketplace.json` is valid JSON and all plugin source directories exist.
 
-### 8. Plugin Manifest Validation (validate)
+### 9. Plugin Manifest Validation (validate)
 
 Verify every plugin in `plugins/*/` and `external_plugins/*/` has a valid `.claude-plugin/plugin.json`.
+
+### 10. Smoke-test ADR Immutability Hook (validate)
+
+For each `docs/decisions/*.md` with `status: accepted`, feed its path to `check-adr-immutability.sh` and verify exit code 2 (block). Also test a non-decision file and verify exit code 0 (allow).
+
+### 11. Smoke-test Proposal Lifecycle Hook (validate)
+
+For each `docs/proposals/*.md` with terminal status, feed its path to `check-proposal-lifecycle.sh` and verify exit code 2. For draft proposals, verify exit code 0.
+
+### 12. Smoke-test Manifest Integrity Hook (validate)
+
+Feed `.impl/manifest.json` path to `check-manifest-integrity.sh` and verify exit code 0 (advisory). Feed an unrelated path and verify exit code 0 (silent passthrough).
 
 ### Summary
 

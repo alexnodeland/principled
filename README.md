@@ -20,9 +20,10 @@ A Claude Code plugin marketplace hosting first-party and community plugins for t
 
 ### First-Party
 
-| Plugin                                                   | Category      | Description                                                                                                                    |
-| -------------------------------------------------------- | ------------- | ------------------------------------------------------------------------------------------------------------------------------ |
-| [**principled-docs**](plugins/principled-docs/README.md) | documentation | Scaffold, author, and enforce module documentation structure following the Principled specification-first methodology (v0.3.1) |
+| Plugin                                                                       | Category       | Description                                                                                                                    |
+| ---------------------------------------------------------------------------- | -------------- | ------------------------------------------------------------------------------------------------------------------------------ |
+| [**principled-docs**](plugins/principled-docs/README.md)                     | documentation  | Scaffold, author, and enforce module documentation structure following the Principled specification-first methodology (v0.3.1) |
+| [**principled-implementation**](plugins/principled-implementation/README.md) | implementation | Orchestrate DDD plan execution via worktree-isolated Claude Code agents (v0.1.0)                                               |
 
 ### Community
 
@@ -40,6 +41,7 @@ _No community plugins yet. See [Contributing](#-contributing-a-plugin) to submit
 
 ```
 /plugin install principled-docs@principled-marketplace
+/plugin install principled-implementation@principled-marketplace
 ```
 
 ### Team-Wide Adoption
@@ -57,7 +59,8 @@ Add to your project's `.claude/settings.json`:
     }
   },
   "enabledPlugins": {
-    "principled-docs@principled-marketplace": true
+    "principled-docs@principled-marketplace": true,
+    "principled-implementation@principled-marketplace": true
   }
 }
 ```
@@ -69,7 +72,8 @@ principled/
 ├── .claude-plugin/
 │   └── marketplace.json         # Plugin catalog
 ├── plugins/                     # First-party plugins
-│   └── principled-docs/         # Flagship documentation plugin
+│   ├── principled-docs/         # Documentation structure plugin
+│   └── principled-implementation/ # Plan execution plugin
 ├── external_plugins/            # Community plugins
 ├── docs/                        # Marketplace governance
 │   ├── proposals/               # RFCs
@@ -104,12 +108,13 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for the full guide.
 
 ## 📋 Categories
 
-| Category        | Description                                             |
-| --------------- | ------------------------------------------------------- |
-| `documentation` | Documentation structure, authoring, and enforcement     |
-| `workflow`      | Development workflow automation and process enforcement |
-| `quality`       | Code quality, review, and standards enforcement         |
-| `architecture`  | Architectural governance and decision tracking          |
+| Category         | Description                                             |
+| ---------------- | ------------------------------------------------------- |
+| `documentation`  | Documentation structure, authoring, and enforcement     |
+| `implementation` | Plan execution, orchestration, and agent automation     |
+| `workflow`       | Development workflow automation and process enforcement |
+| `quality`        | Code quality, review, and standards enforcement         |
+| `architecture`   | Architectural governance and decision tracking          |
 
 ---
 

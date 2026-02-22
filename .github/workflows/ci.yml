@@ -52,8 +52,11 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Check template drift
+      - name: Check principled-docs template drift
         run: bash plugins/principled-docs/skills/scaffold/scripts/check-template-drift.sh
+
+      - name: Check principled-implementation template drift
+        run: bash plugins/principled-implementation/scripts/check-template-drift.sh
 
       - name: Validate root structure
         run: bash plugins/principled-docs/skills/scaffold/scripts/validate-structure.sh --root
@@ -171,3 +174,25 @@ jobs:
               echo "PASS: draft proposal $proposal correctly allowed (exit 0)"
             fi
           done
+
+      - name: Smoke-test manifest integrity hook
+        run: |
+          # Test: editing .impl/manifest.json should warn but allow (exit 0)
+          result=0
+          echo '{"tool_input":{"file_path":".impl/manifest.json"}}' \
+            | bash plugins/principled-implementation/hooks/scripts/check-manifest-integrity.sh || result=$?
+          if [ "$result" -ne 0 ]; then
+            echo "FAIL: expected exit 0 for manifest.json edit, got $result"
+            exit 1
+          fi
+          echo "PASS: manifest.json edit correctly allowed with advisory (exit 0)"
+
+          # Test: editing an unrelated file should pass through silently (exit 0)
+          result=0
+          echo '{"tool_input":{"file_path":"src/index.ts"}}' \
+            | bash plugins/principled-implementation/hooks/scripts/check-manifest-integrity.sh || result=$?
+          if [ "$result" -ne 0 ]; then
+            echo "FAIL: expected exit 0 for unrelated file, got $result"
+            exit 1
+          fi
+          echo "PASS: unrelated file correctly passed through (exit 0)"

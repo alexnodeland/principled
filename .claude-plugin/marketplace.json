@@ -23,6 +23,21 @@
         "monorepo",
         "ddd"
       ]
+    },
+    {
+      "name": "principled-implementation",
+      "source": "./plugins/principled-implementation",
+      "description": "Orchestrate DDD plan execution via worktree-isolated Claude Code agents. Decomposes plans, spawns agents in git worktrees, validates implementations, and merges results.",
+      "version": "0.1.0",
+      "category": "implementation",
+      "keywords": [
+        "implementation",
+        "orchestration",
+        "worktree",
+        "sub-agent",
+        "ddd",
+        "automation"
+      ]
     }
   ]
 }
