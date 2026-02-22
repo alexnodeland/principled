@@ -24,6 +24,7 @@ A Claude Code plugin marketplace hosting first-party and community plugins for t
 | ---------------------------------------------------------------------------- | -------------- | ------------------------------------------------------------------------------------------------------------------------------ |
 | [**principled-docs**](plugins/principled-docs/README.md)                     | documentation  | Scaffold, author, and enforce module documentation structure following the Principled specification-first methodology (v0.3.1) |
 | [**principled-implementation**](plugins/principled-implementation/README.md) | implementation | Orchestrate DDD plan execution via worktree-isolated Claude Code agents (v0.1.0)                                               |
+| [**principled-github**](plugins/principled-github/README.md)                 | workflow       | Integrate the principled workflow with GitHub native features: issues, PRs, templates, actions, CODEOWNERS, and labels (v0.1.0) |
 
 ### Community
 
@@ -42,6 +43,7 @@ _No community plugins yet. See [Contributing](#-contributing-a-plugin) to submit
 ```
 /plugin install principled-docs@principled-marketplace
 /plugin install principled-implementation@principled-marketplace
+/plugin install principled-github@principled-marketplace
 ```
 
 ### Team-Wide Adoption
@@ -60,7 +62,8 @@ Add to your project's `.claude/settings.json`:
   },
   "enabledPlugins": {
     "principled-docs@principled-marketplace": true,
-    "principled-implementation@principled-marketplace": true
+    "principled-implementation@principled-marketplace": true,
+    "principled-github@principled-marketplace": true
   }
 }
 ```
@@ -73,7 +76,8 @@ principled/
 │   └── marketplace.json         # Plugin catalog
 ├── plugins/                     # First-party plugins
 │   ├── principled-docs/         # Documentation structure plugin
-│   └── principled-implementation/ # Plan execution plugin
+│   ├── principled-implementation/ # Plan execution plugin
+│   └── principled-github/       # GitHub integration plugin
 ├── external_plugins/            # Community plugins
 ├── docs/                        # Marketplace governance
 │   ├── proposals/               # RFCs
