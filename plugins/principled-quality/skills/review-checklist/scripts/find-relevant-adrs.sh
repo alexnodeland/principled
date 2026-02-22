@@ -20,19 +20,19 @@ DECISIONS_DIR=""
 # Parse arguments
 while [[ $# -gt 0 ]]; do
   case "$1" in
-    --files)
-      FILES="$2"
-      shift 2
-      ;;
-    --decisions-dir)
-      DECISIONS_DIR="$2"
-      shift 2
-      ;;
-    *)
-      echo "Error: Unknown argument: $1" >&2
-      echo "Usage: find-relevant-adrs.sh --files <file1,file2,...> [--decisions-dir <path>]" >&2
-      exit 1
-      ;;
+  --files)
+    FILES="$2"
+    shift 2
+    ;;
+  --decisions-dir)
+    DECISIONS_DIR="$2"
+    shift 2
+    ;;
+  *)
+    echo "Error: Unknown argument: $1" >&2
+    echo "Usage: find-relevant-adrs.sh --files <file1,file2,...> [--decisions-dir <path>]" >&2
+    exit 1
+    ;;
   esac
 done
 

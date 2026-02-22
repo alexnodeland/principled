@@ -21,19 +21,19 @@ TASK_ID=""
 # Parse arguments
 while [[ $# -gt 0 ]]; do
   case "$1" in
-    --plan)
-      PLAN_PATH="$2"
-      shift 2
-      ;;
-    --task)
-      TASK_ID="$2"
-      shift 2
-      ;;
-    *)
-      echo "Error: Unknown argument: $1" >&2
-      echo "Usage: extract-plan-criteria.sh --plan <path> [--task <id>]" >&2
-      exit 1
-      ;;
+  --plan)
+    PLAN_PATH="$2"
+    shift 2
+    ;;
+  --task)
+    TASK_ID="$2"
+    shift 2
+    ;;
+  *)
+    echo "Error: Unknown argument: $1" >&2
+    echo "Usage: extract-plan-criteria.sh --plan <path> [--task <id>]" >&2
+    exit 1
+    ;;
   esac
 done
 

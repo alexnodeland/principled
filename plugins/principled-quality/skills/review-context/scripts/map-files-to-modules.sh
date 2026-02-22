@@ -18,15 +18,15 @@ FILES=""
 # Parse arguments
 while [[ $# -gt 0 ]]; do
   case "$1" in
-    --files)
-      FILES="$2"
-      shift 2
-      ;;
-    *)
-      echo "Error: Unknown argument: $1" >&2
-      echo "Usage: map-files-to-modules.sh --files <file1,file2,...>" >&2
-      exit 1
-      ;;
+  --files)
+    FILES="$2"
+    shift 2
+    ;;
+  *)
+    echo "Error: Unknown argument: $1" >&2
+    echo "Usage: map-files-to-modules.sh --files <file1,file2,...>" >&2
+    exit 1
+    ;;
   esac
 done
 

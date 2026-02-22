@@ -59,10 +59,7 @@ Generate a structured summary of a PR's review state. Collects checklist status,
      gh pr view <pr-number> --json reviews --jq '.reviews[] | {author: .author.login, state: .state}'
      ```
 
-3. **Build findings table.** For each review comment or finding, create an entry:
-
-   | Finding | Severity | Spec Item | File | Status |
-   | ------- | -------- | --------- | ---- | ------ |
+3. **Build findings table.** For each review comment or finding, create an entry with these columns:
    - **Finding:** Summary of the review comment or concern
    - **Severity:** Blocking, Important, or Advisory (inferred from context)
    - **Spec Item:** Which checklist item or ADR this relates to (if identifiable)
