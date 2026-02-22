@@ -2,8 +2,8 @@
 name: test-hooks
 description: >
   Smoke-test the enforcement hooks by feeding known good and bad inputs
-  and verifying exit codes. Tests both the ADR immutability guard and
-  the proposal lifecycle guard.
+  and verifying exit codes. Tests the ADR immutability guard, the
+  proposal lifecycle guard, and the manifest integrity advisory.
 allowed-tools: Bash(echo *), Bash(bash plugins/*), Read
 user-invocable: true
 ---
@@ -66,6 +66,34 @@ Run these test cases:
    ```
 
    Expected: exit code 0.
+
+### Manifest Integrity Advisory (`plugins/principled-implementation/hooks/scripts/check-manifest-integrity.sh`)
+
+Run these test cases:
+
+1. **Manifest file edit — should warn but allow (exit 0):**
+
+   ```bash
+   echo '{"tool_input":{"file_path":".impl/manifest.json"}}' | bash plugins/principled-implementation/hooks/scripts/check-manifest-integrity.sh
+   ```
+
+   Expected: exit code 0, with advisory message on stderr.
+
+2. **Unrelated file — should pass silently (exit 0):**
+
+   ```bash
+   echo '{"tool_input":{"file_path":"src/index.ts"}}' | bash plugins/principled-implementation/hooks/scripts/check-manifest-integrity.sh
+   ```
+
+   Expected: exit code 0, no output.
+
+3. **Missing JSON input — should allow (exit 0):**
+
+   ```bash
+   echo '{}' | bash plugins/principled-implementation/hooks/scripts/check-manifest-integrity.sh
+   ```
+
+   Expected: exit code 0 (guard scripts default to allow).
 
 ### Reporting
 
