@@ -4,38 +4,7 @@ This file supplements the root `CLAUDE.md` with development-specific guidance fo
 
 ## Dogfooding
 
-This repo installs all four first-party plugins (via `.claude/settings.json`). This means:
-
-### principled-docs
-
-- All 9 plugin skills (`/scaffold`, `/validate`, `/new-proposal`, `/new-plan`, `/new-adr`, `/new-architecture-doc`, `/proposal-status`, `/docs-audit`) are available as slash commands
-- All enforcement hooks (ADR immutability, proposal lifecycle, structure nudge) are active
-- Use the plugin's own skills to manage the marketplace's `docs/` directory
-
-### principled-implementation
-
-- All 6 plugin skills (`/decompose`, `/spawn`, `/check-impl`, `/merge-work`, `/orchestrate`) are available as slash commands
-- The `impl-worker` agent is available for worktree-isolated task execution
-- The manifest integrity advisory hook is active
-- Use `/orchestrate` against DDD plans in `docs/plans/` to execute implementation tasks
-
-### principled-github
-
-- All 9 plugin skills (`/triage`, `/ingest-issue`, `/sync-issues`, `/pr-describe`, `/gh-scaffold`, `/gen-codeowners`, `/sync-labels`, `/pr-check`) are available as slash commands
-- The PR reference advisory hook is active
-- Use `/triage` to batch-process all open untriaged issues into the principled pipeline
-- Use `/ingest-issue` to pull a single GitHub issue into the pipeline (normalizes metadata, creates proposals/plans)
-- Use `/sync-issues` to push proposals/plans to GitHub issues
-- Use `/gh-scaffold` to set up `.github/` directory with principled-aligned templates
-
-### principled-quality
-
-- All 5 plugin skills (`/review-checklist`, `/review-context`, `/review-coverage`, `/review-summary`) are available as slash commands
-- The review checklist advisory hook is active
-- Use `/review-checklist` to generate spec-driven review checklists for PRs
-- Use `/review-context` to surface relevant specifications for a PR's changed files
-- Use `/review-coverage` to assess review completeness against checklist items
-- Use `/review-summary` to generate structured review summaries
+All four first-party plugins are installed via `.claude/settings.json`. See root `CLAUDE.md` § Dogfooding for the full list of available skills and active hooks.
 
 ## Common Pitfalls
 

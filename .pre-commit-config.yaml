@@ -37,3 +37,17 @@ repos:
         language: system
         pass_filenames: false
         always_run: true
+
+      - id: github-template-drift
+        name: github plugin template drift check
+        entry: bash plugins/principled-github/scripts/check-template-drift.sh
+        language: system
+        pass_filenames: false
+        always_run: true
+
+      - id: quality-template-drift
+        name: quality plugin template drift check
+        entry: bash plugins/principled-quality/scripts/check-template-drift.sh
+        language: system
+        pass_filenames: false
+        always_run: true

@@ -8,23 +8,28 @@ related_adrs: [002, 003]
 
 ## Purpose
 
-Describes the three-stage documentation pipeline (Proposals → Decisions → Plans) that governs how changes flow from strategic intent through architectural decisions to tactical implementation. Intended for anyone working with the documentation system — authors, reviewers, and maintainers.
+Describes the documentation pipeline that governs how changes flow from strategic intent through tactical implementation, with architectural decisions recorded along the way. Intended for anyone working with the documentation system — authors, reviewers, and maintainers.
 
 ## Overview
 
-Every significant change follows a three-stage pipeline:
+Every significant change follows a pipeline with three document types:
 
 ```
-┌─────────────┐       ┌─────────────┐       ┌─────────────┐
-│  PROPOSAL    │       │  DECISION    │       │    PLAN      │
-│   (RFC)      │──────▶│   (ADR)      │──────▶│   (DDD)      │
-│              │       │              │       │              │
-│ "what & why" │       │ "what was    │       │ "how"        │
-│              │       │  decided"    │       │              │
-└─────────────┘       └─────────────┘       └─────────────┘
-  Strategic             Permanent              Tactical
-  docs/proposals/       docs/decisions/        docs/plans/
+┌─────────────┐                           ┌─────────────┐
+│  PROPOSAL    │                           │    PLAN      │
+│   (RFC)      │──────────────────────────▶│   (DDD)      │
+│              │                           │              │
+│ "what & why" │    ┌─────────────┐        │ "how"        │
+│              │    │  DECISION    │        │              │
+└─────────────┘    │   (ADR)      │        └─────────────┘
+  Strategic        │ "what was    │          Tactical
+  docs/proposals/  │  decided"    │          docs/plans/
+                   └─────────────┘
+                     Permanent
+                     docs/decisions/
 ```
+
+Proposals lead to plans. Decisions (ADRs) are created at any point during the pipeline as permanent records of significant architectural choices. They are not a sequential step between proposals and plans.
 
 Each stage has distinct characteristics:
 
@@ -65,13 +70,13 @@ proposed ──→ accepted ──→ deprecated
 ```
 
 - Immutable after acceptance (one exception: `superseded_by` field)
-- May be standalone or linked to a proposal via `originating_proposal`
-- Acceptance enables plan creation
+- May be standalone or linked to a proposal via `originating_proposal` (canonical field name) or `from_proposal` (legacy equivalent used in ADRs 004-012)
+- Any tooling reading this field must check both `originating_proposal` and `from_proposal`; new ADRs should use `originating_proposal`
 - Referenced by architecture docs
 
 ### Plans (DDD Decompositions)
 
-Plans decompose accepted decisions into concrete implementation work. They use domain-driven development to break down work into bounded contexts, aggregates, domain events, and implementation tasks.
+Plans decompose accepted proposals into concrete implementation work. They use domain-driven development to break down work into bounded contexts, aggregates, domain events, and implementation tasks.
 
 **Lifecycle:**
 
@@ -117,14 +122,14 @@ Architecture Doc (living)
 
 ### Cross-Referencing
 
-| Document         | Links To                        | Via                                                  |
-| ---------------- | ------------------------------- | ---------------------------------------------------- |
-| ADR              | Originating proposal (optional) | `originating_proposal` frontmatter                   |
-| ADR              | Superseded ADR                  | `superseded_by` on old ADR                           |
-| Plan             | Originating proposal            | `originating_proposal` frontmatter + markdown link   |
-| Plan             | Related ADRs                    | `related_adrs` frontmatter + "Related Decisions"     |
-| Architecture doc | Related ADRs                    | `related_adrs` frontmatter + "Key Decisions" section |
-| Proposal         | Superseding proposal            | `superseded_by` frontmatter                          |
+| Document         | Links To                        | Via                                                                                         |
+| ---------------- | ------------------------------- | ------------------------------------------------------------------------------------------- |
+| ADR              | Originating proposal (optional) | `originating_proposal` or `from_proposal` frontmatter (`originating_proposal` is canonical) |
+| ADR              | Superseded ADR                  | `superseded_by` on old ADR                                                                  |
+| Plan             | Originating proposal            | `originating_proposal` frontmatter + markdown link                                          |
+| Plan             | Related ADRs                    | `related_adrs` frontmatter + "Related Decisions"                                            |
+| Architecture doc | Related ADRs                    | `related_adrs` frontmatter + "Key Decisions" section                                        |
+| Proposal         | Superseding proposal            | `superseded_by` frontmatter                                                                 |
 
 ### Scope: Module vs. Root
 
@@ -155,10 +160,11 @@ Both scopes use identical conventions, templates, lifecycle rules, and naming pa
 4. Author creates ADR for the key decision
    → docs/decisions/001-use-kafka-for-event-store.md (status: proposed → accepted)
 
-5. Author creates DDD plan from the accepted ADR
+5. Author creates DDD plan from the accepted proposal
    → docs/plans/001-switch-to-event-sourcing.md (status: active)
    → Bounded contexts, aggregates, domain events defined
    → Implementation tasks listed
+   → References related ADRs via related_adrs field
 
 6. Plan completed
    → Plan status: complete
