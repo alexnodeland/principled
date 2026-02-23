@@ -72,13 +72,23 @@ Copy from the principled-github canonical source to principled-quality skills:
 3. `plugins/principled-github/skills/sync-issues/scripts/check-gh-cli.sh` → `plugins/principled-quality/skills/review-coverage/scripts/check-gh-cli.sh`
 4. `plugins/principled-github/skills/sync-issues/scripts/check-gh-cli.sh` → `plugins/principled-quality/skills/review-summary/scripts/check-gh-cli.sh`
 
+### principled-release — Cross-Plugin Script Propagation
+
+Copy from the principled-github canonical source to principled-release skills:
+
+1. `plugins/principled-github/skills/sync-issues/scripts/check-gh-cli.sh` → `plugins/principled-release/skills/changelog/scripts/check-gh-cli.sh`
+2. `plugins/principled-github/skills/sync-issues/scripts/check-gh-cli.sh` → `plugins/principled-release/skills/release-ready/scripts/check-gh-cli.sh`
+3. `plugins/principled-github/skills/sync-issues/scripts/check-gh-cli.sh` → `plugins/principled-release/skills/release-plan/scripts/check-gh-cli.sh`
+4. `plugins/principled-github/skills/sync-issues/scripts/check-gh-cli.sh` → `plugins/principled-release/skills/tag-release/scripts/check-gh-cli.sh`
+
 ### Verification
 
-Run all four drift checks:
+Run all five drift checks:
 
 1. `bash plugins/principled-docs/skills/scaffold/scripts/check-template-drift.sh`
 2. `bash plugins/principled-implementation/scripts/check-template-drift.sh`
 3. `bash plugins/principled-github/scripts/check-template-drift.sh`
 4. `bash plugins/principled-quality/scripts/check-template-drift.sh`
+5. `bash plugins/principled-release/scripts/check-template-drift.sh`
 
 Confirm all copies are byte-identical to their canonical sources. Report the result per plugin: PASS (zero drift) or FAIL (list drifted files).

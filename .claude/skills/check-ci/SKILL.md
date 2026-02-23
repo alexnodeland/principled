@@ -70,39 +70,49 @@ bash plugins/principled-github/scripts/check-template-drift.sh
 bash plugins/principled-quality/scripts/check-template-drift.sh
 ```
 
-### 9. Root Structure Validation (validate)
+### 9. Template Drift — principled-release (validate)
+
+```bash
+bash plugins/principled-release/scripts/check-template-drift.sh
+```
+
+### 10. Root Structure Validation (validate)
 
 ```bash
 bash plugins/principled-docs/skills/scaffold/scripts/validate-structure.sh --root
 ```
 
-### 10. Marketplace Manifest Validation (validate)
+### 11. Marketplace Manifest Validation (validate)
 
 Verify `.claude-plugin/marketplace.json` is valid JSON and all plugin source directories exist.
 
-### 11. Plugin Manifest Validation (validate)
+### 12. Plugin Manifest Validation (validate)
 
 Verify every plugin in `plugins/*/` and `external_plugins/*/` has a valid `.claude-plugin/plugin.json`.
 
-### 12. Smoke-test ADR Immutability Hook (validate)
+### 13. Smoke-test ADR Immutability Hook (validate)
 
 For each `docs/decisions/*.md` with `status: accepted`, feed its path to `check-adr-immutability.sh` and verify exit code 2 (block). Also test a non-decision file and verify exit code 0 (allow).
 
-### 13. Smoke-test Proposal Lifecycle Hook (validate)
+### 14. Smoke-test Proposal Lifecycle Hook (validate)
 
 For each `docs/proposals/*.md` with terminal status, feed its path to `check-proposal-lifecycle.sh` and verify exit code 2. For draft proposals, verify exit code 0.
 
-### 14. Smoke-test Manifest Integrity Hook (validate)
+### 15. Smoke-test Manifest Integrity Hook (validate)
 
 Feed `.impl/manifest.json` path to `check-manifest-integrity.sh` and verify exit code 0 (advisory). Feed an unrelated path and verify exit code 0 (silent passthrough).
 
-### 15. Smoke-test PR Reference Hook (validate)
+### 16. Smoke-test PR Reference Hook (validate)
 
 Feed `gh pr create --title "test" --body "test"` command to `check-pr-references.sh` and verify exit code 0 (advisory). Feed an unrelated command and verify exit code 0 (silent passthrough).
 
-### 16. Smoke-test Review Checklist Hook (validate)
+### 17. Smoke-test Review Checklist Hook (validate)
 
 Feed `gh pr review 42` and `gh pr merge 42` commands to `check-review-checklist.sh` and verify exit code 0 (advisory). Feed an unrelated command and verify exit code 0 (silent passthrough).
+
+### 18. Smoke-test Release Readiness Hook (validate)
+
+Feed `git tag v1.0.0` command to `check-release-readiness.sh` and verify exit code 0 (advisory). Feed `git tag -l` and verify exit code 0 (silent passthrough). Feed an unrelated command and verify exit code 0 (silent passthrough).
 
 ### Summary
 

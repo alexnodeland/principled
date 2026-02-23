@@ -6,16 +6,17 @@ core
 
 ## What This Is
 
-This repo is the **Principled methodology plugin marketplace** (v1.0.0). It hosts Claude Code plugins for specification-first development, organized as a curated directory with two tiers: first-party plugins in `plugins/` and community plugins in `external_plugins/`. Three first-party plugins ship today:
+This repo is the **Principled methodology plugin marketplace** (v1.0.0). It hosts Claude Code plugins for specification-first development, organized as a curated directory with two tiers: first-party plugins in `plugins/` and community plugins in `external_plugins/`. Five first-party plugins ship today:
 
 - **principled-docs** (v0.3.1) — Scaffold, author, and enforce module documentation structure for monorepos.
 - **principled-implementation** (v0.1.0) — Orchestrate DDD plan execution via worktree-isolated Claude Code agents.
 - **principled-github** (v0.1.0) — Integrate the principled workflow with GitHub native features: issues, PRs, templates, actions, CODEOWNERS, and labels.
 - **principled-quality** (v0.1.0) — Connect code reviews to the principled documentation pipeline with spec-driven checklists, coverage assessment, and review summaries.
+- **principled-release** (v0.1.0) — Generate changelogs from the documentation pipeline, verify release readiness, coordinate version bumps, and govern the release lifecycle.
 
 ## Architecture
 
-Six layers, top to bottom:
+Seven layers, top to bottom:
 
 | Layer                   | Location                                                           | Role                                                                                                                 |
 | ----------------------- | ------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------- |
@@ -25,6 +26,7 @@ Six layers, top to bottom:
 | **Implementation: All** | `plugins/principled-implementation/`                               | Skills (6), hooks (1), agents (1) for plan execution via worktree-isolated sub-agents                                |
 | **GitHub: All**         | `plugins/principled-github/`                                       | Skills (9), hooks (1) for GitHub integration: issues, PRs, templates, CODEOWNERS, labels                             |
 | **Quality: All**        | `plugins/principled-quality/`                                      | Skills (5), hooks (1) for spec-driven code review: checklists, context, coverage, summaries                          |
+| **Release: All**        | `plugins/principled-release/`                                      | Skills (6), hooks (1) for release lifecycle: changelogs, readiness, version bumps, tagging                           |
 | **Dev DX**              | `.claude/`, config files, `.github/workflows/`                     | Project-level Claude Code settings, dev skills, CI pipeline, linting config                                          |
 
 ## Skills
@@ -78,6 +80,17 @@ Six layers, top to bottom:
 | `review-coverage`  | `/review-coverage <pr-number>`                  | Analytical |
 | `review-summary`   | `/review-summary <pr-number>`                   | Generative |
 
+### principled-release (6 skills)
+
+| Skill              | Command                                                        | Category      |
+| ------------------ | -------------------------------------------------------------- | ------------- |
+| `release-strategy` | _(background — not user-invocable)_                            | Knowledge     |
+| `changelog`        | `/changelog [--since <tag>] [--module <path>]`                 | Generative    |
+| `release-ready`    | `/release-ready [--tag <version>] [--strict]`                  | Analytical    |
+| `version-bump`     | `/version-bump [--module <path>] [--type major\|minor\|patch]` | Generative    |
+| `release-plan`     | `/release-plan [--since <tag>]`                                | Generative    |
+| `tag-release`      | `/tag-release <version> [--dry-run]`                           | Orchestration |
+
 Each skill directory is **self-contained**. No cross-skill imports. If a template or script is needed by multiple skills, each maintains its own copy.
 
 ## Agents
@@ -124,10 +137,15 @@ The `spawn` skill delegates to `impl-worker` via `context: fork` + `agent: impl-
 - `plugins/principled-quality/scripts/check-template-drift.sh` verifies all 4 cross-plugin pairs. Drift = CI failure.
 - This is the first cross-plugin copy in the marketplace. The drift checker navigates to the sibling plugin via `$REPO_ROOT`.
 
+### Cross-Plugin Script Duplication (principled-release)
+
+- `check-gh-cli.sh` canonical remains in `plugins/principled-github/skills/sync-issues/scripts/`, copied to `changelog`, `release-ready`, `release-plan`, and `tag-release` in principled-release.
+- `plugins/principled-release/scripts/check-template-drift.sh` verifies all 4 cross-plugin pairs. Drift = CI failure.
+
 ### Cross-Plugin Dependencies
 
 - `task-manifest.sh`: Canonical in `plugins/principled-implementation/skills/decompose/scripts/`. A read-only subset copy exists in `plugins/principled-github/skills/pr-describe/scripts/` for manifest format compatibility. This copy is intentionally different (not byte-identical) and is **not drift-checked** — it maintains only the interface contract for reading task manifests.
-- `check-gh-cli.sh`: Canonical in `plugins/principled-github/skills/sync-issues/scripts/`. Byte-identical copies exist in 4 principled-quality skills. Drift-checked by `plugins/principled-quality/scripts/check-template-drift.sh`.
+- `check-gh-cli.sh`: Canonical in `plugins/principled-github/skills/sync-issues/scripts/`. Byte-identical copies exist in 4 principled-quality skills and 4 principled-release skills. Drift-checked by `plugins/principled-quality/scripts/check-template-drift.sh` and `plugins/principled-release/scripts/check-template-drift.sh`.
 
 ### Canonical Source Convention
 
@@ -162,6 +180,7 @@ This repo uses its own documentation pipeline at the root level (governing the m
   - 010: gh CLI as GitHub interface
   - 011: Documents as source of truth in sync
   - 012: Dual storage for review checklists
+  - 013: Pipeline-based changelog generation
 - `docs/architecture/` — Living design docs.
   - plugin-system.md, documentation-pipeline.md, enforcement-system.md
 
@@ -170,17 +189,18 @@ This repo uses its own documentation pipeline at the root level (governing the m
 See `CONTRIBUTING.md` for the full contributor guide. Key points:
 
 - **Pre-commit hooks** enforce shell and Markdown lint on every commit (`pre-commit install`)
-- **CI pipeline** (`.github/workflows/ci.yml`) runs shell lint, Markdown lint, template drift (all four plugins), structure validation, and marketplace/plugin manifest validation on every PR
+- **CI pipeline** (`.github/workflows/ci.yml`) runs shell lint, Markdown lint, template drift (all five plugins), structure validation, and marketplace/plugin manifest validation on every PR
 - **`.claude/` directory** provides project-level Claude Code settings and dev skills (`/lint`, `/test-hooks`, `/propagate-templates`, `/check-ci`)
 
 ## Dogfooding
 
-This repo installs all four first-party plugins (via `.claude/settings.json`):
+This repo installs all five first-party plugins (via `.claude/settings.json`):
 
 - **principled-docs** — All 9 skills and 3 enforcement hooks are active during development.
 - **principled-implementation** — All 6 skills, the `impl-worker` agent, and 1 advisory hook are active during development.
 - **principled-github** — All 9 skills and 1 advisory hook are active during development.
 - **principled-quality** — All 5 skills and 1 advisory hook are active during development.
+- **principled-release** — All 6 skills and 1 advisory hook are active during development.
 
 See `.claude/CLAUDE.md` for development-specific context.
 
@@ -249,18 +269,30 @@ Declared in `plugins/principled-quality/hooks/hooks.json`:
 
 Advisory only — reminds when `gh pr review` or `gh pr merge` is run without a review checklist (always exits 0).
 
+### principled-release
+
+Declared in `plugins/principled-release/hooks/hooks.json`:
+
+| Hook                       | Event              | Script                                                                | Timeout |
+| -------------------------- | ------------------ | --------------------------------------------------------------------- | ------- |
+| Release Readiness Advisory | PostToolUse (Bash) | `plugins/principled-release/hooks/scripts/check-release-readiness.sh` | 10s     |
+
+Advisory only — reminds when `git tag` is run without prior `/release-ready` check (always exits 0).
+
 ## Testing
 
 - **Template drift (docs):** `plugins/principled-docs/skills/scaffold/scripts/check-template-drift.sh` — exits non-zero if any copy diverges from canonical.
 - **Template drift (impl):** `plugins/principled-implementation/scripts/check-template-drift.sh` — exits non-zero if any of 7 pairs diverge.
 - **Template drift (github):** `plugins/principled-github/scripts/check-template-drift.sh` — exits non-zero if any of 6 pairs diverge.
 - **Template drift (quality):** `plugins/principled-quality/scripts/check-template-drift.sh` — exits non-zero if any of 4 cross-plugin pairs diverge.
+- **Template drift (release):** `plugins/principled-release/scripts/check-template-drift.sh` — exits non-zero if any of 4 cross-plugin pairs diverge.
 - **Structure validation:** `plugins/principled-docs/skills/scaffold/scripts/validate-structure.sh --module-path <path> [--type <type>] [--strict] [--json]` — checks a module's docs structure.
 - **Root validation:** `plugins/principled-docs/skills/scaffold/scripts/validate-structure.sh --root` — checks repo-level docs structure.
 - **Hook testing (docs):** Feed JSON with `tool_input.file_path` to guard scripts via stdin. Exit 0 = allow, exit 2 = block.
 - **Hook testing (impl):** Feed JSON with `tool_input.file_path` to `check-manifest-integrity.sh` via stdin. Always exits 0 (advisory).
 - **Hook testing (github):** Feed JSON with `tool_input.command` to `check-pr-references.sh` via stdin. Always exits 0 (advisory).
 - **Hook testing (quality):** Feed JSON with `tool_input.command` to `check-review-checklist.sh` via stdin. Always exits 0 (advisory).
+- **Hook testing (release):** Feed JSON with `tool_input.command` to `check-release-readiness.sh` via stdin. Always exits 0 (advisory).
 - **Shell lint:** `shellcheck --shell=bash` and `shfmt -i 2 -bn -sr -d` on all `.sh` files.
 - **Markdown lint:** `npx markdownlint-cli2 '**/*.md'` and `npx prettier --check '**/*.md'`.
 - **Marketplace validation:** Verify `.claude-plugin/marketplace.json` is valid and all plugin source directories exist.
