@@ -1,10 +1,10 @@
 ---
 title: "Pipeline-Based Changelog Generation"
 number: "013"
-status: proposed
+status: accepted
 author: Alex
 created: 2026-02-22
-updated: 2026-02-22
+updated: 2026-02-23
 from_proposal: "004"
 supersedes: null
 superseded_by: null
@@ -14,7 +14,7 @@ superseded_by: null
 
 ## Status
 
-Proposed
+Accepted
 
 <!-- Valid values: proposed, accepted, deprecated, superseded -->
 <!-- Once accepted, this document is IMMUTABLE. -->

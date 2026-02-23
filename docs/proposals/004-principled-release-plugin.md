@@ -1,10 +1,10 @@
 ---
 title: "Principled Release Plugin"
 number: 004
-status: draft
+status: accepted
 author: Alex
 created: 2026-02-22
-updated: 2026-02-22
+updated: 2026-02-23
 supersedes: null
 superseded_by: null
 ---
