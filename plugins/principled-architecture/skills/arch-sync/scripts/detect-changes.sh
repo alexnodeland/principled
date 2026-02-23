@@ -108,8 +108,8 @@ for mod_path in "${!ACTUAL_MODULES[@]}"; do
   mod_name="$(basename "$mod_path")"
 
   # Check if module path or name appears in the doc
-  if echo "$DOC_CONTENT" | grep -q "$mod_path" 2> /dev/null ||
-    echo "$DOC_CONTENT" | grep -q "$mod_name" 2> /dev/null; then
+  if echo "$DOC_CONTENT" | grep -q "$mod_path" 2> /dev/null \
+    || echo "$DOC_CONTENT" | grep -q "$mod_name" 2> /dev/null; then
     REFERENCED_MODULES["$mod_path"]=1
   else
     printf '%s\t%s\t%s\n' \
@@ -145,7 +145,7 @@ while IFS= read -r path_ref; do
         "Remove or update reference — directory no longer exists"
     fi
   fi
-done < <(grep -oP '`[a-zA-Z][a-zA-Z0-9_-]*/[a-zA-Z0-9_/-]+`' "$DOC_PATH" 2> /dev/null |
-  sed 's/`//g' | sort -u || echo "")
+done < <(grep -oP '`[a-zA-Z][a-zA-Z0-9_-]*/[a-zA-Z0-9_/-]+`' "$DOC_PATH" 2> /dev/null \
+  | sed 's/`//g' | sort -u || echo "")
 
 exit 0
