@@ -1,7 +1,7 @@
 ---
 title: "Principled Architecture Plugin"
 number: 005
-status: draft
+status: accepted
 author: Alex
 created: 2026-02-22
 updated: 2026-02-22

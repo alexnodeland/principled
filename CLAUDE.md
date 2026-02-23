@@ -6,17 +6,18 @@ core
 
 ## What This Is
 
-This repo is the **Principled methodology plugin marketplace** (v1.0.0). It hosts Claude Code plugins for specification-first development, organized as a curated directory with two tiers: first-party plugins in `plugins/` and community plugins in `external_plugins/`. Five first-party plugins ship today:
+This repo is the **Principled methodology plugin marketplace** (v1.0.0). It hosts Claude Code plugins for specification-first development, organized as a curated directory with two tiers: first-party plugins in `plugins/` and community plugins in `external_plugins/`. Six first-party plugins ship today:
 
 - **principled-docs** (v0.3.1) — Scaffold, author, and enforce module documentation structure for monorepos.
 - **principled-implementation** (v0.1.0) — Orchestrate DDD plan execution via worktree-isolated Claude Code agents.
 - **principled-github** (v0.1.0) — Integrate the principled workflow with GitHub native features: issues, PRs, templates, actions, CODEOWNERS, and labels.
 - **principled-quality** (v0.1.0) — Connect code reviews to the principled documentation pipeline with spec-driven checklists, coverage assessment, and review summaries.
 - **principled-release** (v0.1.0) — Generate changelogs from the documentation pipeline, verify release readiness, coordinate version bumps, and govern the release lifecycle.
+- **principled-architecture** (v0.1.0) — Map code to architectural decisions, detect drift, audit decision coverage, and keep architecture documents synchronized.
 
 ## Architecture
 
-Seven layers, top to bottom:
+Eight layers, top to bottom:
 
 | Layer                   | Location                                                           | Role                                                                                                                 |
 | ----------------------- | ------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------- |
@@ -27,6 +28,7 @@ Seven layers, top to bottom:
 | **GitHub: All**         | `plugins/principled-github/`                                       | Skills (9), hooks (1) for GitHub integration: issues, PRs, templates, CODEOWNERS, labels                             |
 | **Quality: All**        | `plugins/principled-quality/`                                      | Skills (5), hooks (1) for spec-driven code review: checklists, context, coverage, summaries                          |
 | **Release: All**        | `plugins/principled-release/`                                      | Skills (6), hooks (1) for release lifecycle: changelogs, readiness, version bumps, tagging                           |
+| **Architecture: All**   | `plugins/principled-architecture/`                                 | Skills (6), hooks (1) for architecture governance: mapping, drift detection, auditing, sync                          |
 | **Dev DX**              | `.claude/`, config files, `.github/workflows/`                     | Project-level Claude Code settings, dev skills, CI pipeline, linting config                                          |
 
 ## Skills
@@ -90,6 +92,17 @@ Seven layers, top to bottom:
 | `version-bump`     | `/version-bump [--module <path>] [--type major\|minor\|patch]` | Generative    |
 | `release-plan`     | `/release-plan [--since <tag>]`                                | Generative    |
 | `tag-release`      | `/tag-release <version> [--dry-run]`                           | Orchestration |
+
+### principled-architecture (6 skills)
+
+| Skill           | Command                                         | Category   |
+| --------------- | ----------------------------------------------- | ---------- |
+| `arch-strategy` | _(background — not user-invocable)_             | Knowledge  |
+| `arch-map`      | `/arch-map [--module <path>] [--output <path>]` | Analytical |
+| `arch-drift`    | `/arch-drift [--module <path>] [--strict]`      | Analytical |
+| `arch-audit`    | `/arch-audit [--module <path>]`                 | Analytical |
+| `arch-sync`     | `/arch-sync [--doc <path>] [--all]`             | Generative |
+| `arch-query`    | `/arch-query "<question>"`                      | Analytical |
 
 Each skill directory is **self-contained**. No cross-skill imports. If a template or script is needed by multiple skills, each maintains its own copy.
 
@@ -181,6 +194,7 @@ This repo uses its own documentation pipeline at the root level (governing the m
   - 011: Documents as source of truth in sync
   - 012: Dual storage for review checklists
   - 013: Pipeline-based changelog generation
+  - 014: Heuristic architecture governance
 - `docs/architecture/` — Living design docs.
   - plugin-system.md, documentation-pipeline.md, enforcement-system.md
 
@@ -189,18 +203,19 @@ This repo uses its own documentation pipeline at the root level (governing the m
 See `CONTRIBUTING.md` for the full contributor guide. Key points:
 
 - **Pre-commit hooks** enforce shell and Markdown lint on every commit (`pre-commit install`)
-- **CI pipeline** (`.github/workflows/ci.yml`) runs shell lint, Markdown lint, template drift (all five plugins), structure validation, and marketplace/plugin manifest validation on every PR
+- **CI pipeline** (`.github/workflows/ci.yml`) runs shell lint, Markdown lint, template drift (all six plugins), structure validation, and marketplace/plugin manifest validation on every PR
 - **`.claude/` directory** provides project-level Claude Code settings and dev skills (`/lint`, `/test-hooks`, `/propagate-templates`, `/check-ci`)
 
 ## Dogfooding
 
-This repo installs all five first-party plugins (via `.claude/settings.json`):
+This repo installs all six first-party plugins (via `.claude/settings.json`):
 
 - **principled-docs** — All 9 skills and 3 enforcement hooks are active during development.
 - **principled-implementation** — All 6 skills, the `impl-worker` agent, and 1 advisory hook are active during development.
 - **principled-github** — All 9 skills and 1 advisory hook are active during development.
 - **principled-quality** — All 5 skills and 1 advisory hook are active during development.
 - **principled-release** — All 6 skills and 1 advisory hook are active during development.
+- **principled-architecture** — All 6 skills and 1 advisory hook are active during development.
 
 See `.claude/CLAUDE.md` for development-specific context.
 
@@ -279,6 +294,16 @@ Declared in `plugins/principled-release/hooks/hooks.json`:
 
 Advisory only — reminds when `git tag` is run without prior `/release-ready` check (always exits 0).
 
+### principled-architecture
+
+Declared in `plugins/principled-architecture/hooks/hooks.json`:
+
+| Hook                        | Event               | Script                                                                      | Timeout |
+| --------------------------- | ------------------- | --------------------------------------------------------------------------- | ------- |
+| Boundary Violation Advisory | PostToolUse (Write) | `plugins/principled-architecture/hooks/scripts/check-boundary-violation.sh` | 10s     |
+
+Advisory only — warns when a written source file contains imports violating module dependency direction rules (always exits 0).
+
 ## Testing
 
 - **Template drift (docs):** `plugins/principled-docs/skills/scaffold/scripts/check-template-drift.sh` — exits non-zero if any copy diverges from canonical.
@@ -286,6 +311,7 @@ Advisory only — reminds when `git tag` is run without prior `/release-ready` c
 - **Template drift (github):** `plugins/principled-github/scripts/check-template-drift.sh` — exits non-zero if any of 6 pairs diverge.
 - **Template drift (quality):** `plugins/principled-quality/scripts/check-template-drift.sh` — exits non-zero if any of 4 cross-plugin pairs diverge.
 - **Template drift (release):** `plugins/principled-release/scripts/check-template-drift.sh` — exits non-zero if any of 4 cross-plugin pairs diverge.
+- **Template drift (architecture):** `plugins/principled-architecture/scripts/check-template-drift.sh` — placeholder for future drift pairs (no copies in v0.1.0).
 - **Structure validation:** `plugins/principled-docs/skills/scaffold/scripts/validate-structure.sh --module-path <path> [--type <type>] [--strict] [--json]` — checks a module's docs structure.
 - **Root validation:** `plugins/principled-docs/skills/scaffold/scripts/validate-structure.sh --root` — checks repo-level docs structure.
 - **Hook testing (docs):** Feed JSON with `tool_input.file_path` to guard scripts via stdin. Exit 0 = allow, exit 2 = block.
@@ -293,6 +319,7 @@ Advisory only — reminds when `git tag` is run without prior `/release-ready` c
 - **Hook testing (github):** Feed JSON with `tool_input.command` to `check-pr-references.sh` via stdin. Always exits 0 (advisory).
 - **Hook testing (quality):** Feed JSON with `tool_input.command` to `check-review-checklist.sh` via stdin. Always exits 0 (advisory).
 - **Hook testing (release):** Feed JSON with `tool_input.command` to `check-release-readiness.sh` via stdin. Always exits 0 (advisory).
+- **Hook testing (architecture):** Feed JSON with `tool_input.file_path` to `check-boundary-violation.sh` via stdin. Always exits 0 (advisory).
 - **Shell lint:** `shellcheck --shell=bash` and `shfmt -i 2 -bn -sr -d` on all `.sh` files.
 - **Markdown lint:** `npx markdownlint-cli2 '**/*.md'` and `npx prettier --check '**/*.md'`.
 - **Marketplace validation:** Verify `.claude-plugin/marketplace.json` is valid and all plugin source directories exist.
