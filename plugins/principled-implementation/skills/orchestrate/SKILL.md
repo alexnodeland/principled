@@ -29,6 +29,22 @@ Execute a complete DDD plan from decomposition through validation and merge, man
 | `--continue`  | No       | Resume from existing manifest (skip decomposition)   |
 | `--dry-run`   | No       | Decompose and plan but do not execute                |
 
+## Execution Modes
+
+The orchestrator supports two execution modes, selected automatically at runtime:
+
+### Sequential Mode (default)
+
+When `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS` is not set, tasks within a phase execute sequentially via `/spawn`. This is the proven, stable execution path.
+
+### Agent Teams Mode (opt-in)
+
+When `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1` is set, independent tasks within a phase execute concurrently via agent teams. The orchestrator becomes the team lead, spawning one teammate per independent task.
+
+**Dual state model:** The agent teams task list drives coordination (claiming, dependencies, completion), while `.impl/manifest.json` remains the persistent record. The lead synchronizes between the two.
+
+See [ADR-016](../../docs/decisions/016-agent-teams-for-parallel-execution.md) for the architectural decision and [orchestration-guide.md](../impl-strategy/reference/orchestration-guide.md) for detailed documentation.
+
 ## Workflow
 
 ### Stage 1: Decomposition
@@ -82,7 +98,11 @@ For each phase (in numerical order, or just `--phase <N>` if specified):
    bash scripts/task-manifest.sh --list-tasks --phase <N> --status pending
    ```
 
-### Stage 3: Task Execution (for each task in the phase)
+### Stage 3: Task Execution
+
+#### Sequential Mode (default)
+
+For each task in the phase:
 
 1. **Update manifest to in_progress.**
 
@@ -126,6 +146,22 @@ For each phase (in numerical order, or just `--phase <N>` if specified):
    - **Retryable** (test/lint failure, retries < 2): Update manifest to `failed`, increment retries, re-spawn with failure context appended
    - **Non-retryable** (max retries reached): Mark `abandoned`, continue with remaining tasks
    - **Critical** (blocks dependent phases): Pause and report to user with `--continue` instructions
+
+#### Agent Teams Mode (when CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1)
+
+1. **Detect agent teams.** Check if `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS` is set. If not, fall back to sequential mode above.
+
+2. **Populate task list.** For each pending task in the current phase, add it to the agent teams task list with dependency information from the manifest.
+
+3. **Spawn teammates.** The orchestrator (team lead) spawns one teammate per independent task. Teammates self-claim tasks via the task list's file-lock mechanism.
+
+4. **Each teammate executes.** Same as sequential steps 1-6, but running concurrently in separate context windows. The `TaskCompleted` hook (`gate-task-completion.sh`) enforces quality checks.
+
+5. **Handle idle teammates.** When a teammate finishes and others are still running, reassign to review or cleanup work via `TeammateIdle` handling.
+
+6. **Synchronize state.** As teammates complete tasks, the lead synchronizes the agent teams task list with the `.impl/manifest.json`. Team task completion triggers manifest updates.
+
+7. **Merge sequentially.** After all tasks in the phase complete, the lead merges branches sequentially (same as sequential mode) to avoid complex conflict resolution.
 
 ### Stage 4: Phase Completion
 

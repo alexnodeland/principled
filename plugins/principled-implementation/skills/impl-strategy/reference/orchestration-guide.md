@@ -90,3 +90,37 @@ The orchestrator decides what to do based on failure context:
 | Agent error (non-zero exit) | Retry once, then abandon | Agent may have hit a hard blocker |
 | Merge conflict              | Pause for user           | Requires human judgment           |
 | All tasks in phase failed   | Pause for user           | Phase may need re-decomposition   |
+
+## Agent Teams Execution Mode
+
+When `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1` is set, the orchestrator uses agent teams for parallel task execution within phases. See [ADR-016](../../../../docs/decisions/016-agent-teams-for-parallel-execution.md) for the architectural decision.
+
+### Dual State Model
+
+Two state systems coexist during agent teams execution:
+
+1. **Agent teams task list** — drives runtime coordination: task claiming, dependency tracking, completion signals. Ephemeral and managed by the agent teams runtime.
+2. **`.impl/manifest.json`** — persistent record: branch names, retry counts, check results, error messages, timestamps. Managed by `task-manifest.sh`.
+
+The orchestrator (team lead) synchronizes between them: when a teammate completes a team task, the lead updates the manifest to reflect the new status.
+
+### Lifecycle Hooks
+
+Two hooks enforce quality during agent teams execution:
+
+- `TaskCompleted` → `gate-task-completion.sh`: Rejects task completion when quality checks haven't passed (status must be `passed` in manifest).
+- `TeammateIdle` handling: Reassigns idle teammates to review or cleanup rather than letting them go idle.
+
+### Fallback Guarantee
+
+Every skill that supports agent teams also supports sequential execution. The mode is selected at runtime based on the environment variable, not at skill definition time. If agent teams are disabled or unavailable, `/orchestrate` falls back to sequential `/spawn` invocations with no behavior change.
+
+### When to Use Agent Teams vs. Sequential
+
+| Factor                          | Agent Teams                     | Sequential    |
+| ------------------------------- | ------------------------------- | ------------- |
+| Independent tasks in phase      | Parallel (faster)               | One at a time |
+| Token cost                      | 3-4x per phase                  | 1x per phase  |
+| Merge conflict risk             | Higher (mitigated by seq merge) | Lower         |
+| Terminal environment            | Requires split-pane or in-proc  | Any terminal  |
+| Experimental feature dependency | Yes                             | No            |

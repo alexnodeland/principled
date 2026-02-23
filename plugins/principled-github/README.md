@@ -101,6 +101,14 @@ claude plugin add <path-to-principled-github>
 
 `github-strategy` --- not directly invocable. Gives Claude Code deep understanding of the GitHub-principled mapping model, label taxonomy, and template conventions. Activates automatically when working with GitHub integration.
 
+## 🤖 Agents
+
+| Agent              | Model   | maxTurns | Description                                                             |
+| ------------------ | ------- | -------- | ----------------------------------------------------------------------- |
+| **issue-ingester** | inherit | 30       | Processes a single GitHub issue through the principled triage pipeline. |
+
+The `issue-ingester` agent can be invoked by `/triage` to process issues in parallel, offloading classification, document creation, and label application from the main context window.
+
 ## 🔒 Enforcement Hooks
 
 One advisory hook --- no manual action required.

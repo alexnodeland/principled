@@ -71,6 +71,14 @@ claude plugin add <path-to-principled-quality>
 
 `quality-strategy` --- not directly invocable. Gives Claude Code deep understanding of review standards, checklist categories, severity classification, and the dual storage model. Activates automatically when working with review workflows.
 
+## Agents
+
+| Agent           | Model   | Background | maxTurns | Description                                              |
+| --------------- | ------- | ---------- | -------- | -------------------------------------------------------- |
+| **pr-reviewer** | inherit | yes        | 50       | Comprehensive 4-dimension PR review as background agent. |
+
+The `pr-reviewer` agent runs checklist, context, coverage, and summary analysis in a single background pass, returning a synthesized review report without consuming the main context window.
+
 ## Enforcement Hooks
 
 One advisory hook --- no manual action required.

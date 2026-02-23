@@ -74,19 +74,29 @@ claude plugin add <path-to-principled-implementation>
 
 ## 🤖 Agents
 
-| Agent         | Isolation  | Description                                                    |
-| ------------- | ---------- | -------------------------------------------------------------- |
-| `impl-worker` | `worktree` | Executes a single task from a DDD plan in an isolated worktree |
+| Agent         | Isolation  | maxTurns | Memory  | Description                                                    |
+| ------------- | ---------- | -------- | ------- | -------------------------------------------------------------- |
+| `impl-worker` | `worktree` | 100      | project | Executes a single task from a DDD plan in an isolated worktree |
 
 The `spawn` skill delegates to `impl-worker` via `context: fork` + `agent: impl-worker` frontmatter. Each agent gets its own git worktree, creates a named branch (`impl/<plan-number>/<task-id>`), implements the task, and commits.
 
+The agent uses `memory: project` to accumulate implementation patterns across sessions. A scoped `Stop` hook validates that the worker properly updated task status before finishing.
+
+### Agent Teams (Experimental)
+
+When `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1` is set, `/orchestrate` uses agent teams for parallel task execution within phases. See the [orchestration guide](skills/impl-strategy/reference/orchestration-guide.md) for details.
+
 ## 🔒 Enforcement Hooks
 
-One advisory hook — no manual action required.
+Five hooks across five event types — no manual action required.
 
 | Hook                            | Trigger                  | Behavior                                                                              |
 | ------------------------------- | ------------------------ | ------------------------------------------------------------------------------------- |
 | **Manifest Integrity Advisory** | PreToolUse `Edit\|Write` | 💡 Warns when `.impl/manifest.json` is edited directly. Advisory only — never blocks. |
+| **Worktree Setup**              | WorktreeCreate           | 💡 Initializes `.impl/` in new worktrees with manifest reference. Advisory.           |
+| **Worktree Cleanup**            | WorktreeRemove           | 💡 Archives logs and state when worktrees are removed. Advisory.                      |
+| **Worker Completion Validator** | SubagentStop             | 🛡️ Blocks impl-worker completion if tasks are orphaned in `in_progress`.              |
+| **Task Completion Gate**        | TaskCompleted            | 🛡️ Blocks task completion when quality checks haven't passed (agent teams only).      |
 
 ## 🏗️ Architecture
 
