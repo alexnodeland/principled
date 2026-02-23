@@ -64,6 +64,9 @@ jobs:
       - name: Check principled-quality template drift
         run: bash plugins/principled-quality/scripts/check-template-drift.sh
 
+      - name: Check principled-release template drift
+        run: bash plugins/principled-release/scripts/check-template-drift.sh
+
       - name: Validate root structure
         run: bash plugins/principled-docs/skills/scaffold/scripts/validate-structure.sh --root
 
@@ -251,6 +254,38 @@ jobs:
           result=0
           echo '{"tool_input":{"command":"git status"}}' \
             | bash plugins/principled-quality/hooks/scripts/check-review-checklist.sh || result=$?
+          if [ "$result" -ne 0 ]; then
+            echo "FAIL: expected exit 0 for unrelated command, got $result"
+            exit 1
+          fi
+          echo "PASS: unrelated command correctly passed through (exit 0)"
+
+      - name: Smoke-test release readiness hook
+        run: |
+          # Test: git tag command should warn but allow (exit 0)
+          result=0
+          echo '{"tool_input":{"command":"git tag v1.0.0"}}' \
+            | bash plugins/principled-release/hooks/scripts/check-release-readiness.sh || result=$?
+          if [ "$result" -ne 0 ]; then
+            echo "FAIL: expected exit 0 for git tag, got $result"
+            exit 1
+          fi
+          echo "PASS: git tag correctly allowed with advisory (exit 0)"
+
+          # Test: git tag -l should pass silently (exit 0)
+          result=0
+          echo '{"tool_input":{"command":"git tag -l"}}' \
+            | bash plugins/principled-release/hooks/scripts/check-release-readiness.sh || result=$?
+          if [ "$result" -ne 0 ]; then
+            echo "FAIL: expected exit 0 for git tag -l, got $result"
+            exit 1
+          fi
+          echo "PASS: git tag -l correctly passed through (exit 0)"
+
+          # Test: unrelated command should pass silently (exit 0)
+          result=0
+          echo '{"tool_input":{"command":"git status"}}' \
+            | bash plugins/principled-release/hooks/scripts/check-release-readiness.sh || result=$?
           if [ "$result" -ne 0 ]; then
             echo "FAIL: expected exit 0 for unrelated command, got $result"
             exit 1

@@ -4,7 +4,8 @@ description: >
   Smoke-test all enforcement hooks by feeding known good and bad inputs
   and verifying exit codes. Tests the ADR immutability guard, the
   proposal lifecycle guard, the manifest integrity advisory, the PR
-  reference advisory, and the review checklist advisory.
+  reference advisory, the review checklist advisory, and the release
+  readiness advisory.
 allowed-tools: Bash(echo *), Bash(bash plugins/*), Read
 user-invocable: true
 ---
@@ -148,6 +149,34 @@ Run these test cases:
 
    ```bash
    echo '{"tool_input":{"command":"git status"}}' | bash plugins/principled-quality/hooks/scripts/check-review-checklist.sh
+   ```
+
+   Expected: exit code 0, no output.
+
+### Release Readiness Advisory (`plugins/principled-release/hooks/scripts/check-release-readiness.sh`)
+
+Run these test cases:
+
+1. **`git tag` command — should warn but allow (exit 0):**
+
+   ```bash
+   echo '{"tool_input":{"command":"git tag v1.0.0"}}' | bash plugins/principled-release/hooks/scripts/check-release-readiness.sh
+   ```
+
+   Expected: exit code 0, with advisory message on stderr.
+
+2. **`git tag -l` command — should pass silently (exit 0):**
+
+   ```bash
+   echo '{"tool_input":{"command":"git tag -l"}}' | bash plugins/principled-release/hooks/scripts/check-release-readiness.sh
+   ```
+
+   Expected: exit code 0, no advisory (listing tags is not a release action).
+
+3. **Unrelated command — should pass silently (exit 0):**
+
+   ```bash
+   echo '{"tool_input":{"command":"git status"}}' | bash plugins/principled-release/hooks/scripts/check-release-readiness.sh
    ```
 
    Expected: exit code 0, no output.

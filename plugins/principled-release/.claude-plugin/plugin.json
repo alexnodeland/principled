@@ -1,0 +1,14 @@
+{
+  "name": "principled-release",
+  "version": "0.1.0",
+  "description": "Generate changelogs from the documentation pipeline, verify release readiness, coordinate version bumps, and govern the release lifecycle.",
+  "author": "Alex Nodeland",
+  "homepage": "https://github.com/alexnodeland/principled",
+  "keywords": [
+    "release",
+    "changelog",
+    "versioning",
+    "semver",
+    "release-management"
+  ]
+}

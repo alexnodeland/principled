@@ -4,7 +4,7 @@ This file supplements the root `CLAUDE.md` with development-specific guidance fo
 
 ## Dogfooding
 
-All four first-party plugins are installed via `.claude/settings.json`. See root `CLAUDE.md` § Dogfooding for the full list of available skills and active hooks.
+All five first-party plugins are installed via `.claude/settings.json`. See root `CLAUDE.md` § Dogfooding for the full list of available skills and active hooks.
 
 ## Common Pitfalls
 
@@ -49,8 +49,10 @@ All four first-party plugins are installed via `.claude/settings.json`. See root
   - `check-gh-cli.sh` -> canonical in `plugins/principled-github/skills/sync-issues/scripts/`
 - Then propagate copies to `sync-labels`, `pr-check`, `gh-scaffold`, `ingest-issue`, `triage`, and `pr-describe`.
 - **Also propagate to principled-quality:** `review-checklist`, `review-context`, `review-coverage`, and `review-summary`.
+- **Also propagate to principled-release:** `changelog`, `release-ready`, `release-plan`, and `tag-release`.
 - Run `bash plugins/principled-github/scripts/check-template-drift.sh` to verify zero drift within principled-github.
 - Run `bash plugins/principled-quality/scripts/check-template-drift.sh` to verify zero cross-plugin drift.
+- Run `bash plugins/principled-release/scripts/check-template-drift.sh` to verify zero cross-plugin drift.
 - Forgetting to propagate = CI failure.
 
 ### Editing Hook Scripts (principled-quality)
@@ -58,6 +60,12 @@ All four first-party plugins are installed via `.claude/settings.json`. See root
 - Uses stdin JSON with `tool_input.command`: `echo '{"tool_input":{"command":"gh pr review 42"}}' | bash plugins/principled-quality/hooks/scripts/check-review-checklist.sh`
 - Advisory only --- always exits 0. Never blocks.
 - Triggers on `gh pr review` and `gh pr merge` commands.
+
+### Editing Hook Scripts (principled-release)
+
+- Uses stdin JSON with `tool_input.command`: `echo '{"tool_input":{"command":"git tag v1.0.0"}}' | bash plugins/principled-release/hooks/scripts/check-release-readiness.sh`
+- Advisory only --- always exits 0. Never blocks.
+- Triggers on `git tag` commands (excludes `git tag -l` and `git tag -d`).
 
 ### Changing Frontmatter Schema
 
@@ -72,11 +80,11 @@ All four first-party plugins are installed via `.claude/settings.json`. See root
 
 1. Run `/lint` or `pre-commit run --all-files` to check formatting and lint
 2. Run `/validate --root` to check root structure (plugin skill, from dogfooding)
-3. If you modified templates or scripts, propagate copies first and run drift checks for all four plugins
+3. If you modified templates or scripts, propagate copies first and run drift checks for all five plugins
 
 ## Dev Skills
 
-These supplement the 29 plugin skills available via dogfooding:
+These supplement the 35 plugin skills available via dogfooding:
 
 | Skill                 | Command                | What It Does                                                   |
 | --------------------- | ---------------------- | -------------------------------------------------------------- |

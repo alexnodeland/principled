@@ -69,6 +69,20 @@
         "specification-first",
         "review-coverage"
       ]
+    },
+    {
+      "name": "principled-release",
+      "source": "./plugins/principled-release",
+      "description": "Generate changelogs from the documentation pipeline, verify release readiness, and coordinate versioned releases.",
+      "version": "0.1.0",
+      "category": "workflow",
+      "keywords": [
+        "release",
+        "changelog",
+        "versioning",
+        "semver",
+        "release-management"
+      ]
     }
   ]
 }

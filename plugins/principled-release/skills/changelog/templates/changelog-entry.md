@@ -1,0 +1,11 @@
+## [{{VERSION}}] - {{DATE}}
+
+{{FEATURES}}
+
+{{IMPROVEMENTS}}
+
+{{DECISIONS}}
+
+{{FIXES}}
+
+{{UNCATEGORIZED}}

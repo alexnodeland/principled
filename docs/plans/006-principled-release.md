@@ -1,10 +1,10 @@
 ---
 title: "Principled Release Plugin"
 number: "006"
-status: active
+status: complete
 author: Alex
 created: 2026-02-22
-updated: 2026-02-22
+updated: 2026-02-23
 originating_proposal: "004"
 related_adrs: [013]
 ---
@@ -101,13 +101,13 @@ Tasks are organized by phase, with each phase mapping to one or more bounded con
 
 **Goal:** Create the plugin manifest, directory structure, and marketplace integration.
 
-- [ ] **1.1** Create `plugins/principled-release/.claude-plugin/plugin.json` with name `principled-release`, version `0.1.0`, description, author, keywords (`release`, `changelog`, `versioning`, `semver`)
-- [ ] **1.2** Create full directory skeleton:
+- [x] **1.1** Create `plugins/principled-release/.claude-plugin/plugin.json` with name `principled-release`, version `0.1.0`, description, author, keywords (`release`, `changelog`, `versioning`, `semver`)
+- [x] **1.2** Create full directory skeleton:
   - `skills/release-strategy/`, `skills/changelog/`, `skills/release-ready/`, `skills/version-bump/`, `skills/release-plan/`, `skills/tag-release/`
   - `hooks/scripts/`
   - `scripts/` (plugin-level drift checker)
-- [ ] **1.3** Add plugin entry to `.claude-plugin/marketplace.json` with category `workflow`
-- [ ] **1.4** Add `principled-release@principled-marketplace` to `.claude/settings.json` enabled plugins
+- [x] **1.3** Add plugin entry to `.claude-plugin/marketplace.json` with category `workflow`
+- [x] **1.4** Add `principled-release@principled-marketplace` to `.claude/settings.json` enabled plugins
 
 ### Phase 2: Knowledge Base & Shared Scripts (BC-2, BC-3)
 
@@ -115,11 +115,11 @@ Tasks are organized by phase, with each phase mapping to one or more bounded con
 
 **Depends on:** Phase 1
 
-- [ ] **2.1** Write `release-strategy/reference/release-conventions.md`: Keep a Changelog adaptation, entry format, grouping categories (Features, Improvements, Decisions, Uncategorized), pipeline reference syntax
-- [ ] **2.2** Write `release-strategy/reference/semver-rules.md`: bump type heuristics (supersedes → major, accepted proposals → minor, plan tasks → patch), `--type` override behavior, pre-release version handling
-- [ ] **2.3** Write `release-strategy/SKILL.md`: background knowledge skill, not user-invocable
-- [ ] **2.4** Copy `check-gh-cli.sh` from principled-github canonical source (`plugins/principled-github/skills/sync-issues/scripts/`) to `changelog/scripts/`
-- [ ] **2.5** Implement `changelog/scripts/collect-changes.sh`: accept `--since <tag>` and optional `--module <path>`, traverse git log, resolve PR references via `gh pr view`, extract pipeline document references (RFC-NNN, Plan-NNN, ADR-NNN patterns), output structured change list
+- [x] **2.1** Write `release-strategy/reference/release-conventions.md`: Keep a Changelog adaptation, entry format, grouping categories (Features, Improvements, Decisions, Uncategorized), pipeline reference syntax
+- [x] **2.2** Write `release-strategy/reference/semver-rules.md`: bump type heuristics (supersedes → major, accepted proposals → minor, plan tasks → patch), `--type` override behavior, pre-release version handling
+- [x] **2.3** Write `release-strategy/SKILL.md`: background knowledge skill, not user-invocable
+- [x] **2.4** Copy `check-gh-cli.sh` from principled-github canonical source (`plugins/principled-github/skills/sync-issues/scripts/`) to `changelog/scripts/`
+- [x] **2.5** Implement `changelog/scripts/collect-changes.sh`: accept `--since <tag>` and optional `--module <path>`, traverse git log, resolve PR references via `gh pr view`, extract pipeline document references (RFC-NNN, Plan-NNN, ADR-NNN patterns), output structured change list
 
 ### Phase 3: Changelog Skill (BC-3)
 
@@ -127,8 +127,8 @@ Tasks are organized by phase, with each phase mapping to one or more bounded con
 
 **Depends on:** Phase 2
 
-- [ ] **3.1** Create `changelog/templates/changelog-entry.md`: template with `{{VERSION}}`, `{{DATE}}`, `{{FEATURES}}`, `{{IMPROVEMENTS}}`, `{{DECISIONS}}`, `{{UNCATEGORIZED}}` placeholders
-- [ ] **3.2** Write `changelog/SKILL.md`: user-invocable, accepts `--since <tag>` and `--module <path>`, runs `collect-changes.sh`, groups by category, renders via template, outputs Markdown changelog section
+- [x] **3.1** Create `changelog/templates/changelog-entry.md`: template with `{{VERSION}}`, `{{DATE}}`, `{{FEATURES}}`, `{{IMPROVEMENTS}}`, `{{DECISIONS}}`, `{{UNCATEGORIZED}}` placeholders
+- [x] **3.2** Write `changelog/SKILL.md`: user-invocable, accepts `--since <tag>` and `--module <path>`, runs `collect-changes.sh`, groups by category, renders via template, outputs Markdown changelog section
 
 ### Phase 4: Release Readiness Skill (BC-4)
 
@@ -136,8 +136,8 @@ Tasks are organized by phase, with each phase mapping to one or more bounded con
 
 **Depends on:** Phase 2
 
-- [ ] **4.1** Implement `release-ready/scripts/check-readiness.sh`: accept `--since <tag>`, collect pipeline references from merged PRs, read frontmatter status of each referenced document, report pass/fail per document, support `--strict` flag for hard failures
-- [ ] **4.2** Write `release-ready/SKILL.md`: user-invocable, accepts `--tag <version>` and `--strict`, runs `check-readiness.sh`, reports summary with blocking items, optionally runs structure validation on affected modules
+- [x] **4.1** Implement `release-ready/scripts/check-readiness.sh`: accept `--since <tag>`, collect pipeline references from merged PRs, read frontmatter status of each referenced document, report pass/fail per document, support `--strict` flag for hard failures
+- [x] **4.2** Write `release-ready/SKILL.md`: user-invocable, accepts `--tag <version>` and `--strict`, runs `check-readiness.sh`, reports summary with blocking items, optionally runs structure validation on affected modules
 
 ### Phase 5: Version Bump Skill (BC-5)
 
@@ -145,8 +145,8 @@ Tasks are organized by phase, with each phase mapping to one or more bounded con
 
 **Depends on:** Phase 2
 
-- [ ] **5.1** Implement `version-bump/scripts/detect-modules.sh`: find CLAUDE.md files, parse module type, locate version manifest files (package.json, Cargo.toml, pyproject.toml), output module-to-manifest mapping
-- [ ] **5.2** Write `version-bump/SKILL.md`: user-invocable, accepts `--module <path>` and `--type major|minor|patch`, runs `detect-modules.sh`, determines bump type from change signals (or uses `--type` override), applies version change to manifest, reports what was bumped and why
+- [x] **5.1** Implement `version-bump/scripts/detect-modules.sh`: find CLAUDE.md files, parse module type, locate version manifest files (package.json, Cargo.toml, pyproject.toml), output module-to-manifest mapping
+- [x] **5.2** Write `version-bump/SKILL.md`: user-invocable, accepts `--module <path>` and `--type major|minor|patch`, runs `detect-modules.sh`, determines bump type from change signals (or uses `--type` override), applies version change to manifest, reports what was bumped and why
 
 ### Phase 6: Release Plan & Tag Skills (BC-6)
 
@@ -154,10 +154,10 @@ Tasks are organized by phase, with each phase mapping to one or more bounded con
 
 **Depends on:** Phases 3, 4, 5
 
-- [ ] **6.1** Create `release-plan/templates/release-plan.md`: template with modules affected, features included, decisions included, outstanding items, suggested timeline
-- [ ] **6.2** Write `release-plan/SKILL.md`: user-invocable, accepts `--since <tag>`, collects changes, groups by module and category, generates plan document for team review
-- [ ] **6.3** Implement `tag-release/scripts/validate-tag.sh`: check tag format (vX.Y.Z), check tag doesn't already exist, validate against readiness state
-- [ ] **6.4** Write `tag-release/SKILL.md`: user-invocable, accepts `<version>` and `--dry-run`, runs `/release-ready --strict`, generates changelog, creates git tag, generates release notes, optionally creates GitHub release via `gh release create`
+- [x] **6.1** Create `release-plan/templates/release-plan.md`: template with modules affected, features included, decisions included, outstanding items, suggested timeline
+- [x] **6.2** Write `release-plan/SKILL.md`: user-invocable, accepts `--since <tag>`, collects changes, groups by module and category, generates plan document for team review
+- [x] **6.3** Implement `tag-release/scripts/validate-tag.sh`: check tag format (vX.Y.Z), check tag doesn't already exist, validate against readiness state
+- [x] **6.4** Write `tag-release/SKILL.md`: user-invocable, accepts `<version>` and `--dry-run`, runs `/release-ready --strict`, generates changelog, creates git tag, generates release notes, optionally creates GitHub release via `gh release create`
 
 ### Phase 7: Hook, Drift Detection & Documentation (BC-1, BC-6)
 
@@ -165,14 +165,14 @@ Tasks are organized by phase, with each phase mapping to one or more bounded con
 
 **Depends on:** Phases 3, 4, 5, 6
 
-- [ ] **7.1** Implement `hooks/scripts/check-release-readiness.sh`: PostToolUse hook for Bash, reads stdin JSON, detects `git tag` commands, warns if `/release-ready` hasn't been run, advisory only (always exits 0)
-- [ ] **7.2** Write `hooks/hooks.json`: PostToolUse hook for Bash targeting release readiness check script
-- [ ] **7.3** Propagate `check-gh-cli.sh` copies: `changelog/scripts/` → `release-ready/scripts/`, `tag-release/scripts/`, `release-plan/scripts/` (3 additional copies, 4 total within plugin)
-- [ ] **7.4** Implement `scripts/check-template-drift.sh`: verify all `check-gh-cli.sh` copies match principled-github canonical source (cross-plugin drift detection)
-- [ ] **7.5** Write plugin `README.md`: installation, skills table, hook, changelog format, release workflow, version bump heuristics, drift detection
-- [ ] **7.6** Update `.github/workflows/ci.yml`: add principled-release drift check step
-- [ ] **7.7** Update root `CLAUDE.md`: add principled-release to architecture table, skills table, conventions, hooks, testing, dogfooding, dependencies
-- [ ] **7.8** Update `.claude/CLAUDE.md`: add principled-release dogfooding section and common pitfalls
+- [x] **7.1** Implement `hooks/scripts/check-release-readiness.sh`: PostToolUse hook for Bash, reads stdin JSON, detects `git tag` commands, warns if `/release-ready` hasn't been run, advisory only (always exits 0)
+- [x] **7.2** Write `hooks/hooks.json`: PostToolUse hook for Bash targeting release readiness check script
+- [x] **7.3** Propagate `check-gh-cli.sh` copies: `changelog/scripts/` → `release-ready/scripts/`, `tag-release/scripts/`, `release-plan/scripts/` (3 additional copies, 4 total within plugin)
+- [x] **7.4** Implement `scripts/check-template-drift.sh`: verify all `check-gh-cli.sh` copies match principled-github canonical source (cross-plugin drift detection)
+- [x] **7.5** Write plugin `README.md`: installation, skills table, hook, changelog format, release workflow, version bump heuristics, drift detection
+- [x] **7.6** Update `.github/workflows/ci.yml`: add principled-release drift check step
+- [x] **7.7** Update root `CLAUDE.md`: add principled-release to architecture table, skills table, conventions, hooks, testing, dogfooding, dependencies
+- [x] **7.8** Update `.claude/CLAUDE.md`: add principled-release dogfooding section and common pitfalls
 
 ---
 
@@ -209,18 +209,18 @@ Open decisions to resolve during implementation:
 
 ## Acceptance Criteria
 
-- [ ] `/changelog --since v0.3.1` generates changelog entries grouped by Features, Improvements, Decisions, and Uncategorized
-- [ ] `/changelog --since v0.3.1 --module plugins/principled-docs` scopes to a single module
-- [ ] Changelog entries include parenthetical pipeline references (e.g., "(RFC-001, Plan-001)")
-- [ ] Changes without pipeline references appear under "Uncategorized" (not hidden)
-- [ ] `/release-ready` reports pass/fail for each referenced pipeline document
-- [ ] `/release-ready --strict` exits non-zero when any referenced document is not in terminal status
-- [ ] `/version-bump --module <path>` detects the version manifest and applies the bump
-- [ ] `/version-bump --type major` overrides automatic bump detection
-- [ ] `/release-plan --since v0.3.1` generates a reviewable release plan document
-- [ ] `/tag-release 0.4.0 --dry-run` shows what would happen without creating a tag
-- [ ] `/tag-release 0.4.0` creates a git tag and generates release notes
-- [ ] `check-release-readiness.sh` warns when `git tag` is detected without prior readiness check (advisory, never blocks)
-- [ ] `check-template-drift.sh` passes when all cross-plugin `check-gh-cli.sh` copies match canonical
-- [ ] `check-template-drift.sh` fails when any copy diverges
-- [ ] Plugin README documents all skills, hook, changelog format, and release workflow
+- [x] `/changelog --since v0.3.1` generates changelog entries grouped by Features, Improvements, Decisions, and Uncategorized
+- [x] `/changelog --since v0.3.1 --module plugins/principled-docs` scopes to a single module
+- [x] Changelog entries include parenthetical pipeline references (e.g., "(RFC-001, Plan-001)")
+- [x] Changes without pipeline references appear under "Uncategorized" (not hidden)
+- [x] `/release-ready` reports pass/fail for each referenced pipeline document
+- [x] `/release-ready --strict` exits non-zero when any referenced document is not in terminal status
+- [x] `/version-bump --module <path>` detects the version manifest and applies the bump
+- [x] `/version-bump --type major` overrides automatic bump detection
+- [x] `/release-plan --since v0.3.1` generates a reviewable release plan document
+- [x] `/tag-release 0.4.0 --dry-run` shows what would happen without creating a tag
+- [x] `/tag-release 0.4.0` creates a git tag and generates release notes
+- [x] `check-release-readiness.sh` warns when `git tag` is detected without prior readiness check (advisory, never blocks)
+- [x] `check-template-drift.sh` passes when all cross-plugin `check-gh-cli.sh` copies match canonical
+- [x] `check-template-drift.sh` fails when any copy diverges
+- [x] Plugin README documents all skills, hook, changelog format, and release workflow
