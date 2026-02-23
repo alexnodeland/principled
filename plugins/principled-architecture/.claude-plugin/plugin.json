@@ -1,0 +1,15 @@
+{
+  "name": "principled-architecture",
+  "version": "0.1.0",
+  "description": "Map code to architectural decisions, detect drift, audit decision coverage, and keep architecture documents synchronized with the codebase.",
+  "author": "Alex Nodeland",
+  "homepage": "https://github.com/alexnodeland/principled",
+  "keywords": [
+    "architecture",
+    "adr",
+    "governance",
+    "drift-detection",
+    "module-boundaries",
+    "dependency-rules"
+  ]
+}

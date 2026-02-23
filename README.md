@@ -27,6 +27,7 @@ A Claude Code plugin marketplace hosting first-party and community plugins for t
 | [**principled-github**](plugins/principled-github/README.md)                 | workflow       | Integrate the principled workflow with GitHub native features: issues, PRs, templates, actions, CODEOWNERS, and labels (v0.1.0) |
 | [**principled-quality**](plugins/principled-quality/README.md)               | quality        | Connect code reviews to the principled documentation pipeline with spec-driven checklists and review tracking (v0.1.0)          |
 | [**principled-release**](plugins/principled-release/README.md)               | workflow       | Generate changelogs from the documentation pipeline, verify release readiness, and coordinate versioned releases (v0.1.0)       |
+| [**principled-architecture**](plugins/principled-architecture/README.md)     | architecture   | Map modules to governing ADRs, detect architectural drift, audit governance coverage, and sync architecture docs (v0.1.0)       |
 
 ### Community
 
@@ -48,6 +49,7 @@ _No community plugins yet. See [Contributing](#-contributing-a-plugin) to submit
 /plugin install principled-github@principled-marketplace
 /plugin install principled-quality@principled-marketplace
 /plugin install principled-release@principled-marketplace
+/plugin install principled-architecture@principled-marketplace
 ```
 
 ### Team-Wide Adoption
@@ -69,7 +71,8 @@ Add to your project's `.claude/settings.json`:
     "principled-implementation@principled-marketplace": true,
     "principled-github@principled-marketplace": true,
     "principled-quality@principled-marketplace": true,
-    "principled-release@principled-marketplace": true
+    "principled-release@principled-marketplace": true,
+    "principled-architecture@principled-marketplace": true
   }
 }
 ```
@@ -85,7 +88,8 @@ principled/
 │   ├── principled-implementation/ # Plan execution plugin
 │   ├── principled-github/       # GitHub integration plugin
 │   ├── principled-quality/      # Code review quality plugin
-│   └── principled-release/     # Release lifecycle plugin
+│   ├── principled-release/     # Release lifecycle plugin
+│   └── principled-architecture/ # Architecture governance plugin
 ├── external_plugins/            # Community plugins
 ├── docs/                        # Marketplace governance
 │   ├── proposals/               # RFCs

@@ -24,6 +24,7 @@
     "principled-implementation@principled-marketplace": true,
     "principled-github@principled-marketplace": true,
     "principled-quality@principled-marketplace": true,
-    "principled-release@principled-marketplace": true
+    "principled-release@principled-marketplace": true,
+    "principled-architecture@principled-marketplace": true
   }
 }

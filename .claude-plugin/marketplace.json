@@ -83,6 +83,21 @@
         "semver",
         "release-management"
       ]
+    },
+    {
+      "name": "principled-architecture",
+      "source": "./plugins/principled-architecture",
+      "description": "Map code to architectural decisions, detect drift, audit decision coverage, and keep architecture documents synchronized.",
+      "version": "0.1.0",
+      "category": "architecture",
+      "keywords": [
+        "architecture",
+        "adr",
+        "governance",
+        "drift-detection",
+        "module-boundaries",
+        "dependency-rules"
+      ]
     }
   ]
 }

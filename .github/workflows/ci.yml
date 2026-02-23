@@ -67,6 +67,9 @@ jobs:
       - name: Check principled-release template drift
         run: bash plugins/principled-release/scripts/check-template-drift.sh
 
+      - name: Check principled-architecture template drift
+        run: bash plugins/principled-architecture/scripts/check-template-drift.sh
+
       - name: Validate root structure
         run: bash plugins/principled-docs/skills/scaffold/scripts/validate-structure.sh --root
 
@@ -291,3 +294,25 @@ jobs:
             exit 1
           fi
           echo "PASS: unrelated command correctly passed through (exit 0)"
+
+      - name: Smoke-test boundary violation hook
+        run: |
+          # Test: writing a source file should pass (exit 0, advisory only)
+          result=0
+          echo '{"tool_input":{"file_path":"src/index.ts"}}' \
+            | bash plugins/principled-architecture/hooks/scripts/check-boundary-violation.sh || result=$?
+          if [ "$result" -ne 0 ]; then
+            echo "FAIL: expected exit 0 for source file write, got $result"
+            exit 1
+          fi
+          echo "PASS: source file write correctly allowed with advisory (exit 0)"
+
+          # Test: writing a non-source file should pass silently (exit 0)
+          result=0
+          echo '{"tool_input":{"file_path":"README.md"}}' \
+            | bash plugins/principled-architecture/hooks/scripts/check-boundary-violation.sh || result=$?
+          if [ "$result" -ne 0 ]; then
+            echo "FAIL: expected exit 0 for non-source file, got $result"
+            exit 1
+          fi
+          echo "PASS: non-source file correctly passed through (exit 0)"

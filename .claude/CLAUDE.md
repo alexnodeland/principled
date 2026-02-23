@@ -4,7 +4,7 @@ This file supplements the root `CLAUDE.md` with development-specific guidance fo
 
 ## Dogfooding
 
-All five first-party plugins are installed via `.claude/settings.json`. See root `CLAUDE.md` § Dogfooding for the full list of available skills and active hooks.
+All six first-party plugins are installed via `.claude/settings.json`. See root `CLAUDE.md` § Dogfooding for the full list of available skills and active hooks.
 
 ## Common Pitfalls
 
@@ -67,6 +67,13 @@ All five first-party plugins are installed via `.claude/settings.json`. See root
 - Advisory only --- always exits 0. Never blocks.
 - Triggers on `git tag` commands (excludes `git tag -l` and `git tag -d`).
 
+### Editing Hook Scripts (principled-architecture)
+
+- Uses stdin JSON with `tool_input.file_path`: `echo '{"tool_input":{"file_path":"src/index.ts"}}' | bash plugins/principled-architecture/hooks/scripts/check-boundary-violation.sh`
+- Advisory only --- always exits 0. Never blocks.
+- Triggers on Write of source files (`.ts`, `.tsx`, `.js`, `.jsx`, `.py`, `.go`, `.rs`, `.java`).
+- Checks for module dependency direction violations by scanning imports against the module type system (ADR-003, ADR-014).
+
 ### Changing Frontmatter Schema
 
 - Any changes to frontmatter field names or status values must be reflected in `plugins/principled-docs/hooks/scripts/parse-frontmatter.sh` and the guard scripts that consume it.
@@ -80,11 +87,11 @@ All five first-party plugins are installed via `.claude/settings.json`. See root
 
 1. Run `/lint` or `pre-commit run --all-files` to check formatting and lint
 2. Run `/validate --root` to check root structure (plugin skill, from dogfooding)
-3. If you modified templates or scripts, propagate copies first and run drift checks for all five plugins
+3. If you modified templates or scripts, propagate copies first and run drift checks for all six plugins
 
 ## Dev Skills
 
-These supplement the 35 plugin skills available via dogfooding:
+These supplement the 41 plugin skills available via dogfooding:
 
 | Skill                 | Command                | What It Does                                                   |
 | --------------------- | ---------------------- | -------------------------------------------------------------- |
