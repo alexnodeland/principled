@@ -9,6 +9,12 @@ isolation: worktree
 tools: Read, Write, Edit, Bash, Glob, Grep
 skills:
   - impl-strategy
+model: inherit
+maxTurns: 100
+memory: project
+hooks:
+  - event: Stop
+    command: "bash ${CLAUDE_PLUGIN_ROOT}/hooks/scripts/validate-worker-completion.sh"
 ---
 
 # Implementation Worker Agent

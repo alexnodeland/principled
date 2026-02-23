@@ -1,3 +1,6 @@
 node_modules/
 .impl/
 .review/
+
+# Agent memory — session-local knowledge accumulated by agents with memory: project
+.claude/agent-memory/
