@@ -81,13 +81,27 @@ claude plugin add <path-to-principled-docs>
 
 ## 🔒 Enforcement Hooks
 
-Three hooks provide deterministic guardrails — no manual action required.
+Eight hooks provide deterministic guardrails — no manual action required.
 
-| Hook                         | Trigger                  | Behavior                                                                               |
-| ---------------------------- | ------------------------ | -------------------------------------------------------------------------------------- |
-| **ADR Immutability Guard**   | PreToolUse `Edit\|Write` | 🛡️ Blocks edits to accepted ADRs. Exception: `superseded_by` updates are allowed.      |
-| **Proposal Lifecycle Guard** | PreToolUse `Edit\|Write` | 🛡️ Blocks edits to terminal proposals (`accepted`, `rejected`, `superseded`).          |
-| **Structure Nudge**          | PostToolUse `Write`      | 💡 Advisory validation after file writes. Warns about missing structure. Never blocks. |
+| Hook                           | Trigger                  | Behavior                                                                               |
+| ------------------------------ | ------------------------ | -------------------------------------------------------------------------------------- |
+| **ADR Immutability Guard**     | PreToolUse `Edit\|Write` | 🛡️ Blocks edits to accepted ADRs. Exception: `superseded_by` updates are allowed.      |
+| **Proposal Lifecycle Guard**   | PreToolUse `Edit\|Write` | 🛡️ Blocks edits to terminal proposals (`accepted`, `rejected`, `superseded`).          |
+| **Plan-Proposal Link Guard**   | PreToolUse `Write`       | 🛡️ Blocks plans without an accepted `originating_proposal`.                            |
+| **Required Frontmatter Guard** | PreToolUse `Edit\|Write` | 🛡️ Blocks documents with missing or invalid required frontmatter fields.               |
+| **Document Numbering Guard**   | PreToolUse `Write`       | 🛡️ Blocks duplicate `NNN` prefixes within pipeline document directories.               |
+| **Structure Nudge**            | PostToolUse `Write`      | 💡 Advisory validation after file writes. Warns about missing structure. Never blocks. |
+| **Async Drift Check**          | PostToolUse `Write`      | 💡 Background drift check on template/script writes within plugin skill directories.   |
+| **ADR Supersession Validator** | PostToolUse `Write`      | 💡 Validates supersession chain integrity: missing references, circular chains.        |
+
+## 🤖 Agents
+
+Two analytical agents offload read-heavy work from the main context window.
+
+| Agent                | Model | Background | Description                                                             |
+| -------------------- | ----- | ---------- | ----------------------------------------------------------------------- |
+| **module-auditor**   | haiku | yes        | Validates documentation structure for batches of modules in parallel.   |
+| **decision-auditor** | haiku | yes        | Scans ADRs for supersession chain integrity and consistency violations. |
 
 ## 📂 Module Structure
 

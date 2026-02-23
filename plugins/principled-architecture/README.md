@@ -76,6 +76,14 @@ claude plugin add <path-to-principled-architecture>
 
 `arch-strategy` --- not directly invocable. Gives Claude Code deep understanding of dependency direction rules, governance mapping conventions, heuristic analysis approach (ADR-014), and module type system (ADR-003). Activates automatically when working with architecture governance.
 
+## Agents
+
+| Agent                | Model | Background | maxTurns | Description                                                    |
+| -------------------- | ----- | ---------- | -------- | -------------------------------------------------------------- |
+| **boundary-checker** | haiku | yes        | 30       | Scans modules for dependency direction violations in parallel. |
+
+The `boundary-checker` agent uses heuristic import analysis (ADR-014) to scan assigned modules for boundary violations, returning violations with file paths, line numbers, and ADR references.
+
 ## Enforcement Hooks
 
 One advisory hook --- no manual action required.

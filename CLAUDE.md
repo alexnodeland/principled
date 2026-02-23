@@ -24,11 +24,11 @@ Eight layers, top to bottom:
 | **Marketplace**         | `.claude-plugin/marketplace.json`, `plugins/`, `external_plugins/` | Plugin catalog, directory structure, plugin discovery and distribution                                               |
 | **Docs: Skills**        | `plugins/principled-docs/skills/` (9 directories)                  | Generative workflows — each skill is a slash command with its own `SKILL.md`, templates, scripts, and reference docs |
 | **Docs: Hooks**         | `plugins/principled-docs/hooks/`                                   | Deterministic guardrails — `hooks.json` declares PreToolUse/PostToolUse triggers that run shell scripts              |
-| **Implementation: All** | `plugins/principled-implementation/`                               | Skills (6), hooks (1), agents (1) for plan execution via worktree-isolated sub-agents                                |
-| **GitHub: All**         | `plugins/principled-github/`                                       | Skills (9), hooks (1) for GitHub integration: issues, PRs, templates, CODEOWNERS, labels                             |
-| **Quality: All**        | `plugins/principled-quality/`                                      | Skills (5), hooks (1) for spec-driven code review: checklists, context, coverage, summaries                          |
+| **Implementation: All** | `plugins/principled-implementation/`                               | Skills (6), hooks (5), agents (1) for plan execution via worktree-isolated sub-agents and agent teams                |
+| **GitHub: All**         | `plugins/principled-github/`                                       | Skills (9), hooks (1), agents (1) for GitHub integration: issues, PRs, templates, CODEOWNERS, labels                 |
+| **Quality: All**        | `plugins/principled-quality/`                                      | Skills (5), hooks (1), agents (1) for spec-driven code review: checklists, context, coverage, summaries              |
 | **Release: All**        | `plugins/principled-release/`                                      | Skills (6), hooks (1) for release lifecycle: changelogs, readiness, version bumps, tagging                           |
-| **Architecture: All**   | `plugins/principled-architecture/`                                 | Skills (6), hooks (1) for architecture governance: mapping, drift detection, auditing, sync                          |
+| **Architecture: All**   | `plugins/principled-architecture/`                                 | Skills (6), hooks (1), agents (1) for architecture governance: mapping, drift detection, auditing, sync              |
 | **Dev DX**              | `.claude/`, config files, `.github/workflows/`                     | Project-level Claude Code settings, dev skills, CI pipeline, linting config                                          |
 
 ## Skills
@@ -108,13 +108,18 @@ Each skill directory is **self-contained**. No cross-skill imports. If a templat
 
 ## Agents
 
-The principled-implementation plugin defines one agent:
+Six agents across four plugins:
 
-| Agent         | Isolation  | Description                                                    |
-| ------------- | ---------- | -------------------------------------------------------------- |
-| `impl-worker` | `worktree` | Executes a single task from a DDD plan in an isolated worktree |
+| Agent              | Plugin                    | Isolation  | Model   | Background | Description                                                    |
+| ------------------ | ------------------------- | ---------- | ------- | ---------- | -------------------------------------------------------------- |
+| `impl-worker`      | principled-implementation | `worktree` | inherit | no         | Executes a single task from a DDD plan in an isolated worktree |
+| `module-auditor`   | principled-docs           | —          | haiku   | yes        | Validates documentation structure for batches of modules       |
+| `decision-auditor` | principled-docs           | —          | haiku   | yes        | Audits ADR consistency: supersession chains, orphaned refs     |
+| `issue-ingester`   | principled-github         | —          | inherit | no         | Processes a single GitHub issue through the triage pipeline    |
+| `pr-reviewer`      | principled-quality        | —          | inherit | yes        | Comprehensive 4-dimension PR review analysis                   |
+| `boundary-checker` | principled-architecture   | —          | haiku   | yes        | Scans modules for architectural boundary violations            |
 
-The `spawn` skill delegates to `impl-worker` via `context: fork` + `agent: impl-worker` frontmatter. The orchestrator invokes `/spawn` from inline context (no fork) to coordinate multiple sub-agent spawns sequentially.
+The `spawn` skill delegates to `impl-worker` via `context: fork` + `agent: impl-worker` frontmatter. The orchestrator invokes `/spawn` from inline context (no fork) to coordinate multiple sub-agent spawns — sequentially by default, or in parallel via agent teams when `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1` is set.
 
 ## Key Conventions
 
@@ -195,6 +200,8 @@ This repo uses its own documentation pipeline at the root level (governing the m
   - 012: Dual storage for review checklists
   - 013: Pipeline-based changelog generation
   - 014: Heuristic architecture governance
+  - 015: Event-driven lifecycle hooks for pipeline enforcement
+  - 016: Agent teams for parallel plan execution
 - `docs/architecture/` — Living design docs.
   - plugin-system.md, documentation-pipeline.md, enforcement-system.md
 
@@ -210,12 +217,12 @@ See `CONTRIBUTING.md` for the full contributor guide. Key points:
 
 This repo installs all six first-party plugins (via `.claude/settings.json`):
 
-- **principled-docs** — All 9 skills and 3 enforcement hooks are active during development.
-- **principled-implementation** — All 6 skills, the `impl-worker` agent, and 1 advisory hook are active during development.
-- **principled-github** — All 9 skills and 1 advisory hook are active during development.
-- **principled-quality** — All 5 skills and 1 advisory hook are active during development.
+- **principled-docs** — All 9 skills, 8 enforcement hooks, and 2 agents are active during development.
+- **principled-implementation** — All 6 skills, the `impl-worker` agent, and 5 hooks (1 advisory + 4 lifecycle) are active during development. Agent teams available when `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1`.
+- **principled-github** — All 9 skills, 1 advisory hook, and the `issue-ingester` agent are active during development.
+- **principled-quality** — All 5 skills, 1 advisory hook, and the `pr-reviewer` agent are active during development.
 - **principled-release** — All 6 skills and 1 advisory hook are active during development.
-- **principled-architecture** — All 6 skills and 1 advisory hook are active during development.
+- **principled-architecture** — All 6 skills, 1 advisory hook, and the `boundary-checker` agent are active during development.
 
 See `.claude/CLAUDE.md` for development-specific context.
 
@@ -232,12 +239,14 @@ Proposals → Plans → Implementation. Decisions (ADRs) at any point.
 
 - **Proposals** with terminal status (`accepted`, `rejected`, `superseded`) must NOT be modified. Enforced by `check-proposal-lifecycle.sh`.
 - **ADRs** with status `accepted` must NOT be modified, except the `superseded_by` field. Enforced by `check-adr-immutability.sh`.
-- **Plans** require an accepted proposal (`--from-proposal NNN`).
+- **Plans** require an accepted proposal (`--from-proposal NNN`). Enforced by `check-plan-proposal-link.sh`.
+- **Pipeline documents** must have valid frontmatter. Enforced by `check-required-frontmatter.sh`.
+- **Document numbers** must be unique within their directory. Enforced by `check-doc-numbering.sh`.
 - **Skills and hooks never overlap.** Skills create/modify documents. Hooks enforce rules.
 - **Guard scripts default to allow.** They only block when they can positively confirm a violation.
 - **Guard exit codes:** `0` = allow, `2` = block.
 - **jq is optional.** Hook scripts fall back to `grep` for JSON parsing when `jq` is unavailable.
-- **Subagents cannot spawn subagents.** The orchestrator runs inline to coordinate multiple `/spawn` calls sequentially.
+- **Subagents cannot spawn subagents.** The orchestrator runs inline to coordinate multiple `/spawn` calls (sequentially by default, or in parallel via agent teams).
 - **Worktree agents cannot access main worktree files.** Task details are embedded in the agent prompt via `!` backtick pre-fork commands.
 
 ## Enforcement Hooks
@@ -246,23 +255,35 @@ Proposals → Plans → Implementation. Decisions (ADRs) at any point.
 
 Declared in `plugins/principled-docs/hooks/hooks.json`:
 
-| Hook                     | Event                    | Script                                                                             | Timeout |
-| ------------------------ | ------------------------ | ---------------------------------------------------------------------------------- | ------- |
-| ADR Immutability Guard   | PreToolUse (Edit\|Write) | `plugins/principled-docs/hooks/scripts/check-adr-immutability.sh`                  | 10s     |
-| Proposal Lifecycle Guard | PreToolUse (Edit\|Write) | `plugins/principled-docs/hooks/scripts/check-proposal-lifecycle.sh`                | 10s     |
-| Structure Nudge          | PostToolUse (Write)      | `plugins/principled-docs/skills/scaffold/scripts/validate-structure.sh --on-write` | 15s     |
+| Hook                       | Event                    | Script                                                                             | Timeout |
+| -------------------------- | ------------------------ | ---------------------------------------------------------------------------------- | ------- |
+| ADR Immutability Guard     | PreToolUse (Edit\|Write) | `plugins/principled-docs/hooks/scripts/check-adr-immutability.sh`                  | 10s     |
+| Proposal Lifecycle Guard   | PreToolUse (Edit\|Write) | `plugins/principled-docs/hooks/scripts/check-proposal-lifecycle.sh`                | 10s     |
+| Plan-Proposal Link Guard   | PreToolUse (Write)       | `plugins/principled-docs/hooks/scripts/check-plan-proposal-link.sh`                | 10s     |
+| Required Frontmatter Guard | PreToolUse (Edit\|Write) | `plugins/principled-docs/hooks/scripts/check-required-frontmatter.sh`              | 10s     |
+| Document Numbering Guard   | PreToolUse (Write)       | `plugins/principled-docs/hooks/scripts/check-doc-numbering.sh`                     | 10s     |
+| Structure Nudge            | PostToolUse (Write)      | `plugins/principled-docs/skills/scaffold/scripts/validate-structure.sh --on-write` | 15s     |
+| Async Drift Check          | PostToolUse (Write)      | `plugins/principled-docs/hooks/scripts/async-drift-check.sh`                       | 30s     |
+| ADR Supersession Validator | PostToolUse (Write)      | `plugins/principled-docs/hooks/scripts/check-adr-supersession.sh`                  | 10s     |
 
-Both guard scripts depend on `plugins/principled-docs/hooks/scripts/parse-frontmatter.sh` for YAML field extraction.
+Guard scripts depend on `plugins/principled-docs/hooks/scripts/parse-frontmatter.sh` for YAML field extraction.
 
 ### principled-implementation
 
 Declared in `plugins/principled-implementation/hooks/hooks.json`:
 
-| Hook                        | Event                    | Script                                                                        | Timeout |
-| --------------------------- | ------------------------ | ----------------------------------------------------------------------------- | ------- |
-| Manifest Integrity Advisory | PreToolUse (Edit\|Write) | `plugins/principled-implementation/hooks/scripts/check-manifest-integrity.sh` | 10s     |
+| Hook                        | Event                    | Script                                                                          | Timeout |
+| --------------------------- | ------------------------ | ------------------------------------------------------------------------------- | ------- |
+| Manifest Integrity Advisory | PreToolUse (Edit\|Write) | `plugins/principled-implementation/hooks/scripts/check-manifest-integrity.sh`   | 10s     |
+| Worktree Setup              | WorktreeCreate           | `plugins/principled-implementation/hooks/scripts/setup-impl-worktree.sh`        | 10s     |
+| Worktree Cleanup            | WorktreeRemove           | `plugins/principled-implementation/hooks/scripts/cleanup-impl-worktree.sh`      | 10s     |
+| Worker Completion Validator | SubagentStop             | `plugins/principled-implementation/hooks/scripts/validate-worker-completion.sh` | 10s     |
+| Task Completion Gate        | TaskCompleted            | `plugins/principled-implementation/hooks/scripts/gate-task-completion.sh`       | 10s     |
 
-Advisory only — warns when `.impl/manifest.json` is being edited directly but never blocks (always exits 0).
+- Manifest Integrity Advisory: warns when `.impl/manifest.json` is edited directly (always exits 0).
+- Worktree Setup/Cleanup: initialize and archive worktree state (always exit 0).
+- Worker Completion Validator: blocks impl-worker completion when tasks are orphaned in `in_progress` (exit 2).
+- Task Completion Gate: blocks task completion when quality checks haven't passed; only active when agent teams are enabled (exit 2).
 
 ### principled-github
 
