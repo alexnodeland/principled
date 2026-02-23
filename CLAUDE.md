@@ -124,6 +124,15 @@ The `spawn` skill delegates to `impl-worker` via `context: fork` + `agent: impl-
 - `plugins/principled-quality/scripts/check-template-drift.sh` verifies all 4 cross-plugin pairs. Drift = CI failure.
 - This is the first cross-plugin copy in the marketplace. The drift checker navigates to the sibling plugin via `$REPO_ROOT`.
 
+### Cross-Plugin Dependencies
+
+- `task-manifest.sh`: Canonical in `plugins/principled-implementation/skills/decompose/scripts/`. A read-only subset copy exists in `plugins/principled-github/skills/pr-describe/scripts/` for manifest format compatibility. This copy is intentionally different (not byte-identical) and is **not drift-checked** — it maintains only the interface contract for reading task manifests.
+- `check-gh-cli.sh`: Canonical in `plugins/principled-github/skills/sync-issues/scripts/`. Byte-identical copies exist in 4 principled-quality skills. Drift-checked by `plugins/principled-quality/scripts/check-template-drift.sh`.
+
+### Canonical Source Convention
+
+The canonical version of a shared script or template lives in the skill most closely associated with its primary purpose. When adding a new shared script, declare the canonical location in the relevant `check-template-drift.sh` and in `/propagate-templates`.
+
 ### Naming Patterns
 
 - Documents: `NNN-short-title.md` (e.g., `001-switch-to-event-sourcing.md`)
@@ -177,11 +186,11 @@ See `.claude/CLAUDE.md` for development-specific context.
 
 ## Pipeline
 
-Proposals → Decisions → Plans → Implementation.
+Proposals → Plans → Implementation. Decisions (ADRs) at any point.
 
 - **Proposals** are strategic (what/why). Status: `draft → in-review → accepted|rejected|superseded`.
-- **Decisions** are the permanent record. Status: `proposed → accepted → deprecated|superseded`. Immutable after acceptance.
 - **Plans** are tactical (how, via DDD). Status: `active → complete|abandoned`. Require an accepted proposal (`--from-proposal NNN`).
+- **Decisions** are the permanent record of significant choices, created at any point during the pipeline. Status: `proposed → accepted → deprecated|superseded`. Immutable after acceptance.
 - **Implementation** is automated execution. `/orchestrate` decomposes a plan, spawns worktree-isolated agents, validates results, and merges back.
 
 ## Important Constraints

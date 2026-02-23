@@ -1,16 +1,17 @@
 ---
 name: test-hooks
 description: >
-  Smoke-test the enforcement hooks by feeding known good and bad inputs
+  Smoke-test all enforcement hooks by feeding known good and bad inputs
   and verifying exit codes. Tests the ADR immutability guard, the
-  proposal lifecycle guard, and the manifest integrity advisory.
+  proposal lifecycle guard, the manifest integrity advisory, the PR
+  reference advisory, and the review checklist advisory.
 allowed-tools: Bash(echo *), Bash(bash plugins/*), Read
 user-invocable: true
 ---
 
 # Test Hooks — Enforcement Hook Smoke Tests
 
-Smoke-test the enforcement hooks by feeding known good and bad inputs and verifying exit codes.
+Smoke-test all enforcement hooks by feeding known good and bad inputs and verifying exit codes.
 
 ## Command
 
@@ -94,6 +95,62 @@ Run these test cases:
    ```
 
    Expected: exit code 0 (guard scripts default to allow).
+
+### PR Reference Advisory (`plugins/principled-github/hooks/scripts/check-pr-references.sh`)
+
+Run these test cases:
+
+1. **`gh pr create` command — should warn but allow (exit 0):**
+
+   ```bash
+   echo '{"tool_input":{"command":"gh pr create --title \"test\" --body \"test\""}}' | bash plugins/principled-github/hooks/scripts/check-pr-references.sh
+   ```
+
+   Expected: exit code 0, with advisory message on stderr.
+
+2. **Unrelated command — should pass silently (exit 0):**
+
+   ```bash
+   echo '{"tool_input":{"command":"git status"}}' | bash plugins/principled-github/hooks/scripts/check-pr-references.sh
+   ```
+
+   Expected: exit code 0, no output.
+
+3. **Missing JSON input — should allow (exit 0):**
+
+   ```bash
+   echo '{}' | bash plugins/principled-github/hooks/scripts/check-pr-references.sh
+   ```
+
+   Expected: exit code 0 (guard scripts default to allow).
+
+### Review Checklist Advisory (`plugins/principled-quality/hooks/scripts/check-review-checklist.sh`)
+
+Run these test cases:
+
+1. **`gh pr review` command — should warn but allow (exit 0):**
+
+   ```bash
+   echo '{"tool_input":{"command":"gh pr review 42"}}' | bash plugins/principled-quality/hooks/scripts/check-review-checklist.sh
+   ```
+
+   Expected: exit code 0, with advisory message on stderr.
+
+2. **`gh pr merge` command — should warn but allow (exit 0):**
+
+   ```bash
+   echo '{"tool_input":{"command":"gh pr merge 42"}}' | bash plugins/principled-quality/hooks/scripts/check-review-checklist.sh
+   ```
+
+   Expected: exit code 0, with advisory message on stderr.
+
+3. **Unrelated command — should pass silently (exit 0):**
+
+   ```bash
+   echo '{"tool_input":{"command":"git status"}}' | bash plugins/principled-quality/hooks/scripts/check-review-checklist.sh
+   ```
+
+   Expected: exit code 0, no output.
 
 ### Reporting
 

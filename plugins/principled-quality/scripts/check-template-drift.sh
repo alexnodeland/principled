@@ -41,7 +41,10 @@ compare() {
   fi
 
   if ! diff -q "$canonical" "$copy" > /dev/null 2>&1; then
-    echo "DRIFT: $copy differs from $canonical"
+    echo "DRIFT: Copy has diverged from canonical."
+    echo "  Canonical: $canonical"
+    echo "  Copy:      $copy"
+    echo "  Fix: run /propagate-templates"
     DRIFTED=$((DRIFTED + 1))
   fi
 }
