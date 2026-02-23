@@ -19,6 +19,9 @@
       }
     }
   },
+  "env": {
+    "CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS": ""
+  },
   "enabledPlugins": {
     "principled-docs@principled-marketplace": true,
     "principled-implementation@principled-marketplace": true,
