@@ -16,11 +16,13 @@ set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="${1:-$(cd "$SCRIPT_DIR/../.." && pwd)}"
+# shellcheck disable=SC2034  # PLUGIN_ROOT used by future compare() calls
 PLUGIN_ROOT="$REPO_ROOT/plugins/principled-architecture"
 
 DRIFTED=0
 CHECKED=0
 
+# shellcheck disable=SC2317  # compare() is called dynamically when drift pairs exist
 compare() {
   local canonical="$1"
   local copy="$2"

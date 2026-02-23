@@ -100,6 +100,7 @@ DOC_CONTENT="$(cat "$DOC_PATH")"
 declare -A REFERENCED_MODULES
 
 # Check each actual module against the doc
+# shellcheck disable=SC2034  # REFERENCED_MODULES populated for extensibility
 for mod_path in "${!ACTUAL_MODULES[@]}"; do
   if [[ "$mod_path" == "." ]]; then
     continue
@@ -121,6 +122,7 @@ done
 
 # Check for module references in the doc that don't match actual modules
 # Look for path-like references (dir/subdir patterns)
+# shellcheck disable=SC2016  # backtick pattern in grep is intentionally literal
 while IFS= read -r path_ref; do
   # Skip empty and common non-module paths
   if [[ -z "$path_ref" ]] || [[ "$path_ref" == "docs/"* ]] || [[ "$path_ref" == ".github/"* ]]; then
