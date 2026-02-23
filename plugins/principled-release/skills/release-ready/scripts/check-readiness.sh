@@ -34,30 +34,30 @@ DOCS_DIR="docs"
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
-    --since)
-      if [[ $# -lt 2 ]]; then
-        echo "Error: --since requires a value" >&2
-        exit 1
-      fi
-      SINCE_TAG="$2"
-      shift 2
-      ;;
-    --strict)
-      STRICT=true
-      shift
-      ;;
-    --docs-dir)
-      if [[ $# -lt 2 ]]; then
-        echo "Error: --docs-dir requires a value" >&2
-        exit 1
-      fi
-      DOCS_DIR="$2"
-      shift 2
-      ;;
-    *)
-      echo "Unknown argument: $1" >&2
+  --since)
+    if [[ $# -lt 2 ]]; then
+      echo "Error: --since requires a value" >&2
       exit 1
-      ;;
+    fi
+    SINCE_TAG="$2"
+    shift 2
+    ;;
+  --strict)
+    STRICT=true
+    shift
+    ;;
+  --docs-dir)
+    if [[ $# -lt 2 ]]; then
+      echo "Error: --docs-dir requires a value" >&2
+      exit 1
+    fi
+    DOCS_DIR="$2"
+    shift 2
+    ;;
+  *)
+    echo "Unknown argument: $1" >&2
+    exit 1
+    ;;
   esac
 done
 
@@ -177,21 +177,21 @@ while IFS= read -r ref; do
   # Check if status is terminal
   IS_TERMINAL=false
   case "$DOC_TYPE" in
-    proposal)
-      case "$STATUS" in
-        accepted | rejected | superseded) IS_TERMINAL=true ;;
-      esac
-      ;;
-    plan)
-      case "$STATUS" in
-        complete | abandoned) IS_TERMINAL=true ;;
-      esac
-      ;;
-    decision)
-      case "$STATUS" in
-        accepted | deprecated | superseded) IS_TERMINAL=true ;;
-      esac
-      ;;
+  proposal)
+    case "$STATUS" in
+    accepted | rejected | superseded) IS_TERMINAL=true ;;
+    esac
+    ;;
+  plan)
+    case "$STATUS" in
+    complete | abandoned) IS_TERMINAL=true ;;
+    esac
+    ;;
+  decision)
+    case "$STATUS" in
+    accepted | deprecated | superseded) IS_TERMINAL=true ;;
+    esac
+    ;;
   esac
 
   if $IS_TERMINAL; then

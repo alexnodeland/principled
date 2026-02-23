@@ -22,26 +22,26 @@ ROOT_PATH="."
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
-    --module)
-      if [[ $# -lt 2 ]]; then
-        echo "Error: --module requires a value" >&2
-        exit 1
-      fi
-      MODULE_PATH="$2"
-      shift 2
-      ;;
-    --root)
-      if [[ $# -lt 2 ]]; then
-        echo "Error: --root requires a value" >&2
-        exit 1
-      fi
-      ROOT_PATH="$2"
-      shift 2
-      ;;
-    *)
-      echo "Unknown argument: $1" >&2
+  --module)
+    if [[ $# -lt 2 ]]; then
+      echo "Error: --module requires a value" >&2
       exit 1
-      ;;
+    fi
+    MODULE_PATH="$2"
+    shift 2
+    ;;
+  --root)
+    if [[ $# -lt 2 ]]; then
+      echo "Error: --root requires a value" >&2
+      exit 1
+    fi
+    ROOT_PATH="$2"
+    shift 2
+    ;;
+  *)
+    echo "Unknown argument: $1" >&2
+    exit 1
+    ;;
   esac
 done
 
@@ -73,19 +73,19 @@ extract_version() {
   local version=""
 
   case "$(basename "$manifest")" in
-    package.json | plugin.json)
-      if command -v jq &> /dev/null; then
-        version="$(jq -r '.version // empty' "$manifest" 2> /dev/null || echo "")"
-      else
-        version="$(grep -oP '"version"\s*:\s*"\K[^"]*' "$manifest" | head -1 || echo "")"
-      fi
-      ;;
-    Cargo.toml | pyproject.toml)
-      version="$(grep -oP '^version\s*=\s*"\K[^"]*' "$manifest" | head -1 || echo "")"
-      ;;
-    VERSION)
-      version="$(head -1 "$manifest" | xargs)"
-      ;;
+  package.json | plugin.json)
+    if command -v jq &> /dev/null; then
+      version="$(jq -r '.version // empty' "$manifest" 2> /dev/null || echo "")"
+    else
+      version="$(grep -oP '"version"\s*:\s*"\K[^"]*' "$manifest" | head -1 || echo "")"
+    fi
+    ;;
+  Cargo.toml | pyproject.toml)
+    version="$(grep -oP '^version\s*=\s*"\K[^"]*' "$manifest" | head -1 || echo "")"
+    ;;
+  VERSION)
+    version="$(head -1 "$manifest" | xargs)"
+    ;;
   esac
 
   echo "$version"

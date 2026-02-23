@@ -22,26 +22,26 @@ MODULE_PATH=""
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
-    --since)
-      if [[ $# -lt 2 ]]; then
-        echo "Error: --since requires a value" >&2
-        exit 1
-      fi
-      SINCE_TAG="$2"
-      shift 2
-      ;;
-    --module)
-      if [[ $# -lt 2 ]]; then
-        echo "Error: --module requires a value" >&2
-        exit 1
-      fi
-      MODULE_PATH="$2"
-      shift 2
-      ;;
-    *)
-      echo "Unknown argument: $1" >&2
+  --since)
+    if [[ $# -lt 2 ]]; then
+      echo "Error: --since requires a value" >&2
       exit 1
-      ;;
+    fi
+    SINCE_TAG="$2"
+    shift 2
+    ;;
+  --module)
+    if [[ $# -lt 2 ]]; then
+      echo "Error: --module requires a value" >&2
+      exit 1
+    fi
+    MODULE_PATH="$2"
+    shift 2
+    ;;
+  *)
+    echo "Unknown argument: $1" >&2
+    exit 1
+    ;;
   esac
 done
 
