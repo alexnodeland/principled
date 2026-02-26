@@ -11,6 +11,7 @@
 #   head=<head-branch>
 #   state=<OPEN|CLOSED|MERGED>
 #   files_changed=<count>
+#   files=<comma-separated file paths>
 
 set -euo pipefail
 
@@ -50,14 +51,19 @@ if command -v jq &> /dev/null; then
   HEAD="$(echo "$PR_JSON" | jq -r '.headRefName // ""')"
   STATE="$(echo "$PR_JSON" | jq -r '.state // ""')"
   FILES_CHANGED="$(echo "$PR_JSON" | jq -r '.files | length' 2> /dev/null || echo "0")"
+  FILES="$(echo "$PR_JSON" | jq -r '[.files[].path] | join(",")' 2> /dev/null || echo "")"
 else
-  TITLE="$(echo "$PR_JSON" | grep -oP '"title"\s*:\s*"\K[^"]*' | head -1 || echo "")"
-  BODY="$(echo "$PR_JSON" | grep -oP '"body"\s*:\s*"\K[^"]*' | head -1 | base64 -w 0 2> /dev/null || echo "")"
-  LABELS=""
-  BASE=""
-  HEAD=""
-  STATE=""
-  FILES_CHANGED="0"
+  # Fallback: use gh's built-in --jq (gojq) for field extraction,
+  # avoiding grep -P which is unavailable on macOS.
+  TITLE="$(gh pr view "$PR_NUMBER" --json title --jq '.title' 2> /dev/null || echo "")"
+  BODY_RAW="$(gh pr view "$PR_NUMBER" --json body --jq '.body' 2> /dev/null || echo "")"
+  BODY="$(echo "$BODY_RAW" | base64 -w 0 2> /dev/null || echo "$BODY_RAW" | base64)"
+  LABELS="$(gh pr view "$PR_NUMBER" --json labels --jq '[.labels[].name] | join(",")' 2> /dev/null || echo "")"
+  BASE="$(gh pr view "$PR_NUMBER" --json baseRefName --jq '.baseRefName' 2> /dev/null || echo "")"
+  HEAD="$(gh pr view "$PR_NUMBER" --json headRefName --jq '.headRefName' 2> /dev/null || echo "")"
+  STATE="$(gh pr view "$PR_NUMBER" --json state --jq '.state' 2> /dev/null || echo "")"
+  FILES_CHANGED="$(gh pr view "$PR_NUMBER" --json files --jq '.files | length' 2> /dev/null || echo "0")"
+  FILES="$(gh pr view "$PR_NUMBER" --json files --jq '[.files[].path] | join(",")' 2> /dev/null || echo "")"
 fi
 
 echo "title=${TITLE}"
@@ -67,3 +73,4 @@ echo "base=${BASE}"
 echo "head=${HEAD}"
 echo "state=${STATE}"
 echo "files_changed=${FILES_CHANGED}"
+echo "files=${FILES}"

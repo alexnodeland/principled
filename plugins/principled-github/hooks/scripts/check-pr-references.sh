@@ -18,7 +18,10 @@ COMMAND=""
 if command -v jq &> /dev/null; then
   COMMAND="$(echo "$INPUT" | jq -r '.tool_input.command // empty' 2> /dev/null || echo "")"
 else
-  COMMAND="$(echo "$INPUT" | grep -oP '"command"\s*:\s*"[^"]*"' | head -1 | grep -oP ':\s*"\K[^"]*' || echo "")"
+  # Without jq, use the full input as the search target. This avoids JSON
+  # parsing issues with escaped quotes and the grep -P flag (unavailable on
+  # macOS). Slightly less precise but safe for an advisory-only hook.
+  COMMAND="$INPUT"
 fi
 
 # Only check gh pr create commands

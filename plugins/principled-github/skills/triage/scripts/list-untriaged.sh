@@ -61,14 +61,8 @@ if [[ -n "$LABEL_FILTER" ]]; then
   GH_ARGS+=(--label "$LABEL_FILTER")
 fi
 
-# Fetch open issues (stderr stays on stderr, not mixed into JSON)
-if ! ISSUES_JSON="$(gh "${GH_ARGS[@]}" 2> /dev/null)"; then
-  echo "Error: failed to list issues. Check gh auth status." >&2
-  exit 1
-fi
-
 # Filter out already-triaged issues (those with principled lifecycle labels).
-# Uses jq if available, falls back to grep-based filtering.
+# Uses jq if available, falls back to gh's built-in --jq (gojq).
 JQ_FILTER='
   [.[] |
     select(
@@ -83,28 +77,23 @@ JQ_FILTER='
 '
 
 if command -v jq &> /dev/null; then
+  # Fetch issues, then filter with standalone jq
+  if ! ISSUES_JSON="$(gh "${GH_ARGS[@]}" 2> /dev/null)"; then
+    echo "Error: failed to list issues. Check gh auth status." >&2
+    exit 1
+  fi
   UNTRIAGED="$(echo "$ISSUES_JSON" | jq -r "$JQ_FILTER")" || {
     echo "Error: failed to filter issues with jq" >&2
     exit 1
   }
 else
-  # Fallback: grep-based filtering. Less precise — excludes any issue whose
-  # label JSON contains principled prefixes. May produce false negatives if
-  # a label name coincidentally contains these strings, but that is safe
-  # (skipping an issue is better than re-ingesting one).
-  UNTRIAGED=""
-  while IFS= read -r line; do
-    number="$(echo "$line" | grep -oP '"number":\s*\K[0-9]+')" || continue
-    title="$(echo "$line" | grep -oP '"title":\s*"\K[^"]*')" || continue
-    if echo "$line" | grep -qE '"name":\s*"(proposal:|plan:|type:rfc|type:plan)'; then
-      continue
-    fi
-    if [[ -n "$UNTRIAGED" ]]; then
-      UNTRIAGED="$UNTRIAGED"$'\n'"${number}\t${title}"
-    else
-      UNTRIAGED="${number}\t${title}"
-    fi
-  done < <(echo "$ISSUES_JSON" | grep -oP '\{[^{}]*\}')
+  # Fallback: use gh's built-in --jq (gojq) which works without standalone jq.
+  # This avoids grep -P (unavailable on macOS) and nested JSON parsing issues.
+  GH_ARGS+=(--jq "$JQ_FILTER")
+  if ! UNTRIAGED="$(gh "${GH_ARGS[@]}" 2> /dev/null)"; then
+    echo "Error: failed to list issues. Check gh auth status." >&2
+    exit 1
+  fi
 fi
 
 # Apply limit if specified

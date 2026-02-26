@@ -71,7 +71,8 @@ get-plan-path)
   if command -v jq &> /dev/null; then
     jq -r '.plan_path // empty' "$MANIFEST"
   else
-    grep -oP '"plan_path"\s*:\s*"\K[^"]*' "$MANIFEST" | head -1
+    # sed fallback avoids grep -P which is unavailable on macOS
+    sed -n 's/.*"plan_path"[[:space:]]*:[[:space:]]*"\([^"]*\)".*/\1/p' "$MANIFEST" | head -1
   fi
   ;;
 get-task)
@@ -99,7 +100,8 @@ list-tasks)
       jq -r '.tasks[] | "\(.id): \(.description) [\(.status)]"' "$MANIFEST"
     fi
   else
-    grep -oP '"id"\s*:\s*"\K[^"]*' "$MANIFEST"
+    # sed fallback avoids grep -P which is unavailable on macOS
+    sed -n 's/.*"id"[[:space:]]*:[[:space:]]*"\([^"]*\)".*/\1/p' "$MANIFEST"
   fi
   ;;
 *)

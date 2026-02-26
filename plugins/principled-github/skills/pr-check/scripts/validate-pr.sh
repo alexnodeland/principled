@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # validate-pr.sh — Run PR validation checks against principled conventions.
 #
-# Usage: validate-pr.sh --pr-body <body> --pr-labels <labels> --branch <branch> [--strict] [--json]
+# Usage: validate-pr.sh --pr-body <body> --pr-labels <labels> --branch <branch> [--files <comma-separated>] [--strict] [--json]
 #
 # Checks:
 #   Required (errors):
@@ -13,6 +13,7 @@
 #     - PR references a plan or proposal
 #     - PR has at least one principled label
 #     - Branch follows recognized convention
+#     - Files changed include tests if source files modified
 #
 # Exit codes:
 #   0 — all checks passed
@@ -23,6 +24,7 @@ set -euo pipefail
 PR_BODY=""
 PR_LABELS=""
 BRANCH=""
+FILES=""
 STRICT=false
 JSON_OUTPUT=false
 
@@ -38,6 +40,10 @@ while [[ $# -gt 0 ]]; do
     ;;
   --branch)
     BRANCH="$2"
+    shift 2
+    ;;
+  --files)
+    FILES="$2"
     shift 2
     ;;
   --strict)
@@ -142,6 +148,30 @@ if [[ "$BRANCH" =~ ^(impl|feat|fix|chore|docs|refactor|test|ci)/ ]]; then
 fi
 check "warn" "branch-convention" "$VALID_BRANCH" \
   "$(if $VALID_BRANCH; then echo "Branch follows naming convention"; else echo "Branch does not follow a recognized naming convention (impl/, feat/, fix/, etc.)"; fi)"
+
+# Recommended: test files present when source files are modified
+if [[ -n "$FILES" ]]; then
+  HAS_SOURCE=false
+  HAS_TESTS=false
+  IFS=',' read -ra FILE_LIST <<< "$FILES"
+  for file in "${FILE_LIST[@]}"; do
+    # Source file patterns
+    if [[ "$file" =~ \.(ts|tsx|js|jsx|py|go|rs|java|rb|php|c|cpp|h)$ ]]; then
+      # Exclude test files from source detection
+      if [[ "$file" =~ (test|spec|_test\.|\.test\.|\.spec\.) ]] \
+        || [[ "$file" =~ __tests__/ ]] \
+        || [[ "$file" =~ /tests?/ ]]; then
+        HAS_TESTS=true
+      else
+        HAS_SOURCE=true
+      fi
+    fi
+  done
+  if $HAS_SOURCE; then
+    check "warn" "has-tests" "$HAS_TESTS" \
+      "$(if $HAS_TESTS; then echo "PR includes test changes alongside source changes"; else echo "PR modifies source files but includes no test changes"; fi)"
+  fi
+fi
 
 # Output results
 if $JSON_OUTPUT; then
