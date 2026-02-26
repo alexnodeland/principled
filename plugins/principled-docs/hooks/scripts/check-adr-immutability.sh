@@ -23,8 +23,8 @@ FILE_PATH=""
 if command -v jq &> /dev/null; then
   FILE_PATH="$(echo "$INPUT" | jq -r '.tool_input.file_path // .file_path // empty' 2> /dev/null || echo "")"
 else
-  # Fallback: basic grep extraction
-  FILE_PATH="$(echo "$INPUT" | grep -oP '"file_path"\s*:\s*"[^"]*"' | head -1 | grep -oP ':\s*"\K[^"]*' || echo "")"
+  # Fallback: portable sed extraction (no grep -P on macOS)
+  FILE_PATH="$(echo "$INPUT" | sed -n 's/.*"file_path"[[:space:]]*:[[:space:]]*"\([^"]*\)".*/\1/p' | head -1)"
 fi
 
 # If we couldn't extract a file path, allow
@@ -67,11 +67,13 @@ fi
 
 # For Edit tool: check if old_string and new_string only differ in superseded_by
 if [[ -n "$OLD_STRING" && -n "$NEW_STRING" ]]; then
-  # Check if the change is limited to the superseded_by field
-  OLD_STRIPPED="$(echo "$OLD_STRING" | grep -v 'superseded_by')"
-  NEW_STRIPPED="$(echo "$NEW_STRING" | grep -v 'superseded_by')"
+  # Strip only the frontmatter superseded_by field line (anchored to line start)
+  # Using '^superseded_by:' prevents body text containing "superseded_by" from
+  # being stripped, which would allow content injection through the carve-out.
+  OLD_STRIPPED="$(echo "$OLD_STRING" | grep -v '^superseded_by:')"
+  NEW_STRIPPED="$(echo "$NEW_STRING" | grep -v '^superseded_by:')"
   if [[ "$OLD_STRIPPED" == "$NEW_STRIPPED" ]]; then
-    # The only difference is in superseded_by lines — allow
+    # The only difference is the superseded_by frontmatter field — allow
     exit 0
   fi
 fi
@@ -79,10 +81,10 @@ fi
 # For Write tool: check if the only change vs. current file is superseded_by
 if [[ -n "$NEW_CONTENT" && -z "$OLD_STRING" ]]; then
   CURRENT_CONTENT="$(cat "$FILE_PATH")"
-  CURRENT_STRIPPED="$(echo "$CURRENT_CONTENT" | grep -v 'superseded_by')"
-  NEW_STRIPPED="$(echo "$NEW_CONTENT" | grep -v 'superseded_by')"
+  CURRENT_STRIPPED="$(echo "$CURRENT_CONTENT" | grep -v '^superseded_by:')"
+  NEW_STRIPPED="$(echo "$NEW_CONTENT" | grep -v '^superseded_by:')"
   if [[ "$CURRENT_STRIPPED" == "$NEW_STRIPPED" ]]; then
-    # The only difference is superseded_by — allow
+    # The only difference is the superseded_by frontmatter field — allow
     exit 0
   fi
 fi
