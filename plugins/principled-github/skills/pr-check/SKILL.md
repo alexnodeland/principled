@@ -45,12 +45,12 @@ Validate that a pull request follows principled conventions for cross-referencin
    bash scripts/fetch-pr-metadata.sh --pr <number>
    ```
 
-   Returns: title, body, labels, base branch, head branch, files changed.
+   Returns: title, body, labels, base branch, head branch, file count, and file paths.
 
 3. **Run checks.** Execute each validation:
 
    ```bash
-   bash scripts/validate-pr.sh --pr-body "<body>" --pr-labels "<labels>" --branch "<head-branch>" [--strict]
+   bash scripts/validate-pr.sh --pr-body "<body>" --pr-labels "<labels>" --branch "<head-branch>" --files "<files>" [--strict]
    ```
 
    The script checks:

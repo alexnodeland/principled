@@ -132,16 +132,13 @@ flowchart TB
 
 ### Label Taxonomy
 
-The plugin defines a complete label set for principled workflows:
+The plugin defines labels for principled lifecycle stages (canonical source: `sync-labels/scripts/label-definitions.sh`):
 
 | Group        | Labels                                                                                                  |
 | ------------ | ------------------------------------------------------------------------------------------------------- |
 | **Proposal** | `proposal:draft`, `proposal:in-review`, `proposal:accepted`, `proposal:rejected`, `proposal:superseded` |
 | **Plan**     | `plan:active`, `plan:complete`, `plan:abandoned`                                                        |
-| **Decision** | `decision:proposed`, `decision:accepted`, `decision:deprecated`, `decision:superseded`                  |
-| **Task**     | `task:in-progress`, `task:validating`, `task:passed`, `task:failed`, `task:merged`, `task:abandoned`    |
-| **Type**     | `type:rfc`, `type:adr`, `type:plan`, `type:arch`                                                        |
-| **Workflow** | `ready-for-review`, `needs-discussion`, `blocked`, `automated`                                          |
+| **Type**     | `type:rfc`, `type:plan`                                                                                 |
 
 ### GitHub Templates
 
