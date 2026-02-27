@@ -24,8 +24,8 @@ FILE_PATH=""
 if command -v jq &> /dev/null; then
   FILE_PATH="$(echo "$INPUT" | jq -r '.tool_input.file_path // .file_path // empty' 2> /dev/null || echo "")"
 else
-  # Fallback: basic grep extraction
-  FILE_PATH="$(echo "$INPUT" | grep -oP '"file_path"\s*:\s*"[^"]*"' | head -1 | grep -oP ':\s*"\K[^"]*' || echo "")"
+  # Fallback: portable sed extraction (no grep -P on macOS)
+  FILE_PATH="$(echo "$INPUT" | sed -n 's/.*"file_path"[[:space:]]*:[[:space:]]*"\([^"]*\)".*/\1/p' | head -1)"
 fi
 
 # If we couldn't extract a file path, allow
@@ -54,14 +54,20 @@ if [[ ! "$FILENAME" =~ ^[0-9]{3}-.+\.md$ ]]; then
   exit 0
 fi
 
-# Extract frontmatter from the content being written (Write tool)
-# or from the file on disk (Edit tool)
+# Extract content from the Write tool payload, or old_string/new_string from Edit
 CONTENT=""
+NEW_STRING=""
 if command -v jq &> /dev/null; then
   CONTENT="$(echo "$INPUT" | jq -r '.tool_input.content // empty' 2> /dev/null || echo "")"
+  NEW_STRING="$(echo "$INPUT" | jq -r '.tool_input.new_string // empty' 2> /dev/null || echo "")"
+else
+  # Portable fallback: extract content and new_string via sed
+  # For Write tool content (may contain newlines — use file on disk as fallback)
+  # For Edit tool new_string, extract inline value
+  NEW_STRING="$(echo "$INPUT" | sed -n 's/.*"new_string"[[:space:]]*:[[:space:]]*"\([^"]*\)".*/\1/p' | head -1)"
 fi
 
-# parse_field extracts a frontmatter field value from content string
+# parse_field extracts a frontmatter field value from a full document (with --- delimiters)
 parse_field() {
   local content="$1"
   local field="$2"
@@ -84,6 +90,12 @@ parse_field() {
         value="${value%\"}"
         value="${value#\'}"
         value="${value%\'}"
+        # Strip trailing whitespace
+        value="${value%"${value##*[! ]}"}"
+        # Strip inline YAML comments
+        if [[ "$value" =~ ^([^#]*[^[:space:]])[[:space:]]+#.* ]]; then
+          value="${BASH_REMATCH[1]}"
+        fi
         break
       fi
     fi
@@ -92,17 +104,59 @@ parse_field() {
   echo "$value"
 }
 
-# Get the status field
+# extract_field_from_snippet extracts a field value from a raw text snippet
+# (no frontmatter delimiters required — used for Edit tool new_string)
+extract_field_from_snippet() {
+  local snippet="$1"
+  local field="$2"
+  local value=""
+
+  while IFS= read -r line; do
+    if [[ "$line" =~ ^${field}:[[:space:]]*(.*) ]]; then
+      value="${BASH_REMATCH[1]}"
+      value="${value#\"}"
+      value="${value%\"}"
+      value="${value#\'}"
+      value="${value%\'}"
+      # Strip trailing whitespace
+      value="${value%"${value##*[! ]}"}"
+      # Strip inline YAML comments
+      if [[ "$value" =~ ^([^#]*[^[:space:]])[[:space:]]+#.* ]]; then
+        value="${BASH_REMATCH[1]}"
+      fi
+      break
+    fi
+  done <<< "$snippet"
+
+  echo "$value"
+}
+
+# Get the status field — check Write content, Edit new_string, and file on disk
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+PARSE_FRONTMATTER="$SCRIPT_DIR/parse-frontmatter.sh"
+
 STATUS=""
 if [[ -n "$CONTENT" ]]; then
+  # Write tool: validate the content being written
   STATUS="$(parse_field "$CONTENT" "status")"
+elif [[ -n "$NEW_STRING" ]]; then
+  # Edit tool: check if new_string contains a status field (raw snippet, no --- delimiters)
+  EDIT_STATUS="$(extract_field_from_snippet "$NEW_STRING" "status")"
+  if [[ -n "$EDIT_STATUS" ]]; then
+    # The edit is changing the status — validate the NEW value
+    STATUS="$EDIT_STATUS"
+  else
+    # The edit doesn't touch status — read current valid status from disk
+    if [[ ! -f "$FILE_PATH" ]]; then
+      exit 0
+    fi
+    STATUS="$(bash "$PARSE_FRONTMATTER" --file "$FILE_PATH" --field status)"
+  fi
 else
-  # For Edit tool, read from file on disk. If file doesn't exist, allow (new file).
+  # No content or new_string available — read from file on disk
   if [[ ! -f "$FILE_PATH" ]]; then
     exit 0
   fi
-  SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-  PARSE_FRONTMATTER="$SCRIPT_DIR/parse-frontmatter.sh"
   STATUS="$(bash "$PARSE_FRONTMATTER" --file "$FILE_PATH" --field status)"
 fi
 
@@ -132,10 +186,17 @@ plan)
     ;;
   esac
 
-  # Plans also require originating_proposal
+  # Plans also require originating_proposal — check all sources
   ORIG_PROPOSAL=""
   if [[ -n "$CONTENT" ]]; then
     ORIG_PROPOSAL="$(parse_field "$CONTENT" "originating_proposal")"
+  elif [[ -n "$NEW_STRING" ]]; then
+    EDIT_ORIG="$(extract_field_from_snippet "$NEW_STRING" "originating_proposal")"
+    if [[ -n "$EDIT_ORIG" ]]; then
+      ORIG_PROPOSAL="$EDIT_ORIG"
+    elif [[ -f "$FILE_PATH" ]]; then
+      ORIG_PROPOSAL="$(bash "$PARSE_FRONTMATTER" --file "$FILE_PATH" --field originating_proposal)"
+    fi
   elif [[ -f "$FILE_PATH" ]]; then
     ORIG_PROPOSAL="$(bash "$PARSE_FRONTMATTER" --file "$FILE_PATH" --field originating_proposal)"
   fi

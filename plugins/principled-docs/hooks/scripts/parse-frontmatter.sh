@@ -67,6 +67,12 @@ while IFS= read -r line; do
       VALUE="${VALUE%\"}"
       VALUE="${VALUE#\'}"
       VALUE="${VALUE%\'}"
+      # Strip trailing whitespace
+      VALUE="${VALUE%"${VALUE##*[! ]}"}"
+      # Strip inline YAML comments (unquoted value followed by space+#)
+      if [[ "$VALUE" =~ ^([^#]*[^[:space:]])[[:space:]]+#.* ]]; then
+        VALUE="${BASH_REMATCH[1]}"
+      fi
       echo "$VALUE"
       exit 0
     fi
