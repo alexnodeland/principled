@@ -98,6 +98,22 @@
         "module-boundaries",
         "dependency-rules"
       ]
+    },
+    {
+      "name": "principled-tasks",
+      "source": "./plugins/principled-tasks",
+      "description": "SQLite-backed, Git-committed, graph-structured task tracking for principled orchestration. Tracks beads with typed dependency edges across plans and agents.",
+      "version": "0.1.0",
+      "category": "tracking",
+      "keywords": [
+        "tasks",
+        "tracking",
+        "sqlite",
+        "graph",
+        "beads",
+        "dependencies",
+        "orchestration"
+      ]
     }
   ]
 }
