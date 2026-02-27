@@ -55,7 +55,7 @@ plugins/principled-tasks/
     ├── task-strategy/
     │   ├── SKILL.md
     │   └── reference/
-    │       ├── bead-model.md
+    │       ├── task-model.md
     │       └── schema.md
     ├── task-open/
     │   ├── SKILL.md

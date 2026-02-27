@@ -27,9 +27,9 @@ Activate this knowledge when:
 
 Read these files for detailed guidance on specific topics:
 
-### Bead Model
+### Task Model
 
-- **`reference/bead-model.md`** — Complete bead lifecycle: `open → in_progress → done/blocked/abandoned`. Edge semantics: blocks, spawned_by, part_of, related_to. Discovery chains and cross-plan tracking.
+- **`reference/task-model.md`** — Complete task lifecycle: `open → in_progress → done/blocked/abandoned`. Edge semantics: blocks, spawned_by, part_of, related_to. Discovery chains and cross-plan tracking.
 
 ### Schema Reference
 

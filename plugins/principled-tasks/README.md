@@ -68,7 +68,7 @@ claude plugin add <path-to-principled-tasks>
 
 | Skill           | Description                                                        |
 | --------------- | ------------------------------------------------------------------ |
-| `task-strategy` | Background knowledge: bead model, schema, edge semantics, patterns |
+| `task-strategy` | Background knowledge: task model, schema, edge semantics, patterns |
 
 ### Commands
 

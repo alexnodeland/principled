@@ -28,7 +28,7 @@ This implementation decomposes into **5 bounded contexts**, each representing a 
 | ---- | ------------------------- | ------------------------------------------------------------------ | ----------------------------------------------------- |
 | BC-1 | **Plugin Infrastructure** | Plugin manifest, directory skeleton, marketplace integration       | `plugin.json`, directory tree, marketplace.json entry |
 | BC-2 | **Database Engine**       | SQLite schema initialization, CRUD operations, Git commitment      | `task-db.sh`, schema definition                       |
-| BC-3 | **Knowledge System**      | Background knowledge: bead model, schema reference, edge semantics | `task-strategy/SKILL.md`, reference docs              |
+| BC-3 | **Knowledge System**      | Background knowledge: task model, schema reference, edge semantics | `task-strategy/SKILL.md`, reference docs              |
 | BC-4 | **Write Skills**          | Creating and closing beads with edges and Git commits              | `task-open/SKILL.md`, `task-close/SKILL.md`           |
 | BC-5 | **Read Skills**           | Graph visualization, audit reporting, natural-language querying    | `task-graph/`, `task-audit/`, `task-query/` skills    |
 
@@ -52,7 +52,7 @@ This implementation decomposes into **5 bounded contexts**, each representing a 
 
 | Aggregate       | Root Entity               | Description                                                         |
 | --------------- | ------------------------- | ------------------------------------------------------------------- |
-| **BeadModel**   | `reference/bead-model.md` | Bead lifecycle, edge semantics, discovery chains                    |
+| **BeadModel**   | `reference/task-model.md` | Bead lifecycle, edge semantics, discovery chains                    |
 | **SchemaRef**   | `reference/schema.md`     | Complete SQLite schema with field descriptions and constraints      |
 | **StrategyDef** | `task-strategy/SKILL.md`  | Background knowledge for Claude when task-related context is active |
 
@@ -111,7 +111,7 @@ This implementation decomposes into **5 bounded contexts**, each representing a 
 
 **Depends on:** Phase 1 (directory skeleton exists)
 
-- [ ] **2.1** Write `skills/task-strategy/reference/bead-model.md`:
+- [ ] **2.1** Write `skills/task-strategy/reference/task-model.md`:
   - [ ] Bead lifecycle: open → in_progress → done/blocked/abandoned
   - [ ] Edge semantics: blocks, spawned_by, part_of, related_to
   - [ ] Discovery chains: how discovered_from links tasks

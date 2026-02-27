@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# task-db.sh — SQLite interface for the principled-tasks bead graph
+# task-db.sh — SQLite interface for the principled-tasks task graph
 #
 # CANONICAL COPY: plugins/principled-tasks/skills/task-open/scripts/
 # Copies: task-close, task-graph, task-audit, task-query
@@ -7,11 +7,11 @@
 # Operations:
 #   --init                    Create .impl/tasks.db with schema
 #   --open                    Insert a new bead
-#   --close                   Close a bead (done or abandoned)
+#   --close                   Close a task (done or abandoned)
 #   --add-edge                Add a typed edge between beads
-#   --get                     Retrieve a single bead by ID
-#   --list                    List beads with optional filters
-#   --graph                   Output bead graph (table or DOT)
+#   --get                     Retrieve a single task by ID
+#   --list                    List tasks with optional filters
+#   --graph                   Output task graph (table or DOT)
 #   --audit                   Run audit queries
 #   --commit                  Git add and commit tasks.db
 #
@@ -60,7 +60,7 @@ do_init() {
   fi
 
   sqlite3 "$DB_PATH" << 'SQL'
-CREATE TABLE beads (
+CREATE TABLE tasks (
   id TEXT PRIMARY KEY,
   title TEXT NOT NULL,
   status TEXT NOT NULL CHECK(status IN ('open','in_progress','done','blocked','abandoned')),
@@ -73,7 +73,7 @@ CREATE TABLE beads (
   discovered_from TEXT
 );
 
-CREATE TABLE bead_edges (
+CREATE TABLE task_edges (
   from_id TEXT NOT NULL,
   to_id TEXT NOT NULL,
   kind TEXT NOT NULL CHECK(kind IN ('blocks','spawned_by','part_of','related_to')),
@@ -136,7 +136,7 @@ do_open() {
   local safe_discovered="${discovered_from//\'/\'\'}"
 
   sqlite3 "$DB_PATH" << SQL
-INSERT INTO beads (id, title, status, agent, plan, task_id, notes, created_at, closed_at, discovered_from)
+INSERT INTO tasks (id, title, status, agent, plan, task_id, notes, created_at, closed_at, discovered_from)
 VALUES ('${id}', '${safe_title}', 'open', $([ -n "$agent" ] && echo "'${safe_agent}'" || echo "NULL"), $([ -n "$plan" ] && echo "'${safe_plan}'" || echo "NULL"), $([ -n "$task_id" ] && echo "'${safe_task_id}'" || echo "NULL"), NULL, '${ts}', NULL, $([ -n "$discovered_from" ] && echo "'${safe_discovered}'" || echo "NULL"));
 SQL
 
@@ -146,13 +146,13 @@ SQL
     IFS=',' read -ra block_ids <<< "$blocks"
     for bid in "${block_ids[@]}"; do
       bid=$(echo "$bid" | xargs) # trim whitespace
-      sqlite3 "$DB_PATH" "INSERT OR IGNORE INTO bead_edges (from_id, to_id, kind) VALUES ('${id}', '${bid}', 'blocks');"
+      sqlite3 "$DB_PATH" "INSERT OR IGNORE INTO task_edges (from_id, to_id, kind) VALUES ('${id}', '${bid}', 'blocks');"
     done
   fi
 
   # Add discovered_from edge if specified
   if [[ -n "$discovered_from" ]]; then
-    sqlite3 "$DB_PATH" "INSERT OR IGNORE INTO bead_edges (from_id, to_id, kind) VALUES ('${id}', '${discovered_from}', 'spawned_by');"
+    sqlite3 "$DB_PATH" "INSERT OR IGNORE INTO task_edges (from_id, to_id, kind) VALUES ('${id}', '${discovered_from}', 'spawned_by');"
   fi
 
   echo "$id"
@@ -190,7 +190,7 @@ do_close() {
   local safe_notes="${notes//\'/\'\'}"
 
   sqlite3 "$DB_PATH" << SQL
-UPDATE beads
+UPDATE tasks
 SET status = '${status}',
     closed_at = '${ts}',
     notes = $([ -n "$notes" ] && echo "'${safe_notes}'" || echo "notes")
@@ -200,7 +200,7 @@ SQL
   local affected
   affected=$(sqlite3 "$DB_PATH" "SELECT changes();")
   if [[ "$affected" -eq 0 ]]; then
-    die "No bead found with id '${id}'"
+    die "No task found with id '${id}'"
   fi
 
   echo "Closed ${id} as ${status}"
@@ -234,7 +234,7 @@ do_add_edge() {
   check_sqlite
   check_db
 
-  sqlite3 "$DB_PATH" "INSERT OR IGNORE INTO bead_edges (from_id, to_id, kind) VALUES ('${from_id}', '${to_id}', '${kind}');"
+  sqlite3 "$DB_PATH" "INSERT OR IGNORE INTO task_edges (from_id, to_id, kind) VALUES ('${from_id}', '${to_id}', '${kind}');"
   echo "Edge: ${from_id} --[${kind}]--> ${to_id}"
 }
 
@@ -256,10 +256,10 @@ do_get() {
   check_sqlite
   check_db
 
-  sqlite3 -header -column "$DB_PATH" "SELECT * FROM beads WHERE id = '${id}';"
+  sqlite3 -header -column "$DB_PATH" "SELECT * FROM tasks WHERE id = '${id}';"
 
   local edges
-  edges=$(sqlite3 -header -column "$DB_PATH" "SELECT * FROM bead_edges WHERE from_id = '${id}' OR to_id = '${id}';")
+  edges=$(sqlite3 -header -column "$DB_PATH" "SELECT * FROM task_edges WHERE from_id = '${id}' OR to_id = '${id}';")
   if [[ -n "$edges" ]]; then
     echo ""
     echo "Edges:"
@@ -305,7 +305,7 @@ do_list() {
     )"
   fi
 
-  sqlite3 -header -column "$DB_PATH" "SELECT id, title, status, plan, agent, created_at FROM beads ${where} ORDER BY created_at DESC;"
+  sqlite3 -header -column "$DB_PATH" "SELECT id, title, status, plan, agent, created_at FROM tasks ${where} ORDER BY created_at DESC;"
 }
 
 do_graph() {
@@ -346,13 +346,13 @@ do_graph() {
   fi
 
   if [[ "$dot" == "true" ]]; then
-    echo "digraph beads {"
+    echo "digraph tasks {"
     echo "  rankdir=LR;"
     echo "  node [shape=box, style=rounded];"
     echo ""
 
     # Nodes
-    sqlite3 "$DB_PATH" "SELECT id, title, status FROM beads ${where};" | while IFS='|' read -r id title status; do
+    sqlite3 "$DB_PATH" "SELECT id, title, status FROM tasks ${where};" | while IFS='|' read -r id title status; do
       local color="white"
       case "$status" in
       open) color="lightyellow" ;;
@@ -370,9 +370,9 @@ do_graph() {
     # Edges
     local edge_where=""
     if [[ -n "$where" ]]; then
-      edge_where="WHERE from_id IN (SELECT id FROM beads ${where}) OR to_id IN (SELECT id FROM beads ${where})"
+      edge_where="WHERE from_id IN (SELECT id FROM tasks ${where}) OR to_id IN (SELECT id FROM tasks ${where})"
     fi
-    sqlite3 "$DB_PATH" "SELECT from_id, to_id, kind FROM bead_edges ${edge_where};" | while IFS='|' read -r from_id to_id kind; do
+    sqlite3 "$DB_PATH" "SELECT from_id, to_id, kind FROM task_edges ${edge_where};" | while IFS='|' read -r from_id to_id kind; do
       local style="solid"
       case "$kind" in
       blocks) style="bold" ;;
@@ -385,16 +385,16 @@ do_graph() {
 
     echo "}"
   else
-    echo "=== Beads ==="
-    sqlite3 -header -column "$DB_PATH" "SELECT id, title, status, plan, agent FROM beads ${where} ORDER BY created_at;"
+    echo "=== Tasks ==="
+    sqlite3 -header -column "$DB_PATH" "SELECT id, title, status, plan, agent FROM tasks ${where} ORDER BY created_at;"
 
     echo ""
     echo "=== Edges ==="
     local edge_where=""
     if [[ -n "$where" ]]; then
-      edge_where="WHERE from_id IN (SELECT id FROM beads ${where}) OR to_id IN (SELECT id FROM beads ${where})"
+      edge_where="WHERE from_id IN (SELECT id FROM tasks ${where}) OR to_id IN (SELECT id FROM tasks ${where})"
     fi
-    sqlite3 -header -column "$DB_PATH" "SELECT from_id, to_id, kind FROM bead_edges ${edge_where};"
+    sqlite3 -header -column "$DB_PATH" "SELECT from_id, to_id, kind FROM task_edges ${edge_where};"
   fi
 }
 
@@ -426,13 +426,13 @@ do_audit() {
 
   # Summary counts
   echo "--- Status Summary ---"
-  sqlite3 -header -column "$DB_PATH" "SELECT status, COUNT(*) as count FROM beads WHERE 1=1 ${plan_filter} ${agent_filter} GROUP BY status ORDER BY count DESC;"
+  sqlite3 -header -column "$DB_PATH" "SELECT status, COUNT(*) as count FROM tasks WHERE 1=1 ${plan_filter} ${agent_filter} GROUP BY status ORDER BY count DESC;"
   echo ""
 
-  # Orphan beads (no edges at all)
-  echo "--- Orphan Beads (no edges) ---"
+  # Orphan tasks (no edges at all)
+  echo "--- Orphan Tasks (no edges) ---"
   local orphans
-  orphans=$(sqlite3 -header -column "$DB_PATH" "SELECT id, title, status FROM beads WHERE id NOT IN (SELECT from_id FROM bead_edges UNION SELECT to_id FROM bead_edges) ${plan_filter} ${agent_filter};")
+  orphans=$(sqlite3 -header -column "$DB_PATH" "SELECT id, title, status FROM tasks WHERE id NOT IN (SELECT from_id FROM task_edges UNION SELECT to_id FROM task_edges) ${plan_filter} ${agent_filter};")
   if [[ -n "$orphans" ]]; then
     echo "$orphans"
   else
@@ -443,7 +443,7 @@ do_audit() {
   # Stale in_progress (more than 24 hours)
   echo "--- Stale In-Progress (open > 24h) ---"
   local stale
-  stale=$(sqlite3 -header -column "$DB_PATH" "SELECT id, title, created_at FROM beads WHERE status = 'in_progress' AND datetime(created_at) < datetime('now', '-24 hours') ${plan_filter} ${agent_filter};")
+  stale=$(sqlite3 -header -column "$DB_PATH" "SELECT id, title, created_at FROM tasks WHERE status = 'in_progress' AND datetime(created_at) < datetime('now', '-24 hours') ${plan_filter} ${agent_filter};")
   if [[ -n "$stale" ]]; then
     echo "$stale"
   else
@@ -451,10 +451,10 @@ do_audit() {
   fi
   echo ""
 
-  # Blocked chains (blocked beads and what blocks them)
+  # Blocked chains (blocked tasks and what blocks them)
   echo "--- Blocked Chains ---"
   local blocked
-  blocked=$(sqlite3 -header -column "$DB_PATH" "SELECT b.id as blocked_bead, b.title, e.to_id as blocked_by, b2.status as blocker_status FROM beads b JOIN bead_edges e ON b.id = e.from_id AND e.kind = 'blocks' LEFT JOIN beads b2 ON e.to_id = b2.id WHERE b.status = 'blocked' ${plan_filter} ${agent_filter};")
+  blocked=$(sqlite3 -header -column "$DB_PATH" "SELECT b.id as blocked_bead, b.title, e.to_id as blocked_by, b2.status as blocker_status FROM tasks b JOIN task_edges e ON b.id = e.from_id AND e.kind = 'blocks' LEFT JOIN tasks b2 ON e.to_id = b2.id WHERE b.status = 'blocked' ${plan_filter} ${agent_filter};")
   if [[ -n "$blocked" ]]; then
     echo "$blocked"
   else
@@ -464,14 +464,14 @@ do_audit() {
 
   # Agent workload
   echo "--- Agent Workload ---"
-  sqlite3 -header -column "$DB_PATH" "SELECT agent, COUNT(*) as total, SUM(CASE WHEN status = 'done' THEN 1 ELSE 0 END) as done, SUM(CASE WHEN status IN ('open','in_progress') THEN 1 ELSE 0 END) as active FROM beads WHERE agent IS NOT NULL ${plan_filter} GROUP BY agent ORDER BY total DESC;"
+  sqlite3 -header -column "$DB_PATH" "SELECT agent, COUNT(*) as total, SUM(CASE WHEN status = 'done' THEN 1 ELSE 0 END) as done, SUM(CASE WHEN status IN ('open','in_progress') THEN 1 ELSE 0 END) as active FROM tasks WHERE agent IS NOT NULL ${plan_filter} GROUP BY agent ORDER BY total DESC;"
   echo ""
 
   # Total counts
   local total
-  total=$(sqlite3 "$DB_PATH" "SELECT COUNT(*) FROM beads WHERE 1=1 ${plan_filter} ${agent_filter};")
+  total=$(sqlite3 "$DB_PATH" "SELECT COUNT(*) FROM tasks WHERE 1=1 ${plan_filter} ${agent_filter};")
   local done_count
-  done_count=$(sqlite3 "$DB_PATH" "SELECT COUNT(*) FROM beads WHERE status = 'done' ${plan_filter} ${agent_filter};")
+  done_count=$(sqlite3 "$DB_PATH" "SELECT COUNT(*) FROM tasks WHERE status = 'done' ${plan_filter} ${agent_filter};")
   echo "Total beads: ${total}, Done: ${done_count}, Completion: $((done_count * 100 / (total > 0 ? total : 1)))%"
 }
 
@@ -504,9 +504,9 @@ main() {
 Operations:
   --init                    Initialize the task database
   --open --title <t> [...]  Create a new bead
-  --close --id <id> [...]   Close a bead
+  --close --id <id> [...]   Close a task
   --add-edge --from --to --kind  Add an edge
-  --get --id <id>           Get a bead
+  --get --id <id>           Get a task
   --list [--plan] [--status] [--agent]  List beads
   --graph [--plan] [--open] [--dot]     Visualize graph
   --audit [--plan] [--agent]            Audit health
