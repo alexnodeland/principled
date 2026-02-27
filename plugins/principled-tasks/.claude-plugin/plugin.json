@@ -1,7 +1,7 @@
 {
   "name": "principled-tasks",
   "version": "0.1.0",
-  "description": "SQLite-backed, Git-committed, graph-structured task tracking for principled orchestration. Tracks beads (tasks) with typed dependency edges across plans and agents.",
+  "description": "SQLite-backed, Git-committed, graph-structured task tracking for principled orchestration. Tracks tasks with typed dependency edges across plans and agents.",
   "author": "Alex Nodeland",
   "homepage": "https://github.com/alexnodeland/principled",
   "keywords": [
@@ -9,7 +9,6 @@
     "tracking",
     "sqlite",
     "graph",
-    "beads",
     "dependencies",
     "orchestration"
   ]

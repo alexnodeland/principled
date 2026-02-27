@@ -210,6 +210,58 @@ SQL
   echo "Closed ${id} as ${status}"
 }
 
+do_update() {
+  local id="" status="" notes="" agent=""
+
+  while [[ $# -gt 0 ]]; do
+    case "$1" in
+    --id)
+      id="$2"
+      shift 2
+      ;;
+    --status)
+      status="$2"
+      shift 2
+      ;;
+    --notes)
+      notes="$2"
+      shift 2
+      ;;
+    --agent)
+      agent="$2"
+      shift 2
+      ;;
+    *) die "Unknown option for --update: $1" ;;
+    esac
+  done
+
+  [[ -n "$id" ]] || die "--id is required for --update"
+  [[ -n "$status" ]] || die "--status is required for --update"
+
+  case "$status" in
+  open | in_progress | blocked | abandoned) ;;
+  *) die "Invalid status '$status'. Must be: open, in_progress, blocked, abandoned" ;;
+  esac
+
+  check_db
+
+  local safe_id="${id//\'/\'\'}"
+  local safe_notes="${notes//\'/\'\'}"
+  local safe_agent="${agent//\'/\'\'}"
+
+  local set_clause="status='${status}'"
+  [[ -n "$notes" ]] && set_clause="${set_clause}, notes='${safe_notes}'"
+  [[ -n "$agent" ]] && set_clause="${set_clause}, agent='${safe_agent}'"
+
+  local affected
+  affected=$(sqlite3 "$DB_PATH" "UPDATE tasks SET ${set_clause} WHERE id='${safe_id}'; SELECT changes();")
+
+  [[ "$affected" -gt 0 ]] || die "Task '${id}' not found"
+
+  echo "Updated ${id}: status=${status}"
+  do_commit "update task ${id} status=${status}"
+}
+
 do_add_edge() {
   local from_id="" to_id="" kind=""
 
@@ -523,6 +575,7 @@ Operations:
   case "$operation" in
   --init) do_init ;;
   --open) do_open "$@" ;;
+  --update) do_update "$@" ;;
   --close) do_close "$@" ;;
   --add-edge) do_add_edge "$@" ;;
   --get) do_get "$@" ;;

@@ -30,7 +30,7 @@ Eight layers, top to bottom:
 | **Quality: All**        | `plugins/principled-quality/`                                      | Skills (5), hooks (1), agents (1) for spec-driven code review: checklists, context, coverage, summaries              |
 | **Release: All**        | `plugins/principled-release/`                                      | Skills (6), hooks (1) for release lifecycle: changelogs, readiness, version bumps, tagging                           |
 | **Architecture: All**   | `plugins/principled-architecture/`                                 | Skills (6), hooks (1), agents (1) for architecture governance: mapping, drift detection, auditing, sync              |
-| **Tasks: All**          | `plugins/principled-tasks/`                                        | Skills (6), hooks (2) for persistent task graph: open, close, query, audit, visualize, strategy                      |
+| **Tasks: All**          | `plugins/principled-tasks/`                                        | Skills (7), hooks (2) for persistent task graph: open, close, update, query, audit, visualize, strategy              |
 | **Dev DX**              | `.claude/`, config files, `.github/workflows/`                     | Project-level Claude Code settings, dev skills, CI pipeline, linting config                                          |
 
 ## Skills
@@ -108,14 +108,15 @@ Eight layers, top to bottom:
 
 ### principled-tasks (6 skills)
 
-| Skill           | Command                                                    | Category   |
-| --------------- | ---------------------------------------------------------- | ---------- |
-| `task-strategy` | _(background — not user-invocable)_                        | Knowledge  |
-| `task-open`     | `/task-open --title <title> [--plan <id>] [--blocks <id>]` | Generative |
-| `task-close`    | `/task-close --id <id> [--notes <text>] [--status done]`   | Generative |
-| `task-query`    | `/task-query [--status <status>] [--agent <name>]`         | Analytical |
-| `task-audit`    | `/task-audit [--all]`                                      | Analytical |
-| `task-graph`    | `/task-graph [--format dot\|text] [--status <status>]`     | Analytical |
+| Skill           | Command                                                     | Category   |
+| --------------- | ----------------------------------------------------------- | ---------- |
+| `task-strategy` | _(background — not user-invocable)_                         | Knowledge  |
+| `task-open`     | `/task-open --title <title> [--plan <id>] [--blocks <id>]`  | Generative |
+| `task-close`    | `/task-close --id <id> [--notes <text>] [--status done]`    | Generative |
+| `task-update`   | `/task-update --id <id> --status <status> [--notes <text>]` | Generative |
+| `task-query`    | `/task-query [--status <status>] [--agent <name>]`          | Analytical |
+| `task-audit`    | `/task-audit [--all]`                                       | Analytical |
+| `task-graph`    | `/task-graph [--format dot\|text] [--status <status>]`      | Analytical |
 
 Each skill directory is **self-contained**. No cross-skill imports. If a template or script is needed by multiple skills, each maintains its own copy.
 
