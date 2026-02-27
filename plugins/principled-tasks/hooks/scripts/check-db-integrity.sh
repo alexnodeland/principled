@@ -30,7 +30,7 @@ fi
 if [[ "$file_path" == *".impl/tasks.db"* ]] || [[ "$file_path" == *"tasks.db"* ]]; then
   echo "⚠️  Advisory: Direct edit to tasks.db detected." >&2
   echo "   Use /task-open, /task-close, or task-db.sh for database operations." >&2
-  echo "   Direct edits may corrupt the bead graph or bypass Git commitment." >&2
+  echo "   Direct edits may corrupt the task graph or bypass Git commitment." >&2
 fi
 
 # Advisory only — always allow

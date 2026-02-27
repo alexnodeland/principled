@@ -6,7 +6,7 @@ core
 
 ## What This Is
 
-This repo is the **Principled methodology plugin marketplace** (v1.0.0). It hosts Claude Code plugins for specification-first development, organized as a curated directory with two tiers: first-party plugins in `plugins/` and community plugins in `external_plugins/`. Six first-party plugins ship today:
+This repo is the **Principled methodology plugin marketplace** (v1.0.0). It hosts Claude Code plugins for specification-first development, organized as a curated directory with two tiers: first-party plugins in `plugins/` and community plugins in `external_plugins/`. Seven first-party plugins ship today:
 
 - **principled-docs** (v0.3.1) — Scaffold, author, and enforce module documentation structure for monorepos.
 - **principled-implementation** (v0.1.0) — Orchestrate DDD plan execution via worktree-isolated Claude Code agents.
@@ -14,6 +14,7 @@ This repo is the **Principled methodology plugin marketplace** (v1.0.0). It host
 - **principled-quality** (v0.1.0) — Connect code reviews to the principled documentation pipeline with spec-driven checklists, coverage assessment, and review summaries.
 - **principled-release** (v0.1.0) — Generate changelogs from the documentation pipeline, verify release readiness, coordinate version bumps, and govern the release lifecycle.
 - **principled-architecture** (v0.1.0) — Map code to architectural decisions, detect drift, audit decision coverage, and keep architecture documents synchronized.
+- **principled-tasks** (v0.1.0) — Persistent, graph-linked task tracking with SQLite — open, close, query, audit, and visualize tasks across agent workflows.
 
 ## Architecture
 
@@ -29,6 +30,7 @@ Eight layers, top to bottom:
 | **Quality: All**        | `plugins/principled-quality/`                                      | Skills (5), hooks (1), agents (1) for spec-driven code review: checklists, context, coverage, summaries              |
 | **Release: All**        | `plugins/principled-release/`                                      | Skills (6), hooks (1) for release lifecycle: changelogs, readiness, version bumps, tagging                           |
 | **Architecture: All**   | `plugins/principled-architecture/`                                 | Skills (6), hooks (1), agents (1) for architecture governance: mapping, drift detection, auditing, sync              |
+| **Tasks: All**          | `plugins/principled-tasks/`                                        | Skills (6), hooks (2) for persistent task graph: open, close, query, audit, visualize, strategy                      |
 | **Dev DX**              | `.claude/`, config files, `.github/workflows/`                     | Project-level Claude Code settings, dev skills, CI pipeline, linting config                                          |
 
 ## Skills
@@ -103,6 +105,17 @@ Eight layers, top to bottom:
 | `arch-audit`    | `/arch-audit [--module <path>]`                 | Analytical |
 | `arch-sync`     | `/arch-sync [--doc <path>] [--all]`             | Generative |
 | `arch-query`    | `/arch-query "<question>"`                      | Analytical |
+
+### principled-tasks (6 skills)
+
+| Skill           | Command                                                    | Category   |
+| --------------- | ---------------------------------------------------------- | ---------- |
+| `task-strategy` | _(background — not user-invocable)_                        | Knowledge  |
+| `task-open`     | `/task-open --title <title> [--plan <id>] [--blocks <id>]` | Generative |
+| `task-close`    | `/task-close --id <id> [--notes <text>] [--status done]`   | Generative |
+| `task-query`    | `/task-query [--status <status>] [--agent <name>]`         | Analytical |
+| `task-audit`    | `/task-audit [--all]`                                      | Analytical |
+| `task-graph`    | `/task-graph [--format dot\|text] [--status <status>]`     | Analytical |
 
 Each skill directory is **self-contained**. No cross-skill imports. If a template or script is needed by multiple skills, each maintains its own copy.
 

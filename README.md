@@ -20,14 +20,15 @@ A Claude Code plugin marketplace hosting first-party and community plugins for t
 
 ### First-Party
 
-| Plugin                                                                       | Category       | Description                                                                                                                     |
-| ---------------------------------------------------------------------------- | -------------- | ------------------------------------------------------------------------------------------------------------------------------- |
-| [**principled-docs**](plugins/principled-docs/README.md)                     | documentation  | Scaffold, author, and enforce module documentation structure following the Principled specification-first methodology (v0.3.1)  |
-| [**principled-implementation**](plugins/principled-implementation/README.md) | implementation | Orchestrate DDD plan execution via worktree-isolated Claude Code agents (v0.1.0)                                                |
-| [**principled-github**](plugins/principled-github/README.md)                 | workflow       | Integrate the principled workflow with GitHub native features: issues, PRs, templates, actions, CODEOWNERS, and labels (v0.1.0) |
-| [**principled-quality**](plugins/principled-quality/README.md)               | quality        | Connect code reviews to the principled documentation pipeline with spec-driven checklists and review tracking (v0.1.0)          |
-| [**principled-release**](plugins/principled-release/README.md)               | workflow       | Generate changelogs from the documentation pipeline, verify release readiness, and coordinate versioned releases (v0.1.0)       |
-| [**principled-architecture**](plugins/principled-architecture/README.md)     | architecture   | Map modules to governing ADRs, detect architectural drift, audit governance coverage, and sync architecture docs (v0.1.0)       |
+| Plugin                                                                       | Category       | Description                                                                                                                         |
+| ---------------------------------------------------------------------------- | -------------- | ----------------------------------------------------------------------------------------------------------------------------------- |
+| [**principled-docs**](plugins/principled-docs/README.md)                     | documentation  | Scaffold, author, and enforce module documentation structure following the Principled specification-first methodology (v0.3.1)      |
+| [**principled-implementation**](plugins/principled-implementation/README.md) | implementation | Orchestrate DDD plan execution via worktree-isolated Claude Code agents (v0.1.0)                                                    |
+| [**principled-github**](plugins/principled-github/README.md)                 | workflow       | Integrate the principled workflow with GitHub native features: issues, PRs, templates, actions, CODEOWNERS, and labels (v0.1.0)     |
+| [**principled-quality**](plugins/principled-quality/README.md)               | quality        | Connect code reviews to the principled documentation pipeline with spec-driven checklists and review tracking (v0.1.0)              |
+| [**principled-release**](plugins/principled-release/README.md)               | workflow       | Generate changelogs from the documentation pipeline, verify release readiness, and coordinate versioned releases (v0.1.0)           |
+| [**principled-architecture**](plugins/principled-architecture/README.md)     | architecture   | Map modules to governing ADRs, detect architectural drift, audit governance coverage, and sync architecture docs (v0.1.0)           |
+| [**principled-tasks**](plugins/principled-tasks/README.md)                   | workflow       | Persistent, graph-linked task tracking with SQLite — open, close, query, audit, and visualize tasks across agent workflows (v0.1.0) |
 
 ### Community
 
@@ -50,6 +51,7 @@ _No community plugins yet. See [Contributing](#-contributing-a-plugin) to submit
 /plugin install principled-quality@principled-marketplace
 /plugin install principled-release@principled-marketplace
 /plugin install principled-architecture@principled-marketplace
+/plugin install principled-tasks@principled-marketplace
 ```
 
 ### Team-Wide Adoption
@@ -72,7 +74,8 @@ Add to your project's `.claude/settings.json`:
     "principled-github@principled-marketplace": true,
     "principled-quality@principled-marketplace": true,
     "principled-release@principled-marketplace": true,
-    "principled-architecture@principled-marketplace": true
+    "principled-architecture@principled-marketplace": true,
+    "principled-tasks@principled-marketplace": true
   }
 }
 ```

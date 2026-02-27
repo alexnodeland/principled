@@ -1,8 +1,8 @@
-# Bead Model
+# Task Model
 
-The bead model is the core abstraction of the principled-tasks plugin. Every trackable piece of work is a **bead** — a node in a directed graph with typed edges.
+The task model is the core abstraction of the principled-tasks plugin. Every trackable piece of work is a **bead** — a node in a directed graph with typed edges.
 
-## Bead Lifecycle
+## Task Lifecycle
 
 ```
 open ──→ in_progress ──→ done
