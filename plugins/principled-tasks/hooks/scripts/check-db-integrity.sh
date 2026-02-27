@@ -15,8 +15,8 @@ input=$(cat)
 
 # Extract file_path from tool input
 file_path=""
-if command -v jq &>/dev/null; then
-  file_path=$(echo "$input" | jq -r '.tool_input.file_path // empty' 2>/dev/null || true)
+if command -v jq &> /dev/null; then
+  file_path=$(echo "$input" | jq -r '.tool_input.file_path // empty' 2> /dev/null || true)
 else
   file_path=$(echo "$input" | grep -o '"file_path"[[:space:]]*:[[:space:]]*"[^"]*"' | head -1 | sed 's/.*"file_path"[[:space:]]*:[[:space:]]*"//' | sed 's/"$//' || true)
 fi
