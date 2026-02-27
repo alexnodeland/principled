@@ -34,14 +34,18 @@ check_sqlite() {
 }
 
 check_db() {
-  [[ -f "$DB_PATH" ]] || die "Database not found at $DB_PATH. Run with --init first."
+  check_sqlite
+  mkdir -p "$(dirname "$DB_PATH")"
+  if [[ ! -f "$DB_PATH" ]]; then
+    do_init
+  fi
 }
 
 generate_id() {
-  # Generate a short unique ID: bead-XXXX (hex)
+  # Generate a short unique ID: task-XXXX (hex)
   local hex
   hex=$(printf '%04x' "$RANDOM")
-  echo "bead-${hex}"
+  echo "task-${hex}"
 }
 
 timestamp() {

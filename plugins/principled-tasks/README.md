@@ -15,18 +15,18 @@
 
 ---
 
-A Claude Code plugin that provides persistent, graph-structured task tracking for specification-first development. Tasks (called **beads**, inspired by the Beads methodology) form a directed graph with typed edges — enabling dependency tracking, discovery chains, cross-plan visibility, and natural-language querying via SQLite.
+A Claude Code plugin that provides persistent, graph-structured task tracking for specification-first development. Tasks form a directed graph with typed edges — enabling dependency tracking, discovery chains, cross-plan visibility, and natural-language querying via SQLite.
 
-## The Bead Graph
+## The Task Graph
 
-Every piece of trackable work is a **bead** in a directed graph:
+Every piece of trackable work is a **task** in a directed graph:
 
 ```mermaid
 flowchart LR
-    A["bead-001a\nFix auth\n[done]"]
-    B["bead-002b\nAdd permissions\n[open]"]
-    C["bead-003c\nUpdate docs\n[open]"]
-    D["bead-004d\nFix typo\n[done]"]
+    A["task-001a\nFix auth\n[done]"]
+    B["task-002b\nAdd permissions\n[open]"]
+    C["task-003c\nUpdate docs\n[open]"]
+    D["task-004d\nFix typo\n[done]"]
 
     A -->|blocks| B
     B -->|related_to| C
@@ -42,16 +42,16 @@ Beads track status, agent assignment, plan linkage, and discovery provenance. Ed
 claude plugin add <path-to-principled-tasks>
 
 # Create your first task
-/task-open "Fix login bug" --plan 003
+/task-open --title "Fix login bug" --plan 003
 
 # Create a blocking dependency
-/task-open "Refactor auth module" --blocks bead-0a3f
+/task-open "Refactor auth module" --blocks task-0a3f
 
 # Complete a task
-/task-close bead-0a3f --notes "Fixed via PR #42"
+/task-close --id task-0a3f --notes "Fixed via PR #42"
 
 # Visualize the graph
-/task-graph --open --dot
+/task-graph --status open --format dot
 
 # Audit task health
 /task-audit --plan 003
@@ -62,7 +62,7 @@ claude plugin add <path-to-principled-tasks>
 
 ## Skills
 
-6 skills: 1 background knowledge + 5 user-invocable slash commands. Each skill is self-contained with its own SKILL.md and scripts.
+7 skills: 1 background knowledge + 6 user-invocable slash commands. Each skill is self-contained with its own SKILL.md and scripts.
 
 ### Knowledge
 
@@ -72,13 +72,14 @@ claude plugin add <path-to-principled-tasks>
 
 ### Commands
 
-| Command                                                                    | Description                                        |
-| -------------------------------------------------------------------------- | -------------------------------------------------- |
-| `/task-open <title> [--plan NNN] [--blocks <id>] [--discovered-from <id>]` | Create a new bead in the task graph                |
-| `/task-close <id> [--notes <text>]`                                        | Close a bead as done or abandoned                  |
-| `/task-graph [--plan NNN] [--open] [--dot]`                                | Visualize the bead graph (table or DOT format)     |
-| `/task-audit [--plan NNN] [--agent <name>]`                                | Audit graph health: orphans, stale, blocked chains |
-| `/task-query "<question>"`                                                 | Natural-language queries against the bead graph    |
+| Command                                                                            | Description                                        |
+| ---------------------------------------------------------------------------------- | -------------------------------------------------- |
+| `/task-open --title <title> [--plan NNN] [--blocks <id>] [--discovered-from <id>]` | Create a new task in the task graph                |
+| `/task-close --id <id> [--notes <text>] [--status done\|abandoned]`                | Close a task as done or abandoned                  |
+| `/task-update --id <id> --status <status> [--notes <text>] [--agent <name>]`       | Update status to in_progress or blocked            |
+| `/task-graph [--plan NNN] [--status <status>] [--format dot\|text]`                | Visualize the task graph (table or DOT format)     |
+| `/task-audit [--plan NNN] [--agent <name>]`                                        | Audit graph health: orphans, stale, blocked chains |
+| `/task-query "<question>"`                                                         | Natural-language queries against the task graph    |
 
 ## Enforcement Hook
 
@@ -90,8 +91,8 @@ claude plugin add <path-to-principled-tasks>
 
 ```
 .impl/tasks.db          SQLite database (Git-committed)
-  beads                 Task nodes with status, agent, plan
-  bead_edges            Typed directed edges between beads
+  tasks                 Task nodes with status, agent, plan
+  task_edges            Typed directed edges between beads
 ```
 
 ### Data Flow
@@ -99,6 +100,7 @@ claude plugin add <path-to-principled-tasks>
 ```
 /task-open ──→ task-db.sh --open ──→ sqlite3 ──→ .impl/tasks.db ──→ git commit
 /task-close ──→ task-db.sh --close ──→ sqlite3 ──→ .impl/tasks.db ──→ git commit
+/task-update ──→ task-db.sh --update ──→ sqlite3 ──→ .impl/tasks.db ──→ git commit
 /task-graph ──→ task-db.sh --graph ──→ sqlite3 ──→ stdout (table or DOT)
 /task-audit ──→ task-db.sh --audit ──→ sqlite3 ──→ stdout (report)
 /task-query ──→ Claude SQL gen ──→ sqlite3 ──→ stdout (results)
@@ -106,9 +108,9 @@ claude plugin add <path-to-principled-tasks>
 
 ## Script Duplication
 
-| Script       | Canonical Location                    | Copies                                         |
-| ------------ | ------------------------------------- | ---------------------------------------------- |
-| `task-db.sh` | `skills/task-open/scripts/task-db.sh` | task-close, task-graph, task-audit, task-query |
+| Script       | Canonical Location                    | Copies                                                      |
+| ------------ | ------------------------------------- | ----------------------------------------------------------- |
+| `task-db.sh` | `skills/task-open/scripts/task-db.sh` | task-close, task-update, task-graph, task-audit, task-query |
 
 Drift verified by `scripts/check-template-drift.sh`. Drift = CI failure.
 
