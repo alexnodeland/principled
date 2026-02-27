@@ -30,7 +30,7 @@ for copy in "${copies[@]}"; do
   if [[ ! -f "$copy" ]]; then
     echo "  MISSING: $relative"
     drifted=1
-  elif ! diff -q "$canonical" "$copy" &>/dev/null; then
+  elif ! diff -q "$canonical" "$copy" &> /dev/null; then
     echo "  DRIFTED: $relative"
     drifted=1
   else

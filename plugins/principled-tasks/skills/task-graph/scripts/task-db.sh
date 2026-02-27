@@ -30,7 +30,7 @@ die() {
 }
 
 check_sqlite() {
-  command -v sqlite3 &>/dev/null || die "sqlite3 is required but not found. Install SQLite CLI."
+  command -v sqlite3 &> /dev/null || die "sqlite3 is required but not found. Install SQLite CLI."
 }
 
 check_db() {
@@ -59,7 +59,7 @@ do_init() {
     return 0
   fi
 
-  sqlite3 "$DB_PATH" <<'SQL'
+  sqlite3 "$DB_PATH" << 'SQL'
 CREATE TABLE beads (
   id TEXT PRIMARY KEY,
   title TEXT NOT NULL,
@@ -89,13 +89,31 @@ do_open() {
 
   while [[ $# -gt 0 ]]; do
     case "$1" in
-      --title) title="$2"; shift 2 ;;
-      --plan) plan="$2"; shift 2 ;;
-      --blocks) blocks="$2"; shift 2 ;;
-      --discovered-from) discovered_from="$2"; shift 2 ;;
-      --agent) agent="$2"; shift 2 ;;
-      --task-id) task_id="$2"; shift 2 ;;
-      *) die "Unknown option for --open: $1" ;;
+    --title)
+      title="$2"
+      shift 2
+      ;;
+    --plan)
+      plan="$2"
+      shift 2
+      ;;
+    --blocks)
+      blocks="$2"
+      shift 2
+      ;;
+    --discovered-from)
+      discovered_from="$2"
+      shift 2
+      ;;
+    --agent)
+      agent="$2"
+      shift 2
+      ;;
+    --task-id)
+      task_id="$2"
+      shift 2
+      ;;
+    *) die "Unknown option for --open: $1" ;;
     esac
   done
 
@@ -117,7 +135,7 @@ do_open() {
   local safe_task_id="${task_id//\'/\'\'}"
   local safe_discovered="${discovered_from//\'/\'\'}"
 
-  sqlite3 "$DB_PATH" <<SQL
+  sqlite3 "$DB_PATH" << SQL
 INSERT INTO beads (id, title, status, agent, plan, task_id, notes, created_at, closed_at, discovered_from)
 VALUES ('${id}', '${safe_title}', 'open', $([ -n "$agent" ] && echo "'${safe_agent}'" || echo "NULL"), $([ -n "$plan" ] && echo "'${safe_plan}'" || echo "NULL"), $([ -n "$task_id" ] && echo "'${safe_task_id}'" || echo "NULL"), NULL, '${ts}', NULL, $([ -n "$discovered_from" ] && echo "'${safe_discovered}'" || echo "NULL"));
 SQL
@@ -145,10 +163,19 @@ do_close() {
 
   while [[ $# -gt 0 ]]; do
     case "$1" in
-      --id) id="$2"; shift 2 ;;
-      --notes) notes="$2"; shift 2 ;;
-      --status) status="$2"; shift 2 ;;
-      *) die "Unknown option for --close: $1" ;;
+    --id)
+      id="$2"
+      shift 2
+      ;;
+    --notes)
+      notes="$2"
+      shift 2
+      ;;
+    --status)
+      status="$2"
+      shift 2
+      ;;
+    *) die "Unknown option for --close: $1" ;;
     esac
   done
 
@@ -162,7 +189,7 @@ do_close() {
   ts=$(timestamp)
   local safe_notes="${notes//\'/\'\'}"
 
-  sqlite3 "$DB_PATH" <<SQL
+  sqlite3 "$DB_PATH" << SQL
 UPDATE beads
 SET status = '${status}',
     closed_at = '${ts}',
@@ -184,10 +211,19 @@ do_add_edge() {
 
   while [[ $# -gt 0 ]]; do
     case "$1" in
-      --from) from_id="$2"; shift 2 ;;
-      --to) to_id="$2"; shift 2 ;;
-      --kind) kind="$2"; shift 2 ;;
-      *) die "Unknown option for --add-edge: $1" ;;
+    --from)
+      from_id="$2"
+      shift 2
+      ;;
+    --to)
+      to_id="$2"
+      shift 2
+      ;;
+    --kind)
+      kind="$2"
+      shift 2
+      ;;
+    *) die "Unknown option for --add-edge: $1" ;;
     esac
   done
 
@@ -207,8 +243,11 @@ do_get() {
 
   while [[ $# -gt 0 ]]; do
     case "$1" in
-      --id) id="$2"; shift 2 ;;
-      *) die "Unknown option for --get: $1" ;;
+    --id)
+      id="$2"
+      shift 2
+      ;;
+    *) die "Unknown option for --get: $1" ;;
     esac
   done
 
@@ -234,11 +273,23 @@ do_list() {
 
   while [[ $# -gt 0 ]]; do
     case "$1" in
-      --plan) where_clauses+=("plan = '${2}'"); shift 2 ;;
-      --status) where_clauses+=("status = '${2}'"); shift 2 ;;
-      --agent) where_clauses+=("agent = '${2}'"); shift 2 ;;
-      --format) format="$2"; shift 2 ;;
-      *) die "Unknown option for --list: $1" ;;
+    --plan)
+      where_clauses+=("plan = '${2}'")
+      shift 2
+      ;;
+    --status)
+      where_clauses+=("status = '${2}'")
+      shift 2
+      ;;
+    --agent)
+      where_clauses+=("agent = '${2}'")
+      shift 2
+      ;;
+    --format)
+      format="$2"
+      shift 2
+      ;;
+    *) die "Unknown option for --list: $1" ;;
     esac
   done
 
@@ -262,10 +313,19 @@ do_graph() {
 
   while [[ $# -gt 0 ]]; do
     case "$1" in
-      --plan) where_clauses+=("plan = '${2}'"); shift 2 ;;
-      --open) open_only="true"; shift ;;
-      --dot) dot="true"; shift ;;
-      *) die "Unknown option for --graph: $1" ;;
+    --plan)
+      where_clauses+=("plan = '${2}'")
+      shift 2
+      ;;
+    --open)
+      open_only="true"
+      shift
+      ;;
+    --dot)
+      dot="true"
+      shift
+      ;;
+    *) die "Unknown option for --graph: $1" ;;
     esac
   done
 
@@ -294,11 +354,11 @@ do_graph() {
     sqlite3 "$DB_PATH" "SELECT id, title, status FROM beads ${where};" | while IFS='|' read -r id title status; do
       local color="white"
       case "$status" in
-        open) color="lightyellow" ;;
-        in_progress) color="lightblue" ;;
-        done) color="lightgreen" ;;
-        blocked) color="lightsalmon" ;;
-        abandoned) color="lightgray" ;;
+      open) color="lightyellow" ;;
+      in_progress) color="lightblue" ;;
+      done) color="lightgreen" ;;
+      blocked) color="lightsalmon" ;;
+      abandoned) color="lightgray" ;;
       esac
       echo "  \"${id}\" [label=\"${id}\\n${title}\\n[${status}]\", fillcolor=${color}, style=\"rounded,filled\"];"
     done
@@ -313,10 +373,10 @@ do_graph() {
     sqlite3 "$DB_PATH" "SELECT from_id, to_id, kind FROM bead_edges ${edge_where};" | while IFS='|' read -r from_id to_id kind; do
       local style="solid"
       case "$kind" in
-        blocks) style="bold" ;;
-        spawned_by) style="dashed" ;;
-        part_of) style="dotted" ;;
-        related_to) style="dashed" ;;
+      blocks) style="bold" ;;
+      spawned_by) style="dashed" ;;
+      part_of) style="dotted" ;;
+      related_to) style="dashed" ;;
       esac
       echo "  \"${from_id}\" -> \"${to_id}\" [label=\"${kind}\", style=${style}];"
     done
@@ -342,9 +402,17 @@ do_audit() {
 
   while [[ $# -gt 0 ]]; do
     case "$1" in
-      --plan) plan="$2"; plan_filter="AND plan = '${2}'"; shift 2 ;;
-      --agent) agent="$2"; agent_filter="AND agent = '${2}'"; shift 2 ;;
-      *) die "Unknown option for --audit: $1" ;;
+    --plan)
+      plan="$2"
+      plan_filter="AND plan = '${2}'"
+      shift 2
+      ;;
+    --agent)
+      agent="$2"
+      agent_filter="AND agent = '${2}'"
+      shift 2
+      ;;
+    *) die "Unknown option for --audit: $1" ;;
     esac
   done
 
@@ -402,7 +470,7 @@ do_audit() {
   total=$(sqlite3 "$DB_PATH" "SELECT COUNT(*) FROM beads WHERE 1=1 ${plan_filter} ${agent_filter};")
   local done_count
   done_count=$(sqlite3 "$DB_PATH" "SELECT COUNT(*) FROM beads WHERE status = 'done' ${plan_filter} ${agent_filter};")
-  echo "Total beads: ${total}, Done: ${done_count}, Completion: $(( done_count * 100 / (total > 0 ? total : 1) ))%"
+  echo "Total beads: ${total}, Done: ${done_count}, Completion: $((done_count * 100 / (total > 0 ? total : 1)))%"
 }
 
 do_commit() {
@@ -410,14 +478,14 @@ do_commit() {
 
   check_db
 
-  if ! git rev-parse --is-inside-work-tree &>/dev/null; then
+  if ! git rev-parse --is-inside-work-tree &> /dev/null; then
     die "Not inside a Git repository"
   fi
 
   git add "$DB_PATH"
 
   # Only commit if there are staged changes to tasks.db
-  if git diff --cached --quiet -- "$DB_PATH" 2>/dev/null; then
+  if git diff --cached --quiet -- "$DB_PATH" 2> /dev/null; then
     echo "No changes to commit"
     return 0
   fi
@@ -447,16 +515,16 @@ Operations:
   shift
 
   case "$operation" in
-    --init) do_init ;;
-    --open) do_open "$@" ;;
-    --close) do_close "$@" ;;
-    --add-edge) do_add_edge "$@" ;;
-    --get) do_get "$@" ;;
-    --list) do_list "$@" ;;
-    --graph) do_graph "$@" ;;
-    --audit) do_audit "$@" ;;
-    --commit) do_commit "$@" ;;
-    *) die "Unknown operation: $operation" ;;
+  --init) do_init ;;
+  --open) do_open "$@" ;;
+  --close) do_close "$@" ;;
+  --add-edge) do_add_edge "$@" ;;
+  --get) do_get "$@" ;;
+  --list) do_list "$@" ;;
+  --graph) do_graph "$@" ;;
+  --audit) do_audit "$@" ;;
+  --commit) do_commit "$@" ;;
+  *) die "Unknown operation: $operation" ;;
   esac
 }
 
