@@ -286,6 +286,7 @@ do_list() {
       shift 2
       ;;
     --format)
+      # shellcheck disable=SC2034
       format="$2"
       shift 2
       ;;
@@ -360,7 +361,8 @@ do_graph() {
       blocked) color="lightsalmon" ;;
       abandoned) color="lightgray" ;;
       esac
-      echo "  \"${id}\" [label=\"${id}\\n${title}\\n[${status}]\", fillcolor=${color}, style=\"rounded,filled\"];"
+      printf '  "%s" [label="%s\n%s\n[%s]", fillcolor=%s, style="rounded,filled"];
+' "${id}" "${id}" "${title}" "${status}" "${color}"
     done
 
     echo ""

@@ -21,9 +21,9 @@ Translate natural-language questions about the task graph into SQL queries again
 
 ## Arguments
 
-| Argument      | Required | Description                                      |
-| ------------- | -------- | ------------------------------------------------ |
-| `<question>`  | Yes      | Natural-language question about the task graph   |
+| Argument     | Required | Description                                    |
+| ------------ | -------- | ---------------------------------------------- |
+| `<question>` | Yes      | Natural-language question about the task graph |
 
 ## Workflow
 

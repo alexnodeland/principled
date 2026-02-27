@@ -21,18 +21,18 @@ CREATE TABLE beads (
 );
 ```
 
-| Column            | Type | Description                                              |
-| ----------------- | ---- | -------------------------------------------------------- |
-| `id`              | TEXT | Unique identifier, format: `bead-XXXX` (hex)            |
-| `title`           | TEXT | Human-readable task description                          |
+| Column            | Type | Description                                                |
+| ----------------- | ---- | ---------------------------------------------------------- |
+| `id`              | TEXT | Unique identifier, format: `bead-XXXX` (hex)               |
+| `title`           | TEXT | Human-readable task description                            |
 | `status`          | TEXT | Current state: open, in_progress, done, blocked, abandoned |
-| `agent`           | TEXT | Name of the agent that worked on this bead (nullable)    |
-| `plan`            | TEXT | Originating plan number, e.g. "003" (nullable)           |
-| `task_id`         | TEXT | Task ID from plan manifest, e.g. "1.1" (nullable)       |
-| `notes`           | TEXT | Freeform notes, typically set at close time (nullable)   |
-| `created_at`      | TEXT | ISO 8601 UTC timestamp of creation                       |
-| `closed_at`       | TEXT | ISO 8601 UTC timestamp of closure (nullable)             |
-| `discovered_from` | TEXT | Bead ID that led to discovery of this bead (nullable)    |
+| `agent`           | TEXT | Name of the agent that worked on this bead (nullable)      |
+| `plan`            | TEXT | Originating plan number, e.g. "003" (nullable)             |
+| `task_id`         | TEXT | Task ID from plan manifest, e.g. "1.1" (nullable)          |
+| `notes`           | TEXT | Freeform notes, typically set at close time (nullable)     |
+| `created_at`      | TEXT | ISO 8601 UTC timestamp of creation                         |
+| `closed_at`       | TEXT | ISO 8601 UTC timestamp of closure (nullable)               |
+| `discovered_from` | TEXT | Bead ID that led to discovery of this bead (nullable)      |
 
 ### bead_edges
 
@@ -45,11 +45,11 @@ CREATE TABLE bead_edges (
 );
 ```
 
-| Column    | Type | Description                                              |
-| --------- | ---- | -------------------------------------------------------- |
-| `from_id` | TEXT | Source bead ID                                           |
-| `to_id`   | TEXT | Target bead ID                                           |
-| `kind`    | TEXT | Edge type: blocks, spawned_by, part_of, related_to       |
+| Column    | Type | Description                                        |
+| --------- | ---- | -------------------------------------------------- |
+| `from_id` | TEXT | Source bead ID                                     |
+| `to_id`   | TEXT | Target bead ID                                     |
+| `kind`    | TEXT | Edge type: blocks, spawned_by, part_of, related_to |
 
 The composite primary key `(from_id, to_id, kind)` allows multiple edge types between the same pair of beads.
 

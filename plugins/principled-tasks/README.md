@@ -66,24 +66,24 @@ claude plugin add <path-to-principled-tasks>
 
 ### Knowledge
 
-| Skill            | Description                                                         |
-| ---------------- | ------------------------------------------------------------------- |
-| `task-strategy`  | Background knowledge: bead model, schema, edge semantics, patterns  |
+| Skill           | Description                                                        |
+| --------------- | ------------------------------------------------------------------ |
+| `task-strategy` | Background knowledge: bead model, schema, edge semantics, patterns |
 
 ### Commands
 
-| Command                                                              | Description                                         |
-| -------------------------------------------------------------------- | --------------------------------------------------- |
-| `/task-open <title> [--plan NNN] [--blocks <id>] [--discovered-from <id>]` | Create a new bead in the task graph       |
-| `/task-close <id> [--notes <text>]`                                  | Close a bead as done or abandoned                   |
-| `/task-graph [--plan NNN] [--open] [--dot]`                          | Visualize the bead graph (table or DOT format)      |
-| `/task-audit [--plan NNN] [--agent <name>]`                          | Audit graph health: orphans, stale, blocked chains  |
-| `/task-query "<question>"`                                           | Natural-language queries against the bead graph     |
+| Command                                                                    | Description                                        |
+| -------------------------------------------------------------------------- | -------------------------------------------------- |
+| `/task-open <title> [--plan NNN] [--blocks <id>] [--discovered-from <id>]` | Create a new bead in the task graph                |
+| `/task-close <id> [--notes <text>]`                                        | Close a bead as done or abandoned                  |
+| `/task-graph [--plan NNN] [--open] [--dot]`                                | Visualize the bead graph (table or DOT format)     |
+| `/task-audit [--plan NNN] [--agent <name>]`                                | Audit graph health: orphans, stale, blocked chains |
+| `/task-query "<question>"`                                                 | Natural-language queries against the bead graph    |
 
 ## Enforcement Hook
 
-| Hook                  | Event                    | Behavior                                                  |
-| --------------------- | ------------------------ | --------------------------------------------------------- |
+| Hook                  | Event                    | Behavior                                                   |
+| --------------------- | ------------------------ | ---------------------------------------------------------- |
 | DB Integrity Advisory | PreToolUse (Edit\|Write) | Warns on direct `.impl/tasks.db` edits. Advisory (exit 0). |
 
 ## Architecture
@@ -106,21 +106,21 @@ claude plugin add <path-to-principled-tasks>
 
 ## Script Duplication
 
-| Script       | Canonical Location                    | Copies                                        |
-| ------------ | ------------------------------------- | --------------------------------------------- |
+| Script       | Canonical Location                    | Copies                                         |
+| ------------ | ------------------------------------- | ---------------------------------------------- |
 | `task-db.sh` | `skills/task-open/scripts/task-db.sh` | task-close, task-graph, task-audit, task-query |
 
 Drift verified by `scripts/check-template-drift.sh`. Drift = CI failure.
 
 ## Dependencies
 
-| Dependency         | Required | Notes                                        |
-| ------------------ | -------- | -------------------------------------------- |
-| Claude Code v2.1.3+| Yes     | Plugin system with skills                    |
-| Bash               | Yes      | All scripts are pure bash                    |
-| `sqlite3` CLI      | Yes      | Database operations                          |
-| Git                | Yes      | DB committed after every write               |
-| `jq`               | No       | Optional — hook falls back to grep           |
+| Dependency          | Required | Notes                              |
+| ------------------- | -------- | ---------------------------------- |
+| Claude Code v2.1.3+ | Yes      | Plugin system with skills          |
+| Bash                | Yes      | All scripts are pure bash          |
+| `sqlite3` CLI       | Yes      | Database operations                |
+| Git                 | Yes      | DB committed after every write     |
+| `jq`                | No       | Optional — hook falls back to grep |
 
 ## Related
 
