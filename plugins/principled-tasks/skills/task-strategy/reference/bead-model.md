@@ -37,16 +37,17 @@ open ──→ in_progress ──→ done
 
 Edges are directed: `from_id → to_id`. The `kind` field determines the relationship semantic.
 
-| Kind          | Meaning                            | Example                              |
-| ------------- | ---------------------------------- | ------------------------------------ |
-| `blocks`      | from_id must complete before to_id | "Fix auth" blocks "Add permissions"  |
-| `spawned_by`  | from_id was discovered during to_id | "Fix typo" spawned_by "Refactor UI" |
-| `part_of`     | from_id is a subtask of to_id      | "Write tests" part_of "Add feature" |
-| `related_to`  | Soft link, no ordering implied     | "Update docs" related_to "New API"  |
+| Kind         | Meaning                             | Example                             |
+| ------------ | ----------------------------------- | ----------------------------------- |
+| `blocks`     | from_id must complete before to_id  | "Fix auth" blocks "Add permissions" |
+| `spawned_by` | from_id was discovered during to_id | "Fix typo" spawned_by "Refactor UI" |
+| `part_of`    | from_id is a subtask of to_id       | "Write tests" part_of "Add feature" |
+| `related_to` | Soft link, no ordering implied      | "Update docs" related_to "New API"  |
 
 ## Discovery Chains
 
 When an agent works on bead A and discovers additional work, the new bead B is created with:
+
 - `discovered_from` field set to A's ID
 - A `spawned_by` edge from B to A
 
@@ -55,6 +56,7 @@ This creates a traceable discovery chain: you can follow `spawned_by` edges to s
 ## Cross-Plan Tracking
 
 Beads can optionally be linked to a plan via the `plan` field and to a specific plan task via `task_id`. This enables:
+
 - Filtering the graph by plan: `/task-graph --plan 003`
 - Auditing completion by plan: `/task-audit --plan 003`
 - Correlating beads with manifest tasks in principled-implementation

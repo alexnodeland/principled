@@ -24,63 +24,63 @@ Build the `principled-tasks` Claude Code plugin end-to-end: plugin infrastructur
 
 This implementation decomposes into **5 bounded contexts**, each representing a distinct area of domain responsibility within the plugin:
 
-| #    | Bounded Context           | Responsibility                                                                    | Key Artifacts                                         |
-| ---- | ------------------------- | --------------------------------------------------------------------------------- | ----------------------------------------------------- |
-| BC-1 | **Plugin Infrastructure** | Plugin manifest, directory skeleton, marketplace integration                      | `plugin.json`, directory tree, marketplace.json entry |
-| BC-2 | **Database Engine**       | SQLite schema initialization, CRUD operations, Git commitment                     | `task-db.sh`, schema definition                       |
-| BC-3 | **Knowledge System**      | Background knowledge: bead model, schema reference, edge semantics                | `task-strategy/SKILL.md`, reference docs              |
-| BC-4 | **Write Skills**          | Creating and closing beads with edges and Git commits                             | `task-open/SKILL.md`, `task-close/SKILL.md`           |
-| BC-5 | **Read Skills**           | Graph visualization, audit reporting, natural-language querying                    | `task-graph/`, `task-audit/`, `task-query/` skills    |
+| #    | Bounded Context           | Responsibility                                                     | Key Artifacts                                         |
+| ---- | ------------------------- | ------------------------------------------------------------------ | ----------------------------------------------------- |
+| BC-1 | **Plugin Infrastructure** | Plugin manifest, directory skeleton, marketplace integration       | `plugin.json`, directory tree, marketplace.json entry |
+| BC-2 | **Database Engine**       | SQLite schema initialization, CRUD operations, Git commitment      | `task-db.sh`, schema definition                       |
+| BC-3 | **Knowledge System**      | Background knowledge: bead model, schema reference, edge semantics | `task-strategy/SKILL.md`, reference docs              |
+| BC-4 | **Write Skills**          | Creating and closing beads with edges and Git commits              | `task-open/SKILL.md`, `task-close/SKILL.md`           |
+| BC-5 | **Read Skills**           | Graph visualization, audit reporting, natural-language querying    | `task-graph/`, `task-audit/`, `task-query/` skills    |
 
 ### Aggregates
 
 #### BC-1: Plugin Infrastructure
 
-| Aggregate          | Root Entity   | Description                                                            |
-| ------------------ | ------------- | ---------------------------------------------------------------------- |
-| **PluginManifest** | `plugin.json` | Plugin identity, version, metadata                                     |
-| **DirectoryTree**  | Plugin root   | Complete directory skeleton for all skills, hooks, and scripts         |
+| Aggregate          | Root Entity   | Description                                                    |
+| ------------------ | ------------- | -------------------------------------------------------------- |
+| **PluginManifest** | `plugin.json` | Plugin identity, version, metadata                             |
+| **DirectoryTree**  | Plugin root   | Complete directory skeleton for all skills, hooks, and scripts |
 
 #### BC-2: Database Engine
 
-| Aggregate        | Root Entity   | Description                                                                                   |
-| ---------------- | ------------- | --------------------------------------------------------------------------------------------- |
-| **TaskDB**       | `task-db.sh`  | SQLite interface: init schema, insert beads, update status, add edges, query, export graph    |
-| **GitCommitter** | `task-db.sh`  | After-write hook within the script that stages and commits `.impl/tasks.db`                   |
+| Aggregate        | Root Entity  | Description                                                                                |
+| ---------------- | ------------ | ------------------------------------------------------------------------------------------ |
+| **TaskDB**       | `task-db.sh` | SQLite interface: init schema, insert beads, update status, add edges, query, export graph |
+| **GitCommitter** | `task-db.sh` | After-write hook within the script that stages and commits `.impl/tasks.db`                |
 
 #### BC-3: Knowledge System
 
-| Aggregate       | Root Entity                 | Description                                                         |
-| --------------- | --------------------------- | ------------------------------------------------------------------- |
-| **BeadModel**   | `reference/bead-model.md`   | Bead lifecycle, edge semantics, discovery chains                    |
-| **SchemaRef**   | `reference/schema.md`       | Complete SQLite schema with field descriptions and constraints      |
-| **StrategyDef** | `task-strategy/SKILL.md`    | Background knowledge for Claude when task-related context is active |
+| Aggregate       | Root Entity               | Description                                                         |
+| --------------- | ------------------------- | ------------------------------------------------------------------- |
+| **BeadModel**   | `reference/bead-model.md` | Bead lifecycle, edge semantics, discovery chains                    |
+| **SchemaRef**   | `reference/schema.md`     | Complete SQLite schema with field descriptions and constraints      |
+| **StrategyDef** | `task-strategy/SKILL.md`  | Background knowledge for Claude when task-related context is active |
 
 #### BC-4: Write Skills
 
-| Aggregate         | Root Entity           | Description                                                          |
-| ----------------- | --------------------- | -------------------------------------------------------------------- |
+| Aggregate          | Root Entity           | Description                                                          |
+| ------------------ | --------------------- | -------------------------------------------------------------------- |
 | **TaskOpenSkill**  | `task-open/SKILL.md`  | Creates beads with optional plan link, blocking edges, discovery ref |
 | **TaskCloseSkill** | `task-close/SKILL.md` | Closes beads with notes, sets closed_at timestamp                    |
 
 #### BC-5: Read Skills
 
-| Aggregate          | Root Entity            | Description                                                   |
-| ------------------ | ---------------------- | ------------------------------------------------------------- |
-| **TaskGraphSkill** | `task-graph/SKILL.md`  | Visualize the bead graph, filter by plan or status, DOT export |
-| **TaskAuditSkill** | `task-audit/SKILL.md`  | Audit bead health: orphans, cycles, stale in_progress         |
-| **TaskQuerySkill** | `task-query/SKILL.md`  | Natural-language to SQL translation for ad-hoc queries        |
+| Aggregate          | Root Entity           | Description                                                    |
+| ------------------ | --------------------- | -------------------------------------------------------------- |
+| **TaskGraphSkill** | `task-graph/SKILL.md` | Visualize the bead graph, filter by plan or status, DOT export |
+| **TaskAuditSkill** | `task-audit/SKILL.md` | Audit bead health: orphans, cycles, stale in_progress          |
+| **TaskQuerySkill** | `task-query/SKILL.md` | Natural-language to SQL translation for ad-hoc queries         |
 
 ### Domain Events
 
-| Event                   | Source Context         | Target Context(s)  | Description                                                        |
-| ----------------------- | ---------------------- | ------------------ | ------------------------------------------------------------------ |
-| **PluginSkeletonCreated** | BC-1 (Infrastructure) | BC-2, BC-3, BC-4, BC-5 | Directory tree exists; all contexts can populate artifacts       |
-| **SchemaReady**         | BC-2 (Database)        | BC-4, BC-5          | task-db.sh --init works; write and read skills can operate        |
-| **KnowledgeComplete**   | BC-3 (Knowledge)       | BC-4, BC-5          | Reference docs available for skills to consult                    |
-| **BeadCreated**         | BC-4 (Write)           | BC-5 (Read)         | New bead in DB; graph/audit/query reflect it                      |
-| **BeadClosed**          | BC-4 (Write)           | BC-5 (Read)         | Bead status updated; graph/audit/query reflect it                 |
-| **DBCommitted**         | BC-2 (Database)        | Git                  | tasks.db staged and committed after every write                   |
+| Event                     | Source Context        | Target Context(s)      | Description                                                |
+| ------------------------- | --------------------- | ---------------------- | ---------------------------------------------------------- |
+| **PluginSkeletonCreated** | BC-1 (Infrastructure) | BC-2, BC-3, BC-4, BC-5 | Directory tree exists; all contexts can populate artifacts |
+| **SchemaReady**           | BC-2 (Database)       | BC-4, BC-5             | task-db.sh --init works; write and read skills can operate |
+| **KnowledgeComplete**     | BC-3 (Knowledge)      | BC-4, BC-5             | Reference docs available for skills to consult             |
+| **BeadCreated**           | BC-4 (Write)          | BC-5 (Read)            | New bead in DB; graph/audit/query reflect it               |
+| **BeadClosed**            | BC-4 (Write)          | BC-5 (Read)            | Bead status updated; graph/audit/query reflect it          |
+| **DBCommitted**           | BC-2 (Database)       | Git                    | tasks.db staged and committed after every write            |
 
 ---
 
@@ -185,13 +185,13 @@ This implementation decomposes into **5 bounded contexts**, each representing a 
 
 ## Dependencies
 
-| Dependency                              | Required By           | Status            |
-| --------------------------------------- | --------------------- | ----------------- |
-| Claude Code v2.1.3+ plugin system      | Entire implementation | Assumed available |
-| Bash shell with standard utilities      | All scripts           | Assumed available |
-| `sqlite3` CLI                           | task-db.sh            | Required          |
-| Git                                     | DB commitment         | Assumed available |
-| `jq` (optional)                         | JSON output modes     | Optional fallback |
+| Dependency                         | Required By           | Status            |
+| ---------------------------------- | --------------------- | ----------------- |
+| Claude Code v2.1.3+ plugin system  | Entire implementation | Assumed available |
+| Bash shell with standard utilities | All scripts           | Assumed available |
+| `sqlite3` CLI                      | task-db.sh            | Required          |
+| Git                                | DB commitment         | Assumed available |
+| `jq` (optional)                    | JSON output modes     | Optional fallback |
 
 ---
 
@@ -214,14 +214,14 @@ This implementation decomposes into **5 bounded contexts**, each representing a 
 
 ## Cross-Reference Map
 
-| RFC Section              | Plan Phase | Key Tasks       |
-| ------------------------ | ---------- | --------------- |
-| §1 Plugin Structure      | Phase 1    | 1.1, 1.2        |
-| §2 Data Model            | Phase 1    | 1.3             |
-| §5 Script Duplication    | Phase 1    | 1.4, 1.5        |
-| §3 Skills (background)   | Phase 2    | 2.1–2.3         |
-| §4 Hook                  | Phase 2    | 2.4, 2.5        |
-| §3 Skills (write)        | Phase 3    | 3.1, 3.2        |
-| §3 Skills (read)         | Phase 4    | 4.1–4.3         |
-| §6 Git Commitment        | Phase 3, 4 | 3.1, 3.2        |
-| Plugin Docs              | Phase 5    | 5.1, 5.2        |
+| RFC Section            | Plan Phase | Key Tasks |
+| ---------------------- | ---------- | --------- |
+| §1 Plugin Structure    | Phase 1    | 1.1, 1.2  |
+| §2 Data Model          | Phase 1    | 1.3       |
+| §5 Script Duplication  | Phase 1    | 1.4, 1.5  |
+| §3 Skills (background) | Phase 2    | 2.1–2.3   |
+| §4 Hook                | Phase 2    | 2.4, 2.5  |
+| §3 Skills (write)      | Phase 3    | 3.1, 3.2  |
+| §3 Skills (read)       | Phase 4    | 4.1–4.3   |
+| §6 Git Commitment      | Phase 3, 4 | 3.1, 3.2  |
+| Plugin Docs            | Phase 5    | 5.1, 5.2  |

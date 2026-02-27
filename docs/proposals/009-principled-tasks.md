@@ -85,52 +85,52 @@ The database lives at `.impl/tasks.db` and is committed to Git after every write
 
 **Beads table** — each row is a task:
 
-| Column            | Type | Constraints                                                  |
-| ----------------- | ---- | ------------------------------------------------------------ |
-| `id`              | TEXT | PRIMARY KEY                                                  |
-| `title`           | TEXT | NOT NULL                                                     |
+| Column            | Type | Constraints                                                     |
+| ----------------- | ---- | --------------------------------------------------------------- |
+| `id`              | TEXT | PRIMARY KEY                                                     |
+| `title`           | TEXT | NOT NULL                                                        |
 | `status`          | TEXT | NOT NULL, CHECK(IN open, in_progress, done, blocked, abandoned) |
-| `agent`           | TEXT | Nullable — which agent worked on it                          |
-| `plan`            | TEXT | Nullable — originating plan number                           |
-| `task_id`         | TEXT | Nullable — task ID from plan manifest                        |
-| `notes`           | TEXT | Nullable — freeform notes                                    |
-| `created_at`      | TEXT | NOT NULL — ISO 8601 timestamp                                |
-| `closed_at`       | TEXT | Nullable — when status became done/abandoned                 |
-| `discovered_from` | TEXT | Nullable — bead ID that led to discovery of this one         |
+| `agent`           | TEXT | Nullable — which agent worked on it                             |
+| `plan`            | TEXT | Nullable — originating plan number                              |
+| `task_id`         | TEXT | Nullable — task ID from plan manifest                           |
+| `notes`           | TEXT | Nullable — freeform notes                                       |
+| `created_at`      | TEXT | NOT NULL — ISO 8601 timestamp                                   |
+| `closed_at`       | TEXT | Nullable — when status became done/abandoned                    |
+| `discovered_from` | TEXT | Nullable — bead ID that led to discovery of this one            |
 
 **Bead edges table** — typed directed edges between beads:
 
-| Column    | Type | Constraints                                               |
-| --------- | ---- | --------------------------------------------------------- |
-| `from_id` | TEXT | NOT NULL                                                  |
-| `to_id`   | TEXT | NOT NULL                                                  |
-| `kind`    | TEXT | NOT NULL, CHECK(IN blocks, spawned_by, part_of, related_to) |
-| PRIMARY KEY | — | `(from_id, to_id, kind)`                                  |
+| Column      | Type | Constraints                                                 |
+| ----------- | ---- | ----------------------------------------------------------- |
+| `from_id`   | TEXT | NOT NULL                                                    |
+| `to_id`     | TEXT | NOT NULL                                                    |
+| `kind`      | TEXT | NOT NULL, CHECK(IN blocks, spawned_by, part_of, related_to) |
+| PRIMARY KEY | —    | `(from_id, to_id, kind)`                                    |
 
 ### 3. Skills
 
-| Skill        | Command                                                      | Category   |
-| ------------ | ------------------------------------------------------------ | ---------- |
-| task-strategy | _(background — not user-invocable)_                         | Knowledge  |
-| task-open    | `/task-open <title> [--plan NNN] [--blocks <id>] [--discovered-from <id>]` | Generative |
-| task-close   | `/task-close <id> [--notes <text>]`                          | Generative |
-| task-graph   | `/task-graph [--plan NNN] [--open] [--dot]`                  | Analytical |
-| task-audit   | `/task-audit [--plan NNN] [--agent <name>]`                  | Analytical |
-| task-query   | `/task-query "<natural language question>"`                   | Analytical |
+| Skill         | Command                                                                    | Category   |
+| ------------- | -------------------------------------------------------------------------- | ---------- |
+| task-strategy | _(background — not user-invocable)_                                        | Knowledge  |
+| task-open     | `/task-open <title> [--plan NNN] [--blocks <id>] [--discovered-from <id>]` | Generative |
+| task-close    | `/task-close <id> [--notes <text>]`                                        | Generative |
+| task-graph    | `/task-graph [--plan NNN] [--open] [--dot]`                                | Analytical |
+| task-audit    | `/task-audit [--plan NNN] [--agent <name>]`                                | Analytical |
+| task-query    | `/task-query "<natural language question>"`                                | Analytical |
 
 ### 4. Hook
 
 One advisory hook monitors direct edits to `tasks.db`:
 
-| Hook                    | Event                    | Behavior                                                  |
-| ----------------------- | ------------------------ | --------------------------------------------------------- |
-| DB Integrity Advisory   | PreToolUse (Edit\|Write) | Warns when `.impl/tasks.db` is edited directly. Advisory only (exit 0). |
+| Hook                  | Event                    | Behavior                                                                |
+| --------------------- | ------------------------ | ----------------------------------------------------------------------- |
+| DB Integrity Advisory | PreToolUse (Edit\|Write) | Warns when `.impl/tasks.db` is edited directly. Advisory only (exit 0). |
 
 ### 5. Script Duplication
 
-| Script       | Canonical Location                          | Copies                                               |
-| ------------ | ------------------------------------------- | ---------------------------------------------------- |
-| `task-db.sh` | `skills/task-open/scripts/task-db.sh`       | task-close, task-graph, task-audit, task-query        |
+| Script       | Canonical Location                    | Copies                                         |
+| ------------ | ------------------------------------- | ---------------------------------------------- |
+| `task-db.sh` | `skills/task-open/scripts/task-db.sh` | task-close, task-graph, task-audit, task-query |
 
 Drift is verified by `scripts/check-template-drift.sh`.
 

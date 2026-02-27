@@ -20,10 +20,10 @@ Audit the `.impl/tasks.db` bead graph for health issues and report findings with
 
 ## Arguments
 
-| Argument         | Required | Description                                  |
-| ---------------- | -------- | -------------------------------------------- |
-| `--plan NNN`     | No       | Filter audit to beads linked to plan NNN     |
-| `--agent <name>` | No       | Filter audit to beads assigned to agent      |
+| Argument         | Required | Description                              |
+| ---------------- | -------- | ---------------------------------------- |
+| `--plan NNN`     | No       | Filter audit to beads linked to plan NNN |
+| `--agent <name>` | No       | Filter audit to beads assigned to agent  |
 
 ## Workflow
 

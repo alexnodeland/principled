@@ -21,10 +21,10 @@ Close a task (bead) in the `.impl/tasks.db` graph by setting its status to `done
 
 ## Arguments
 
-| Argument        | Required | Description                                         |
-| --------------- | -------- | --------------------------------------------------- |
-| `<id>`          | Yes      | Bead ID to close (e.g., `bead-0a3f`)                |
-| `--notes <text>`| No       | Resolution notes (e.g., "Fixed via PR #42")         |
+| Argument         | Required | Description                                 |
+| ---------------- | -------- | ------------------------------------------- |
+| `<id>`           | Yes      | Bead ID to close (e.g., `bead-0a3f`)        |
+| `--notes <text>` | No       | Resolution notes (e.g., "Fixed via PR #42") |
 
 ## Workflow
 

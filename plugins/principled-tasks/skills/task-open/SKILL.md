@@ -21,12 +21,12 @@ Create a new task (bead) in the `.impl/tasks.db` graph and commit the change to 
 
 ## Arguments
 
-| Argument              | Required | Description                                                           |
-| --------------------- | -------- | --------------------------------------------------------------------- |
-| `<title>`             | Yes      | Human-readable task description                                       |
-| `--plan NNN`          | No       | Link to a plan number (e.g., `003`)                                   |
-| `--blocks <id>`       | No       | Comma-separated bead IDs that this task blocks                        |
-| `--discovered-from <id>` | No    | Bead ID that led to discovery of this task                            |
+| Argument                 | Required | Description                                    |
+| ------------------------ | -------- | ---------------------------------------------- |
+| `<title>`                | Yes      | Human-readable task description                |
+| `--plan NNN`             | No       | Link to a plan number (e.g., `003`)            |
+| `--blocks <id>`          | No       | Comma-separated bead IDs that this task blocks |
+| `--discovered-from <id>` | No       | Bead ID that led to discovery of this task     |
 
 ## Workflow
 

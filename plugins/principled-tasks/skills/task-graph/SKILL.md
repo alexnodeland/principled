@@ -20,11 +20,11 @@ Display the bead graph from `.impl/tasks.db` as a formatted table or DOT-format 
 
 ## Arguments
 
-| Argument     | Required | Description                                            |
-| ------------ | -------- | ------------------------------------------------------ |
-| `--plan NNN` | No       | Filter to beads linked to plan NNN                     |
-| `--open`     | No       | Show only open/in_progress/blocked beads               |
-| `--dot`      | No       | Output in DOT format (for Graphviz rendering)          |
+| Argument     | Required | Description                                   |
+| ------------ | -------- | --------------------------------------------- |
+| `--plan NNN` | No       | Filter to beads linked to plan NNN            |
+| `--open`     | No       | Show only open/in_progress/blocked beads      |
+| `--dot`      | No       | Output in DOT format (for Graphviz rendering) |
 
 ## Workflow
 
