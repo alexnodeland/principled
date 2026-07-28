@@ -262,6 +262,23 @@ file_size_bytes() {
   wc -c < "$1" | awk '{print $1}'
 }
 
+# Bytes an agent actually receives at spawn: global memory plus its own file.
+#
+# The budget exists to bound CONTEXT, and injection delivers both files
+# (inject-agent-memory.sh). Measuring the agent file alone understated the real
+# payload by the whole size of global.md — 55% of it in this repository — so a
+# file could sit comfortably "under budget" while the agent received far more.
+effective_payload_bytes() {
+  local agent_file="$1" total=0
+  if [[ -f "${MEMORY_DIR}/global.md" ]]; then
+    total=$(($(file_size_bytes "${MEMORY_DIR}/global.md")))
+  fi
+  if [[ -f "$agent_file" ]]; then
+    total=$((total + $(file_size_bytes "$agent_file")))
+  fi
+  echo "$total"
+}
+
 # --- Operation: init -------------------------------------------------------
 if [[ "$OPERATION" == "init" ]]; then
   mkdir -p "$AGENT_MEMORY_DIR" "$RETRO_DIR"
@@ -580,6 +597,29 @@ if [[ "$OPERATION" == "check" ]]; then
   fi
 
   errors=0
+
+  # Global memory is checked first and unconditionally. It is injected into every
+  # memory-bearing agent, which makes it the highest-blast-radius file in the
+  # system — and it was previously never validated at all, because this loop
+  # iterates the registry and global.md has no registry entry.
+  global_file="${MEMORY_DIR}/global.md"
+  if [[ ! -f "$global_file" ]]; then
+    echo "ERROR: global: no file at ${global_file}"
+    errors=$((errors + 1))
+  elif [[ "$(head -1 "$global_file")" != "---" ]]; then
+    echo "ERROR: global: missing YAML frontmatter"
+    errors=$((errors + 1))
+  else
+    global_size="$(file_size_bytes "$global_file")"
+    if [[ "$global_size" -gt "$SOFT_LIMIT_BYTES" ]]; then
+      echo "WARN: global: ${global_size} bytes, over the ${SOFT_LIMIT_BYTES} byte soft budget."
+      echo "      This file is injected into EVERY memory-bearing agent, so a byte here"
+      echo "      costs a byte in every agent's context. Synthesize it down."
+    else
+      echo "OK: global: ${global_size} bytes (injected into every agent)"
+    fi
+  fi
+
   for id in $targets; do
     mem_file="$(agent_memory_path "$id")"
     if [[ ! -f "$mem_file" ]]; then
@@ -600,15 +640,19 @@ if [[ "$OPERATION" == "check" ]]; then
       errors=$((errors + 1))
     fi
 
+    # Budget the payload the agent actually receives — global plus its own file —
+    # not the agent file alone. The budget bounds context, and injection delivers
+    # both.
     size="$(file_size_bytes "$mem_file")"
-    if [[ "$size" -gt "$HARD_LIMIT_BYTES" ]]; then
-      echo "WARN: ${id}: memory is ${size} bytes, over the ${HARD_LIMIT_BYTES} byte budget."
+    payload="$(effective_payload_bytes "$mem_file")"
+    if [[ "$payload" -gt "$HARD_LIMIT_BYTES" ]]; then
+      echo "WARN: ${id}: ${payload} bytes injected (${size} own + global), over the ${HARD_LIMIT_BYTES} byte budget."
       echo "      Every byte is injected at spawn. Synthesize it down; do not truncate."
-    elif [[ "$size" -gt "$SOFT_LIMIT_BYTES" ]]; then
-      echo "WARN: ${id}: memory is ${size} bytes, over the ${SOFT_LIMIT_BYTES} byte soft budget."
+    elif [[ "$payload" -gt "$SOFT_LIMIT_BYTES" ]]; then
+      echo "WARN: ${id}: ${payload} bytes injected (${size} own + global), over the ${SOFT_LIMIT_BYTES} byte soft budget."
       echo "      Consider synthesizing accumulated notes into fewer, denser statements."
     else
-      echo "OK: ${id}: ${size} bytes"
+      echo "OK: ${id}: ${payload} bytes injected (${size} own + global)"
     fi
   done
 

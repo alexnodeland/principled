@@ -66,25 +66,57 @@ if [[ ! -f "$AGENT_MEMORY" ]]; then
   exit 0
 fi
 
+# Read a memory file as of HEAD, not as it sits in the working tree.
+#
+# This is what makes the ADR-022 review gate bind on EFFECT rather than only on
+# distribution. Reading the working tree meant an uncommitted edit was injected
+# into the very next spawn: an agent could change what every subsequent agent in
+# the same run believed, and produce code under the changed belief, before any
+# reviewer saw a diff. "An agent proposes; a human decides" was true of how memory
+# spreads and false of when it takes hold.
+#
+# Untracked files fall back to the working tree, so a fresh `--init` still works.
+# The fallback is announced, because silently injecting unreviewed content is the
+# behaviour being removed.
+read_memory() {
+  local file="$1"
+  [[ -f "$file" ]] || return 0
+
+  local rel
+  rel="${file#"${REPO_ROOT}/"}"
+
+  if git -C "$REPO_ROOT" cat-file -e "HEAD:${rel}" 2> /dev/null; then
+    git -C "$REPO_ROOT" show "HEAD:${rel}" 2> /dev/null
+    return 0
+  fi
+
+  echo "[uncommitted: ${rel} is not in HEAD; injecting the working-tree copy]"
+  cat "$file"
+}
+
 # Print everything after the closing frontmatter delimiter. Frontmatter is
 # metadata for scripts; the agent only needs the prose.
 emit_body() {
   local file="$1"
   [[ -f "$file" ]] || return 0
-  if [[ "$(head -1 "$file")" != "---" ]]; then
-    cat "$file"
+  local content
+  content="$(read_memory "$file")"
+  [[ -n "$content" ]] || return 0
+
+  if [[ "$(printf '%s\n' "$content" | head -1)" != "---" ]]; then
+    printf '%s\n' "$content"
     return 0
   fi
-  awk '
+  printf '%s\n' "$content" | awk '
     NR == 1 { next }
     !done && /^---[[:space:]]*$/ { done = 1; next }
     done { print }
-  ' "$file"
+  '
 }
 
 {
   echo "=== Accumulated memory for '${agent_id}' ==="
-  echo "Source: .agents/memory/ (committed to git, revisable in review — ADR-020)"
+  echo "Source: .agents/memory/ as of HEAD — uncommitted edits are NOT injected (ADR-020, ADR-022)"
   echo ""
 
   if [[ -f "$GLOBAL_MEMORY" ]]; then
