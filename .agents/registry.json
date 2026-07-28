@@ -1,0 +1,47 @@
+{
+  "version": 1,
+  "agents": [
+    {
+      "id": "impl-worker",
+      "plugin": "principled-implementation",
+      "role": "worker",
+      "memory": true,
+      "rationale": "Primary beneficiary — implementation patterns and codebase knowledge"
+    },
+    {
+      "id": "issue-ingester",
+      "plugin": "principled-github",
+      "role": "triage",
+      "memory": true,
+      "rationale": "Triage and classification patterns accumulate"
+    },
+    {
+      "id": "pr-reviewer",
+      "plugin": "principled-quality",
+      "role": "reviewer",
+      "memory": true,
+      "rationale": "Learns recurring review themes"
+    },
+    {
+      "id": "module-auditor",
+      "plugin": "principled-docs",
+      "role": "auditor",
+      "memory": false,
+      "rationale": "Runs a deterministic script; nothing to learn"
+    },
+    {
+      "id": "decision-auditor",
+      "plugin": "principled-docs",
+      "role": "auditor",
+      "memory": false,
+      "rationale": "Checks supersession chains deterministically"
+    },
+    {
+      "id": "boundary-checker",
+      "plugin": "principled-architecture",
+      "role": "auditor",
+      "memory": false,
+      "rationale": "Scans imports against fixed rules"
+    }
+  ]
+}

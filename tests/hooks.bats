@@ -21,8 +21,26 @@ setup() {
   REL_HOOKS="${REPO_ROOT}/plugins/principled-release/hooks/scripts"
   ARCH_HOOKS="${REPO_ROOT}/plugins/principled-architecture/hooks/scripts"
   TASK_HOOKS="${REPO_ROOT}/plugins/principled-tasks/hooks/scripts"
+  AGENT_HOOKS="${REPO_ROOT}/plugins/principled-agent/hooks/scripts"
   cd "$REPO_ROOT" || return 1
   make_nojq_path
+}
+
+# Build a throwaway repository with a scaffolded .agents/ directory, for the
+# principled-agent hooks. They read from the repository root, so they need a real
+# one rather than a bare temp directory.
+make_agents_repo() {
+  AGENT_REPO="${BATS_TEST_TMPDIR}/agents-repo"
+  mkdir -p "$AGENT_REPO"
+  (
+    cd "$AGENT_REPO" || exit 1
+    git init -q -b main .
+    git config user.email test@example.com
+    git config user.name "Test"
+    git config core.fsmonitor false
+    git config gc.auto 0
+    bash "${REPO_ROOT}/plugins/principled-agent/lib/agent-memory.sh" --init > /dev/null
+  )
 }
 
 # Build a PATH that genuinely lacks jq.
@@ -307,4 +325,125 @@ run_without_jq() {
       return 1
     }
   done
+}
+
+# --- Agent memory injection (principled-agent) ---
+#
+# This hook runs on SubagentStart, so a failure here would block agent spawning
+# entirely. Every path must exit 0, including the ones where it can do nothing.
+
+@test "memory injection emits the agent's knowledge at spawn" {
+  make_agents_repo
+  printf -- '- macOS ships bash 3.2, so no `declare -A`.\n' >> "${AGENT_REPO}/.agents/memory/agents/impl-worker.md"
+  run bash -c "cd '${AGENT_REPO}' && echo '{\"agent_id\":\"impl-worker\"}' | bash '${AGENT_HOOKS}/inject-agent-memory.sh' 2>&1"
+  [ "$status" -eq 0 ]
+  echo "$output" | grep -q 'macOS ships bash 3.2'
+}
+
+@test "memory injection emits global memory alongside the agent's own" {
+  make_agents_repo
+  printf -- '- every agent should know this.\n' >> "${AGENT_REPO}/.agents/memory/global.md"
+  run bash -c "cd '${AGENT_REPO}' && echo '{\"agent_id\":\"impl-worker\"}' | bash '${AGENT_HOOKS}/inject-agent-memory.sh' 2>&1"
+  [ "$status" -eq 0 ]
+  echo "$output" | grep -q 'every agent should know this'
+}
+
+@test "memory injection stays silent for an agent that carries no memory" {
+  make_agents_repo
+  printf -- '- every agent should know this.\n' >> "${AGENT_REPO}/.agents/memory/global.md"
+  run bash -c "cd '${AGENT_REPO}' && echo '{\"agent_id\":\"module-auditor\"}' | bash '${AGENT_HOOKS}/inject-agent-memory.sh' 2>&1"
+  [ "$status" -eq 0 ]
+  # module-auditor runs a deterministic script and learns nothing (RFC-011), so it
+  # must receive nothing at all — not even global memory, which would spend context
+  # budget for no possible benefit.
+  [ -z "$output" ]
+}
+
+@test "memory injection does not truncate an oversized file" {
+  make_agents_repo
+  local mem="${AGENT_REPO}/.agents/memory/agents/impl-worker.md"
+  awk 'BEGIN { for (i = 0; i < 400; i++) print "- padding line" }' >> "$mem"
+  printf -- '- THE FINAL FACT\n' >> "$mem"
+  run bash -c "cd '${AGENT_REPO}' && echo '{\"agent_id\":\"impl-worker\"}' | bash '${AGENT_HOOKS}/inject-agent-memory.sh' 2>&1"
+  [ "$status" -eq 0 ]
+  # Truncation would drop the tail, so assert the last line survives injection.
+  echo "$output" | grep -q 'THE FINAL FACT'
+}
+
+@test "memory injection exits 0 when no repository has been initialized" {
+  run bash -c "cd '${BATS_TEST_TMPDIR}' && echo '{\"agent_id\":\"impl-worker\"}' | bash '${AGENT_HOOKS}/inject-agent-memory.sh'"
+  [ "$status" -eq 0 ]
+}
+
+@test "memory injection exits 0 on malformed input" {
+  run bash -c "echo 'not json at all' | bash '${AGENT_HOOKS}/inject-agent-memory.sh'"
+  [ "$status" -eq 0 ]
+  run bash -c "echo '' | bash '${AGENT_HOOKS}/inject-agent-memory.sh'"
+  [ "$status" -eq 0 ]
+}
+
+@test "memory injection works without jq" {
+  make_agents_repo
+  printf -- '- a fact reachable only via the grep fallback.\n' >> "${AGENT_REPO}/.agents/memory/agents/impl-worker.md"
+  run bash -c "cd '${AGENT_REPO}' && echo '{\"agent_id\":\"impl-worker\"}' | env -i PATH='${NOJQ_BIN}' HOME='${HOME}' bash '${AGENT_HOOKS}/inject-agent-memory.sh' 2>&1"
+  [ "$status" -eq 0 ]
+  echo "$output" | grep -q 'reachable only via the grep fallback'
+}
+
+# --- Agent memory integrity advisory (principled-agent) ---
+
+@test "memory integrity advisory ignores files outside .agents/" {
+  run bash -c "echo '{\"tool_input\":{\"file_path\":\"src/index.ts\"}}' | bash '${AGENT_HOOKS}/check-memory-integrity.sh' 2>&1"
+  [ "$status" -eq 0 ]
+  [ -z "$output" ]
+}
+
+@test "memory integrity advisory warns past the soft budget" {
+  make_agents_repo
+  local mem="${AGENT_REPO}/.agents/memory/agents/impl-worker.md"
+  awk 'BEGIN { for (i = 0; i < 200; i++) print "- a durable fact about this codebase worth keeping." }' >> "$mem"
+  run bash -c "echo '{\"tool_input\":{\"file_path\":\"${mem}\"}}' | bash '${AGENT_HOOKS}/check-memory-integrity.sh' 2>&1"
+  [ "$status" -eq 0 ]
+  echo "$output" | grep -q 'soft budget'
+}
+
+@test "memory integrity advisory warns when agent_id disagrees with the filename" {
+  make_agents_repo
+  local mem="${AGENT_REPO}/.agents/memory/agents/pr-reviewer.md"
+  sed 's/agent_id: "pr-reviewer"/agent_id: "someone-else"/' "$mem" > "${mem}.tmp"
+  mv "${mem}.tmp" "$mem"
+  run bash -c "echo '{\"tool_input\":{\"file_path\":\"${mem}\"}}' | bash '${AGENT_HOOKS}/check-memory-integrity.sh' 2>&1"
+  [ "$status" -eq 0 ]
+  echo "$output" | grep -q 'will never be injected'
+}
+
+@test "memory integrity advisory warns on missing frontmatter" {
+  make_agents_repo
+  local mem="${AGENT_REPO}/.agents/memory/agents/impl-worker.md"
+  printf 'no frontmatter here\n' > "$mem"
+  run bash -c "echo '{\"tool_input\":{\"file_path\":\"${mem}\"}}' | bash '${AGENT_HOOKS}/check-memory-integrity.sh' 2>&1"
+  [ "$status" -eq 0 ]
+  echo "$output" | grep -q 'no YAML frontmatter'
+}
+
+@test "memory integrity advisory never blocks, whatever it finds" {
+  make_agents_repo
+  local mem="${AGENT_REPO}/.agents/memory/agents/impl-worker.md"
+  printf 'garbage\n' > "$mem"
+  run bash -c "echo '{\"tool_input\":{\"file_path\":\"${mem}\"}}' | bash '${AGENT_HOOKS}/check-memory-integrity.sh'"
+  [ "$status" -eq 0 ]
+}
+
+@test "memory integrity advisory exits 0 on malformed input" {
+  run bash -c "echo 'not json' | bash '${AGENT_HOOKS}/check-memory-integrity.sh'"
+  [ "$status" -eq 0 ]
+}
+
+@test "memory integrity advisory works without jq" {
+  make_agents_repo
+  local mem="${AGENT_REPO}/.agents/memory/agents/impl-worker.md"
+  awk 'BEGIN { for (i = 0; i < 200; i++) print "- a durable fact about this codebase worth keeping." }' >> "$mem"
+  run run_without_jq "${AGENT_HOOKS}/check-memory-integrity.sh" \
+    "{\"tool_input\":{\"file_path\":\"${mem}\"}}"
+  [ "$status" -eq 0 ]
 }

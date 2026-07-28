@@ -29,6 +29,7 @@ A Claude Code plugin marketplace hosting first-party and community plugins for t
 | [**principled-release**](plugins/principled-release/README.md)               | workflow       | Generate changelogs from the documentation pipeline, verify release readiness, and coordinate versioned releases (v0.1.0)          |
 | [**principled-architecture**](plugins/principled-architecture/README.md)     | architecture   | Map modules to governing ADRs, detect architectural drift, audit governance coverage, and sync architecture docs (v0.1.0)          |
 | [**principled-tasks**](plugins/principled-tasks/README.md)                   | workflow       | Git-native, graph-linked task tracking backed by an append-only event log — merges cleanly across parallel agent branches (v0.1.0) |
+| [**principled-agent**](plugins/principled-agent/README.md)                   | orchestration  | Persistent agent identity and memory — git-committed knowledge injected at spawn and revised in pull requests (v0.1.0)             |
 
 ### Community
 
@@ -52,6 +53,7 @@ _No community plugins yet. See [Contributing](#-contributing-a-plugin) to submit
 /plugin install principled-release@principled-marketplace
 /plugin install principled-architecture@principled-marketplace
 /plugin install principled-tasks@principled-marketplace
+/plugin install principled-agent@principled-marketplace
 ```
 
 ### Team-Wide Adoption
@@ -75,7 +77,8 @@ Add to your project's `.claude/settings.json`:
     "principled-quality@principled-marketplace": true,
     "principled-release@principled-marketplace": true,
     "principled-architecture@principled-marketplace": true,
-    "principled-tasks@principled-marketplace": true
+    "principled-tasks@principled-marketplace": true,
+    "principled-agent@principled-marketplace": true
   }
 }
 ```
@@ -92,7 +95,8 @@ principled/
 │   ├── principled-github/       # GitHub integration plugin
 │   ├── principled-quality/      # Code review quality plugin
 │   ├── principled-release/     # Release lifecycle plugin
-│   └── principled-architecture/ # Architecture governance plugin
+│   ├── principled-architecture/ # Architecture governance plugin
+│   └── principled-agent/       # Agent identity and memory plugin
 ├── external_plugins/            # Community plugins
 ├── docs/                        # Marketplace governance
 │   ├── proposals/               # RFCs

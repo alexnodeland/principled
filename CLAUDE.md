@@ -6,7 +6,7 @@ core
 
 ## What This Is
 
-This repo is the **Principled methodology plugin marketplace** (v0.4.0, pre-1.0). It hosts Claude Code plugins for specification-first development, organized as a curated directory with two tiers: first-party plugins in `plugins/` and community plugins in `external_plugins/`. Seven first-party plugins ship today:
+This repo is the **Principled methodology plugin marketplace** (v0.4.0, pre-1.0). It hosts Claude Code plugins for specification-first development, organized as a curated directory with two tiers: first-party plugins in `plugins/` and community plugins in `external_plugins/`. Eight first-party plugins ship today:
 
 - **principled-docs** (v0.3.1) — Scaffold, author, and enforce module documentation structure for monorepos.
 - **principled-implementation** (v0.1.0) — Orchestrate DDD plan execution via worktree-isolated Claude Code agents.
@@ -15,22 +15,24 @@ This repo is the **Principled methodology plugin marketplace** (v0.4.0, pre-1.0)
 - **principled-release** (v0.1.0) — Generate changelogs from the documentation pipeline, verify release readiness, coordinate version bumps, and govern the release lifecycle.
 - **principled-architecture** (v0.1.0) — Map code to architectural decisions, detect drift, audit decision coverage, and keep architecture documents synchronized.
 - **principled-tasks** (v0.1.0) — Git-native, graph-linked task tracking backed by an append-only event log — open, close, update, query, audit, and visualize tasks across agent workflows.
+- **principled-agent** (v0.1.0) — Persistent agent identity and memory: git-committed knowledge injected at spawn and revised in pull requests.
 
 ## Architecture
 
-Ten layers, top to bottom:
+Eleven layers, top to bottom:
 
 | Layer                   | Location                                                           | Role                                                                                                                 |
 | ----------------------- | ------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------- |
 | **Marketplace**         | `.claude-plugin/marketplace.json`, `plugins/`, `external_plugins/` | Plugin catalog, directory structure, plugin discovery and distribution                                               |
 | **Docs: Skills**        | `plugins/principled-docs/skills/` (9 directories)                  | Generative workflows — each skill is a slash command with its own `SKILL.md`, templates, scripts, and reference docs |
 | **Docs: Hooks**         | `plugins/principled-docs/hooks/`                                   | Deterministic guardrails — `hooks.json` declares PreToolUse/PostToolUse triggers that run shell scripts              |
-| **Implementation: All** | `plugins/principled-implementation/`                               | Skills (6), hooks (5), agents (1) for plan execution via worktree-isolated sub-agents and agent teams                |
+| **Implementation: All** | `plugins/principled-implementation/`                               | Skills (7), hooks (5), agents (1) for plan execution via worktree-isolated sub-agents and agent teams                |
 | **GitHub: All**         | `plugins/principled-github/`                                       | Skills (9), hooks (1), agents (1) for GitHub integration: issues, PRs, templates, CODEOWNERS, labels                 |
 | **Quality: All**        | `plugins/principled-quality/`                                      | Skills (5), hooks (1), agents (1) for spec-driven code review: checklists, context, coverage, summaries              |
 | **Release: All**        | `plugins/principled-release/`                                      | Skills (6), hooks (1) for release lifecycle: changelogs, readiness, version bumps, tagging                           |
 | **Architecture: All**   | `plugins/principled-architecture/`                                 | Skills (6), hooks (1), agents (1) for architecture governance: mapping, drift detection, auditing, sync              |
 | **Tasks: All**          | `plugins/principled-tasks/`                                        | Skills (7), 1 hook, and `lib/task-db.sh` for the event-log task graph: open, close, update, query, audit, visualize  |
+| **Agent: All**          | `plugins/principled-agent/`                                        | Skills (4), 2 hooks, and `lib/agent-memory.sh` for `.agents/` identity, memory injection, and integrity              |
 | **Dev DX**              | `.claude/`, config files, `.github/workflows/`                     | Project-level Claude Code settings, dev skills, CI pipeline, linting config                                          |
 
 ## Skills
@@ -49,16 +51,17 @@ Ten layers, top to bottom:
 | `new-architecture-doc` | `/new-architecture-doc <title>`          | Generative |
 | `proposal-status`      | `/proposal-status NNN <status>`          | Analytical |
 
-### principled-implementation (6 skills)
+### principled-implementation (7 skills)
 
-| Skill           | Command                                             | Category      |
-| --------------- | --------------------------------------------------- | ------------- |
-| `impl-strategy` | _(background — not user-invocable)_                 | Knowledge     |
-| `decompose`     | `/decompose <plan-path>`                            | Analytical    |
-| `spawn`         | `/spawn <task-id>`                                  | Orchestration |
-| `check-impl`    | `/check-impl [--task <id>] [--all]`                 | Analytical    |
-| `merge-work`    | `/merge-work <task-id> [--force] [--no-cleanup]`    | Orchestration |
-| `orchestrate`   | `/orchestrate <plan-path> [--phase N] [--continue]` | Orchestration |
+| Skill           | Command                                                | Category      |
+| --------------- | ------------------------------------------------------ | ------------- |
+| `impl-strategy` | _(background — not user-invocable)_                    | Knowledge     |
+| `decompose`     | `/decompose <plan-path>`                               | Analytical    |
+| `spawn`         | `/spawn <task-id>`                                     | Orchestration |
+| `check-impl`    | `/check-impl [--task <id>] [--all]`                    | Analytical    |
+| `merge-work`    | `/merge-work <task-id> [--force] [--no-cleanup]`       | Orchestration |
+| `orchestrate`   | `/orchestrate <plan-path> [--phase N] [--continue]`    | Orchestration |
+| `resume`        | `/resume [<plan-path>] [--from-checkpoint] [--replan]` | Orchestration |
 
 ### principled-github (9 skills)
 
@@ -118,11 +121,21 @@ Ten layers, top to bottom:
 | `task-audit`    | `/task-audit [--all]`                                       | Analytical |
 | `task-graph`    | `/task-graph [--format dot\|text] [--status <status>]`      | Analytical |
 
+### principled-agent (4 skills)
+
+| Skill            | Command                                             | Category   |
+| ---------------- | --------------------------------------------------- | ---------- |
+| `agent-strategy` | _(background — not user-invocable)_                 | Knowledge  |
+| `agent-init`     | `/agent-init [--commit]`                            | Generative |
+| `agent-memory`   | `/agent-memory [<id>] [--list] [--learn] [--check]` | Analytical |
+| `agent-retro`    | `/agent-retro [<plan-path>] [--promote]`            | Generative |
+
 Skills own their own prompts and templates. Code shared by more than one skill in a
 plugin lives in that plugin's `lib/` and is referenced as `${CLAUDE_PLUGIN_ROOT}/lib/...`
-— one copy, no drift checker (ADR-018). principled-tasks follows this pattern today;
-the other plugins still use the older copy-with-drift-detection scheme (ADR-009) and
-are being migrated.
+— one copy, no drift checker (ADR-018). The migration off ADR-009's
+copy-with-drift-detection scheme is complete: no script under `skills/*/scripts/` is
+referenced by more than one SKILL.md in its plugin. Scripts that remain in a skill
+directory are used by that skill alone, which is where they belong.
 
 ## Agents
 
@@ -156,6 +169,7 @@ drift checker — drift is impossible rather than detected.
 | principled-release        | `check-gh-cli.sh` (vendored), `collect-changes.sh`, `check-readiness.sh`, `detect-modules.sh` |
 | principled-architecture   | `scan-modules.sh`                                                                             |
 | principled-tasks          | `task-db.sh`                                                                                  |
+| principled-agent          | `agent-memory.sh`                                                                             |
 
 `scripts/check-skill-references.sh` verifies every referenced path resolves **and**
 that it uses `${CLAUDE_PLUGIN_ROOT}`. Both halves matter. The old drift checkers
@@ -226,8 +240,11 @@ This repo uses its own documentation pipeline at the root level (governing the m
   - 017: Event log as record, SQLite as cache (principled-tasks storage)
   - 018: Shared plugin `lib/` over copy-with-drift-detection (supersedes 009)
   - 019: Bats for shell testing
+  - 020: Agent memory as a frontmatter document (not an event log)
+  - 021: Manifest checkpoint and criterion-level acceptance tracking
 - `docs/architecture/` — Living design docs.
-  - plugin-system.md, documentation-pipeline.md, enforcement-system.md
+  - plugin-system.md, documentation-pipeline.md, enforcement-system.md,
+    architecture-governance.md, release-system.md, agent-memory.md
 
 ## Versioning
 
@@ -258,15 +275,16 @@ See `CONTRIBUTING.md` for the full contributor guide. Key points:
 
 ## Dogfooding
 
-This repo installs all seven first-party plugins (via `.claude/settings.json`):
+This repo installs all eight first-party plugins (via `.claude/settings.json`):
 
 - **principled-docs** — All 9 skills, 8 enforcement hooks, and 2 agents are active during development.
-- **principled-implementation** — All 6 skills, the `impl-worker` agent, and 5 hooks (1 advisory + 4 lifecycle) are active during development. Agent teams available when `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1`.
+- **principled-implementation** — All 7 skills, the `impl-worker` agent, and 5 hooks (1 advisory + 4 lifecycle) are active during development. Agent teams available when `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1`.
 - **principled-github** — All 9 skills, 1 advisory hook, and the `issue-ingester` agent are active during development.
 - **principled-quality** — All 5 skills, 1 advisory hook, and the `pr-reviewer` agent are active during development.
 - **principled-release** — All 6 skills and 1 advisory hook are active during development.
 - **principled-architecture** — All 6 skills, 1 advisory hook, and the `boundary-checker` agent are active during development.
 - **principled-tasks** — All 7 skills and 1 advisory hook are active during development. Shared code lives in `lib/task-db.sh` (ADR-018).
+- **principled-agent** — All 4 skills and 2 hooks (memory injection + integrity advisory) are active during development. Shared code lives in `lib/agent-memory.sh` (ADR-018).
 
 See `.claude/CLAUDE.md` for development-specific context.
 
@@ -380,13 +398,28 @@ Declared in `plugins/principled-tasks/hooks/hooks.json`:
 Advisory only — warns on direct edits to `.principled/tasks.jsonl` (the record) or
 `.impl/tasks.db` (the derived cache). Always exits 0.
 
+### principled-agent
+
+Declared in `plugins/principled-agent/hooks/hooks.json`:
+
+| Hook                      | Event                     | Script                                                             | Timeout |
+| ------------------------- | ------------------------- | ------------------------------------------------------------------ | ------- |
+| Agent Memory Injection    | SubagentStart             | `plugins/principled-agent/hooks/scripts/inject-agent-memory.sh`    | 10s     |
+| Memory Integrity Advisory | PostToolUse (Edit\|Write) | `plugins/principled-agent/hooks/scripts/check-memory-integrity.sh` | 10s     |
+
+- Agent Memory Injection: emits global and per-agent memory to stderr at spawn. Only
+  agents the registry marks `memory: true` receive anything. Never truncates, always
+  exits 0 — a memory problem must not stop an agent running.
+- Memory Integrity Advisory: validates frontmatter and reports against the 8 KB / 16 KB
+  context budget on writes under `.agents/`. Always exits 0.
+
 ## Testing
 
 - **Template drift (docs):** `plugins/principled-docs/skills/scaffold/scripts/check-template-drift.sh` — exits non-zero if any copy diverges from canonical.
 - **Cross-plugin drift:** `scripts/check-cross-plugin-drift.sh` — exits non-zero if a vendored `check-gh-cli.sh` diverges from canonical.
 - **Pipeline audit:** `scripts/pipeline-audit.sh` — reconciles declared document state against the repository (numbering, plan/proposal links, statuses, supersession chains).
 - **Reference integrity:** `scripts/check-skill-references.sh` — exits non-zero if any script or template referenced by a SKILL.md or hooks.json does not exist.
-- **Tests:** `npx bats tests/` — bats suite covering the task graph library. Also run on macOS bash 3.2 in CI.
+- **Tests:** `npx bats tests/` — bats suite covering the task graph library, agent memory, the manifest checkpoint and criteria, and every hook. Also run on macOS bash 3.2 in CI.
 - **Structure validation:** `plugins/principled-docs/lib/validate-structure.sh --module-path <path> [--type <type>] [--strict] [--json]` — checks a module's docs structure.
 - **Root validation:** `plugins/principled-docs/lib/validate-structure.sh --root` — checks repo-level docs structure.
 - **Hook testing (docs):** Feed JSON with `tool_input.file_path` to guard scripts via stdin. Exit 0 = allow, exit 2 = block.
@@ -396,7 +429,8 @@ Advisory only — warns on direct edits to `.principled/tasks.jsonl` (the record
 - **Hook testing (release):** Feed JSON with `tool_input.command` to `check-release-readiness.sh` via stdin. Always exits 0 (advisory).
 - **Hook testing (architecture):** Feed JSON with `tool_input.file_path` to `check-boundary-violation.sh` via stdin. Always exits 0 (advisory).
 - **Hook testing (tasks):** Feed JSON with `tool_input.file_path` to `check-db-integrity.sh` via stdin. Always exits 0 (advisory).
-- **Hook testing (all):** `npx bats tests/hooks.bats` — 30 tests covering allow, block, malformed input, and the no-jq fallback path for every hook.
+- **Hook testing (agent):** Feed JSON with an agent id to `inject-agent-memory.sh`, or `tool_input.file_path` to `check-memory-integrity.sh`, via stdin. Both always exit 0.
+- **Hook testing (all):** `npx bats tests/hooks.bats` — 48 tests covering allow, block, malformed input, and the no-jq fallback path for every hook.
 - **Shell lint:** `shellcheck --shell=bash` and `shfmt -i 2 -bn -sr -d` on all `.sh` files.
 - **Markdown lint:** `npx markdownlint-cli2 '**/*.md'` and `npx prettier --check '**/*.md'`.
 - **Marketplace validation:** Verify `.claude-plugin/marketplace.json` is valid and all plugin source directories exist.
