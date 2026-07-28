@@ -14,7 +14,7 @@ This repo is the **Principled methodology plugin marketplace** (v1.0.0). It host
 - **principled-quality** (v0.1.0) — Connect code reviews to the principled documentation pipeline with spec-driven checklists, coverage assessment, and review summaries.
 - **principled-release** (v0.1.0) — Generate changelogs from the documentation pipeline, verify release readiness, coordinate version bumps, and govern the release lifecycle.
 - **principled-architecture** (v0.1.0) — Map code to architectural decisions, detect drift, audit decision coverage, and keep architecture documents synchronized.
-- **principled-tasks** (v0.1.0) — Persistent, graph-linked task tracking with SQLite — open, close, query, audit, and visualize tasks across agent workflows.
+- **principled-tasks** (v0.1.0) — Git-native, graph-linked task tracking backed by an append-only event log — open, close, update, query, audit, and visualize tasks across agent workflows.
 
 ## Architecture
 
@@ -30,7 +30,7 @@ Eight layers, top to bottom:
 | **Quality: All**        | `plugins/principled-quality/`                                      | Skills (5), hooks (1), agents (1) for spec-driven code review: checklists, context, coverage, summaries              |
 | **Release: All**        | `plugins/principled-release/`                                      | Skills (6), hooks (1) for release lifecycle: changelogs, readiness, version bumps, tagging                           |
 | **Architecture: All**   | `plugins/principled-architecture/`                                 | Skills (6), hooks (1), agents (1) for architecture governance: mapping, drift detection, auditing, sync              |
-| **Tasks: All**          | `plugins/principled-tasks/`                                        | Skills (7), hooks (2) for persistent task graph: open, close, update, query, audit, visualize, strategy              |
+| **Tasks: All**          | `plugins/principled-tasks/`                                        | Skills (7), 1 hook, and `lib/task-db.sh` for the event-log task graph: open, close, update, query, audit, visualize  |
 | **Dev DX**              | `.claude/`, config files, `.github/workflows/`                     | Project-level Claude Code settings, dev skills, CI pipeline, linting config                                          |
 
 ## Skills
@@ -118,7 +118,11 @@ Eight layers, top to bottom:
 | `task-audit`    | `/task-audit [--all]`                                       | Analytical |
 | `task-graph`    | `/task-graph [--format dot\|text] [--status <status>]`      | Analytical |
 
-Each skill directory is **self-contained**. No cross-skill imports. If a template or script is needed by multiple skills, each maintains its own copy.
+Skills own their own prompts and templates. Code shared by more than one skill in a
+plugin lives in that plugin's `lib/` and is referenced as `${CLAUDE_PLUGIN_ROOT}/lib/...`
+— one copy, no drift checker (ADR-018). principled-tasks follows this pattern today;
+the other plugins still use the older copy-with-drift-detection scheme (ADR-009) and
+are being migrated.
 
 ## Agents
 

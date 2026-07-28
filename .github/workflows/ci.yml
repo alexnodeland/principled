@@ -46,6 +46,45 @@ jobs:
       - name: Check Markdown formatting (Prettier)
         run: npx prettier --check '**/*.md'
 
+  test:
+    name: Tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run bats test suite
+        run: npx bats tests/
+
+  # macOS ships bash 3.2, so anything using bash 4+ syntax (declare -A, local -n,
+  # ${var,,}) breaks for a large share of users while passing on ubuntu's bash 5.
+  compat-bash32:
+    name: Bash 3.2 Compatibility
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Confirm the runner really has bash 3.2
+        run: /bin/bash --version | head -1
+
+      - name: Run test suite under stock macOS bash
+        run: /bin/bash -c 'npx bats tests/'
+
   validate:
     name: Validate
     runs-on: ubuntu-latest
