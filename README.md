@@ -8,7 +8,7 @@
 
 <p align="center">
   <img src="https://img.shields.io/badge/claude_code-v2.1.3+-7c3aed?style=flat-square" alt="Claude Code v2.1.3+" />
-  <img src="https://img.shields.io/badge/marketplace-v0.4.0-blue?style=flat-square" alt="Marketplace v0.4.0" />
+  <img src="https://img.shields.io/badge/marketplace-v0.5.0-blue?style=flat-square" alt="Marketplace v0.5.0" />
   <img src="https://img.shields.io/badge/license-MIT-gray?style=flat-square" alt="License: MIT" />
 </p>
 
