@@ -18,32 +18,95 @@ Execute a complete DDD plan from decomposition through validation and merge, man
 
 ```
 /orchestrate <plan-path> [--phase <N>] [--continue] [--dry-run]
+             [--mode interactive|supervised|autonomous] [--max-workers <N>]
 ```
 
 ## Arguments
 
-| Argument      | Required | Description                                          |
-| ------------- | -------- | ---------------------------------------------------- |
-| `<plan-path>` | Yes      | Path to DDD plan file                                |
-| `--phase <N>` | No       | Execute only phase N (skip earlier completed phases) |
-| `--continue`  | No       | Resume from existing manifest (skip decomposition)   |
-| `--dry-run`   | No       | Decompose and plan but do not execute                |
+| Argument        | Required | Description                                                |
+| --------------- | -------- | ---------------------------------------------------------- |
+| `<plan-path>`   | Yes      | Path to DDD plan file                                      |
+| `--phase <N>`   | No       | Execute only phase N (skip earlier completed phases)       |
+| `--continue`    | No       | Resume from existing manifest (skip decomposition)         |
+| `--dry-run`     | No       | Decompose and plan but do not execute                      |
+| `--mode <mode>` | No       | Autonomy level. Default `interactive` — existing behaviour |
+| `--max-workers` | No       | Concurrent workers under agent teams. Default 3            |
 
-## Execution Modes
+## Two orthogonal axes
 
-The orchestrator supports two execution modes, selected automatically at runtime:
+"Mode" means two different things here, and conflating them causes real confusion. They
+are independent — any autonomy level can run under either parallelism strategy.
 
-### Sequential Mode (default)
+| Axis            | Selected by                            | Answers                               |
+| --------------- | -------------------------------------- | ------------------------------------- |
+| **Parallelism** | `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS` | How many tasks run at once?           |
+| **Autonomy**    | `--mode`                               | How much human involvement is needed? |
 
-When `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS` is not set, tasks within a phase execute sequentially via `/spawn`. This is the proven, stable execution path.
+### Parallelism: sequential or agent teams
 
-### Agent Teams Mode (opt-in)
+**Sequential (default).** When `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS` is not set, tasks
+within a phase execute sequentially via `/spawn`. This is the proven, stable path.
 
-When `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1` is set, independent tasks within a phase execute concurrently via agent teams. The orchestrator becomes the team lead, spawning one teammate per independent task.
+**Agent teams (opt-in).** When `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1`, independent
+tasks within a phase execute concurrently, capped by `--max-workers`. The orchestrator
+becomes the team lead, spawning one teammate per independent task.
 
-**Dual state model:** The agent teams task list drives coordination (claiming, dependencies, completion), while `.impl/manifest.json` remains the persistent record. The lead synchronizes between the two.
+**Dual state model:** the agent teams task list drives coordination (claiming,
+dependencies, completion), while `.impl/manifest.json` remains the persistent record.
+The lead synchronizes between the two.
 
-See [ADR-016](../../docs/decisions/016-agent-teams-for-parallel-execution.md) for the architectural decision and [orchestration-guide.md](../impl-strategy/reference/orchestration-guide.md) for detailed documentation.
+See [ADR-016](../../docs/decisions/016-agent-teams-for-parallel-execution.md) and
+[orchestration-guide.md](../impl-strategy/reference/orchestration-guide.md).
+
+### Autonomy: `--mode`
+
+| Mode          | Behaviour                                 | Human involvement      |
+| ------------- | ----------------------------------------- | ---------------------- |
+| `interactive` | Current behaviour, unchanged              | Continuous             |
+| `supervised`  | Runs on, pausing at decision points       | At decision gates      |
+| `autonomous`  | Runs end to end, posts results for review | Post-completion review |
+
+**`--mode` defaults to `interactive`, so omitting it behaves exactly as before.**
+
+**Supervised** reports at each phase boundary and continues automatically _unless_ a stop
+condition fires (below).
+
+**Autonomous** runs decompose → spawn → validate → merge without pausing, maintains a
+live progress issue, and finishes by running `/pr-describe`, `/review-checklist`, and
+`/release-ready` before opening a **draft** PR labelled `agent-authored`. If blocked, it
+files an `agent-blocked` issue with diagnostics rather than stalling.
+
+## Stop conditions
+
+These apply in `supervised` and `autonomous` modes. Each says the same thing: the
+evidence indicates the next attempt fails the same way, so stop and surface it rather
+than escalating (ADR-022).
+
+| Condition                  | Default | Action                                     |
+| -------------------------- | ------- | ------------------------------------------ |
+| Halt switch present        | —       | Pause at the next phase boundary           |
+| Task retry budget exceeded | 2       | Stop the task, file `agent-blocked`        |
+| Phase task-failure rate    | 50%     | Stop the run — systemic, not one hard task |
+
+**The halt switch is checked at every phase boundary**, never mid-task. Interrupting a
+worker halfway leaves a worktree in an unknown state; the phase boundary is the nearest
+point where stopping is clean.
+
+principled-agent owns the switch but may not be installed, and plugins cannot reference
+each other's `${CLAUDE_PLUGIN_ROOT}` (ADR-018). **The file path is the contract**, so
+check it directly rather than calling into another plugin:
+
+```bash
+test -f .agents/HALT && cat .agents/HALT
+```
+
+If it exists, stop at the phase boundary, print the reason, and report clearly that the
+run was halted rather than completed. If `.agents/` does not exist at all, there is no
+halt switch and the run proceeds — an uninitialized repository is not a halted one.
+
+`--max-workers` defaults to 3. That is a deliberately conservative default, not a
+measurement: this repository has never run autonomous dispatch, and review capacity —
+not CI or API quota — is the constraint that actually binds (ADR-022).
 
 ## Workflow
 
@@ -173,7 +236,40 @@ For each task in the phase:
 
 2. **Report phase results.** Display: tasks merged, failed, abandoned.
 
-3. **Advance to next phase.** Return to Stage 2 for the next phase.
+3. **Evaluate stop conditions** (`supervised` and `autonomous` only). This is the phase
+   boundary, and the only place a run stops cleanly.
+
+   a. **Halt switch.** If `.agents/HALT` exists, stop here. Print its contents as the
+   reason, state plainly that the run was **halted, not completed**, and give the
+   `--continue` command for resuming once the halt is cleared. Do not begin the next
+   phase.
+
+   b. **Phase failure rate.** If more than 50% of this phase's tasks failed or were
+   abandoned, stop. A majority-failed phase is a systemic fault — a broken suite, a bad
+   plan, a missing dependency — and the next phase will almost certainly hit it too.
+   Under `autonomous`, file an `agent-blocked` issue with the phase status and the
+   failure details.
+
+   c. **Retry budget.** Tasks that exhausted their retries (default 2) are already
+   `abandoned`. Under `autonomous`, file one `agent-blocked` issue per abandoned task
+   rather than one per attempt.
+
+4. **Write a checkpoint** before advancing, so an interrupted run resumes with its
+   reasoning intact (ADR-021):
+
+   ```bash
+   bash "${CLAUDE_PLUGIN_ROOT}/lib/task-manifest.sh" --set-checkpoint \
+     --agent-id orchestrator --phase <N> \
+     --summary-text "<what completed, what failed and why, what to do next>"
+   ```
+
+5. **Report and advance.**
+   - `interactive`: report and continue as today.
+   - `supervised`: post a progress summary, then continue automatically unless a stop
+     condition fired.
+   - `autonomous`: update the live progress issue, then continue.
+
+   Return to Stage 2 for the next phase.
 
 ### Stage 5: Completion
 
@@ -191,6 +287,10 @@ For each task in the phase:
    - If all merged: _"Plan \<number\> implementation complete."_
    - If some failed: list failed/abandoned tasks with details
 
+   Never report a halted or circuit-broken run as complete. Say which stop condition
+   fired and what remains — a run that stopped early and a run that finished are
+   different outcomes, and only one of them is done.
+
 2. **Clean up remaining worktrees.** For any worktrees still present:
 
    ```bash
@@ -198,6 +298,21 @@ For each task in the phase:
    ```
 
    Remove worktrees for merged or abandoned tasks.
+
+3. **Autonomous mode only — close the loop.** Before opening anything:
+
+   ```bash
+   bash "${CLAUDE_PLUGIN_ROOT}/lib/run-checks.sh"
+   ```
+
+   Then run `/pr-describe`, `/review-checklist`, and `/release-ready`, and open a
+   **draft** PR labelled `agent-authored`, linking the issue, proposal, and plan.
+
+   The draft status and the label are both load-bearing (ADR-022): promotion to
+   ready-for-review is a human act, and the in-flight PR budget is counted by that label,
+   so an unlabelled agent PR is invisible to the review-capacity circuit breaker.
+
+   Never approve, promote, or merge. No mode auto-merges.
 
 ## Error Recovery
 

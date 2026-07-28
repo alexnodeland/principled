@@ -56,6 +56,13 @@ LABELS=(
   # Document type
   "type:rfc|C5DEF5|Proposal / RFC document"
   "type:plan|BFD4F2|DDD Implementation Plan"
+
+  # Agent workforce (ADR-022). These are load-bearing, not decorative:
+  # agent-blocked is counted against the dispatch budget, and agent-authored is
+  # how in-flight agent PRs are counted for the review-capacity circuit breaker.
+  "agent-ready|1D76DB|Issue is understood well enough to hand to an agent"
+  "agent-blocked|D93F0B|Agent could not proceed; counts against the dispatch budget"
+  "agent-authored|8250DF|Opened by an agent; counts against the in-flight PR budget"
 )
 
 case "$ACTION" in

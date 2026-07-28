@@ -447,3 +447,72 @@ run_without_jq() {
     "{\"tool_input\":{\"file_path\":\"${mem}\"}}"
   [ "$status" -eq 0 ]
 }
+
+# --- Agent governance advisory (principled-agent) ---
+#
+# Advisory by construction: PostToolUse fires after the command has already run, so
+# blocking here would be theatre. The authoritative enforcement is --can-dispatch
+# before a run starts, and branch protection on the GitHub side.
+
+@test "governance advisory warns on a non-draft PR create" {
+  run bash -c "echo '{\"tool_input\":{\"command\":\"gh pr create --title x --label agent-authored\"}}' | bash '${AGENT_HOOKS}/check-agent-governance.sh' 2>&1"
+  [ "$status" -eq 0 ]
+  echo "$output" | grep -q 'draft'
+}
+
+@test "governance advisory stays quiet on a compliant draft PR" {
+  run bash -c "echo '{\"tool_input\":{\"command\":\"gh pr create --draft --title x --label agent-authored\"}}' | bash '${AGENT_HOOKS}/check-agent-governance.sh' 2>&1"
+  [ "$status" -eq 0 ]
+  [ -z "$output" ]
+}
+
+@test "governance advisory warns when an agent PR lacks the agent-authored label" {
+  run bash -c "echo '{\"tool_input\":{\"command\":\"gh pr create --draft --title x\"}}' | bash '${AGENT_HOOKS}/check-agent-governance.sh' 2>&1"
+  [ "$status" -eq 0 ]
+  # An unlabelled agent PR is invisible to the in-flight budget.
+  echo "$output" | grep -q 'agent-authored'
+}
+
+@test "governance advisory warns on self-approval" {
+  run bash -c "echo '{\"tool_input\":{\"command\":\"gh pr review 42 --approve\"}}' | bash '${AGENT_HOOKS}/check-agent-governance.sh' 2>&1"
+  [ "$status" -eq 0 ]
+  echo "$output" | grep -q 'must not approve'
+}
+
+@test "governance advisory warns on merge and on ready-for-review promotion" {
+  run bash -c "echo '{\"tool_input\":{\"command\":\"gh pr merge 42\"}}' | bash '${AGENT_HOOKS}/check-agent-governance.sh' 2>&1"
+  [ "$status" -eq 0 ]
+  echo "$output" | grep -q 'auto-merge'
+  run bash -c "echo '{\"tool_input\":{\"command\":\"gh pr ready 42\"}}' | bash '${AGENT_HOOKS}/check-agent-governance.sh' 2>&1"
+  [ "$status" -eq 0 ]
+  echo "$output" | grep -q 'human decision'
+}
+
+@test "governance advisory surfaces an engaged halt on a dispatch command" {
+  make_agents_repo
+  printf 'CI is broken\n' > "${AGENT_REPO}/.agents/HALT"
+  run bash -c "cd '${AGENT_REPO}' && echo '{\"tool_input\":{\"command\":\"bash agent-dispatch.sh 12\"}}' | bash '${AGENT_HOOKS}/check-agent-governance.sh' 2>&1"
+  [ "$status" -eq 0 ]
+  echo "$output" | grep -q 'halt switch is engaged'
+  echo "$output" | grep -q 'CI is broken'
+}
+
+@test "governance advisory ignores unrelated commands" {
+  run bash -c "echo '{\"tool_input\":{\"command\":\"ls -la\"}}' | bash '${AGENT_HOOKS}/check-agent-governance.sh' 2>&1"
+  [ "$status" -eq 0 ]
+  [ -z "$output" ]
+}
+
+@test "governance advisory never blocks and survives malformed input" {
+  run bash -c "echo 'not json' | bash '${AGENT_HOOKS}/check-agent-governance.sh'"
+  [ "$status" -eq 0 ]
+  run bash -c "echo '' | bash '${AGENT_HOOKS}/check-agent-governance.sh'"
+  [ "$status" -eq 0 ]
+}
+
+@test "governance advisory works without jq" {
+  run run_without_jq "${AGENT_HOOKS}/check-agent-governance.sh" \
+    '{"tool_input":{"command":"gh pr create --title x"}}'
+  [ "$status" -eq 0 ]
+  echo "$output" | grep -q 'draft'
+}

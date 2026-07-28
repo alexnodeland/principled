@@ -1,5 +1,5 @@
 {
-  "description": "Principled agent: memory injection at spawn and integrity advisory for .agents/ writes",
+  "description": "Principled agent: memory injection at spawn, integrity advisory for .agents/ writes, and contributor-protocol governance advisory",
   "hooks": {
     "SubagentStart": [
       {
@@ -19,6 +19,16 @@
           {
             "type": "command",
             "command": "bash ${CLAUDE_PLUGIN_ROOT}/hooks/scripts/check-memory-integrity.sh",
+            "timeout": 10
+          }
+        ]
+      },
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash ${CLAUDE_PLUGIN_ROOT}/hooks/scripts/check-agent-governance.sh",
             "timeout": 10
           }
         ]

@@ -1,0 +1,149 @@
+# Agent dispatch — opt-in GitHub Actions backend for the Agent Contributor Protocol.
+#
+# THIS FILE IS A TEMPLATE. Installing principled-agent does not install it, and
+# installing it does not enable automatic dispatch (ADR-023).
+#
+# To use it:
+#   1. Copy to .github/workflows/agent-dispatch.yml
+#   2. Add ANTHROPIC_API_KEY to repository secrets
+#   3. Create the labels: agent-ready, agent-blocked, agent-authored
+#   4. Run it manually from the Actions tab, or via:
+#        gh workflow run agent-dispatch.yml -f issue=<number>
+#
+# Automatic dispatch on `agent-ready` is DELIBERATELY COMMENTED OUT below. Enabling it
+# means agents start work with no human present, so it should be a visible, reviewable
+# diff rather than a default inherited from installing a plugin.
+#
+# Before enabling it, make sure you have:
+#   - Branch protection on your default branch, with required reviews
+#   - A plan for who triages agent-blocked issues, and how often
+#   - Agreement that the caps in ADR-022 match your actual review capacity
+
+name: Agent Dispatch
+
+on:
+  # Manual dispatch only, by default.
+  workflow_dispatch:
+    inputs:
+      issue:
+        description: "Issue number to work on"
+        required: true
+        type: string
+      agent:
+        description: "Agent to assign (blank routes by specialization)"
+        required: false
+        type: string
+      mode:
+        description: "Autonomy level"
+        required: false
+        default: supervised
+        type: choice
+        options:
+          - supervised
+          - autonomous
+  # Automatic dispatch. Read the header before uncommenting.
+  #
+  # issues:
+  #   types: [labeled]
+
+# Least privilege (ADR-023). Notably absent:
+#   actions: write  — a compromised run must not be able to rewrite this workflow
+#   id-token        — no OIDC federation is needed
+# Nothing here grants organization scope.
+permissions:
+  contents: write # branches and commits
+  issues: write # progress comments, agent-blocked
+  pull-requests: write # draft PRs
+
+# One dispatch per issue at a time. Without this, a re-labelled issue starts a second
+# agent on the same work and the two race on the same branch.
+concurrency:
+  group: agent-dispatch-${{ github.event.inputs.issue || github.event.issue.number }}
+  cancel-in-progress: false
+
+jobs:
+  dispatch:
+    # When the `issues` trigger is enabled, only act on the agent-ready label.
+    if: >
+      github.event_name == 'workflow_dispatch' ||
+      github.event.label.name == 'agent-ready'
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # worktree isolation and changelog generation need history
+
+      - name: Check the halt switch
+        # The halt switch must be honoured before any work begins, and it is just a
+        # committed file — no API call, so it still works when the API is what broke.
+        run: |
+          if [ -f .agents/HALT ]; then
+            echo "::error::Halt switch engaged. Dispatch refused."
+            echo "Reason: $(head -1 .agents/HALT)"
+            echo "Clear it with: agent-governance.sh --resume"
+            exit 1
+          fi
+          echo "No halt in effect."
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Install the Claude Code CLI
+        run: npm install -g @anthropic-ai/claude-code
+
+      - name: Check governance budgets
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          # Refuses on an engaged halt, an exhausted blocker budget, an exhausted
+          # in-flight PR budget, or budgets it cannot verify. Exit 3 is a refusal
+          # rather than an error, and is reported as such.
+          set +e
+          bash .claude/plugins/principled-agent/lib/agent-governance.sh --can-dispatch
+          status=$?
+          set -e
+          if [ "$status" -eq 3 ]; then
+            echo "::error::Dispatch refused by a governance constraint (see above)."
+            exit 1
+          elif [ "$status" -ne 0 ]; then
+            echo "::error::Could not evaluate governance state; refusing to dispatch."
+            exit 1
+          fi
+
+      - name: Run the agent
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          ISSUE: ${{ github.event.inputs.issue || github.event.issue.number }}
+          AGENT: ${{ github.event.inputs.agent }}
+          MODE: ${{ github.event.inputs.mode || 'supervised' }}
+        run: |
+          claude --print --permission-mode acceptEdits \
+            "/agent-dispatch ${ISSUE} --local ${AGENT:+--agent $AGENT}
+
+            Run in --mode ${MODE}. Honour every governance constraint in ADR-022:
+            open a DRAFT pull request labelled agent-authored, never approve or merge
+            anything, and stop at the next phase boundary if .agents/HALT appears."
+
+      - name: File a blocker on failure
+        if: failure()
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          ISSUE: ${{ github.event.inputs.issue || github.event.issue.number }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          gh issue create \
+            --title "agent-blocked: dispatch failed for issue #${ISSUE}" \
+            --label agent-blocked \
+            --body "Dispatch for #${ISSUE} failed.
+
+          Run: ${RUN_URL}
+
+          This counts against the blocker budget (ADR-022). Once open blockers reach
+          the budget, further dispatch is refused until they are triaged — that is
+          deliberate: blockers outpacing triage is a systemic signal, not queue depth."

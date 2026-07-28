@@ -1,7 +1,7 @@
 ---
 title: "GitHub-Native Agent Collaboration and Autonomous Execution"
 number: "012"
-status: draft
+status: accepted
 author: Alex
 created: 2026-07-28
 updated: 2026-07-28
@@ -229,15 +229,88 @@ exists to avoid. The protocol is what makes the modes safe to use.
   boundary is
 - **New ADR:** agent governance constraints (draft PRs, no self-approval, attribution)
 
-## Open Questions
+## Resolved Questions
 
-- **Where do the execution modes live?** `--mode` extends `/orchestrate` in
-  principled-implementation, but dispatch and the protocol are principled-agent. Does
-  that split the orchestrator across two plugins?
-- **How is `agent-blocked` triaged?** Autonomous mode can produce blockers faster than
-  they are read. Should there be a blocked-issue budget that halts dispatch?
-- **What is the concurrency ceiling?** RFC-010 cited 20-30 parallel agents from prior
-  art. What does this repository's CI, GitHub API quota, and review capacity actually
-  support?
-- **Does `--mode autonomous` need a kill switch** reachable from outside the session —
-  a label or a file that halts all dispatch?
+These were open when this proposal was drafted. Each is answered below; the answers are
+binding on the implementation plan.
+
+### Where the execution modes live
+
+**Resolved: `--mode` stays entirely in `/orchestrate`. It does not split the
+orchestrator, because mode and dispatch answer different questions.**
+
+The apparent conflict dissolves once the two are stated precisely:
+
+- **Mode** answers _how much human involvement does this run require?_ That is a property
+  of one orchestration run, and every mechanism it needs — retry budgets, phase
+  boundaries, task state — already lives in the manifest. It needs nothing from the agent
+  registry.
+- **Dispatch** answers _which agent should pick up this work, and is it allowed to start?_
+  That needs the registry and the governance state, and nothing from the manifest.
+
+So `--mode` extends `/orchestrate` in principled-implementation, and dispatch lives in
+principled-agent. The one thing they share is the halt switch, and that is deliberately a
+**file at a fixed repository path** rather than an API: `/orchestrate` checks it at phase
+boundaries and `/agent-dispatch` checks it before dispatching, neither needing to call
+into the other's plugin. Plugins install independently and cannot reference each other's
+`${CLAUDE_PLUGIN_ROOT}` (ADR-018), so a shared file is the only coupling available — and
+here it is also the right one, since the switch must be operable by a human with no
+session at all.
+
+### Triaging `agent-blocked`
+
+**Resolved: a blocked-issue budget that halts dispatch, defaulting to 5.**
+
+When `/agent-dispatch` is asked to start work, it counts open `agent-blocked` issues
+first. At or above the budget it refuses and explains why.
+
+The reasoning is that blockers accumulating faster than a human triages them is not a
+queue-depth problem, it is a signal that something systemic is wrong — a broken test
+suite, a bad plan, a missing credential. Continuing to dispatch converts one systemic
+problem into many, each costing a run and a human triage. Halting is cheap and reversible;
+the accumulated mess is neither.
+
+This is the same family as the 50% phase-failure circuit breaker: both stop the system
+when the evidence says the next attempt will fail the same way.
+
+### The concurrency ceiling
+
+**Resolved: default `--max-workers 3` and a cap of 5 in-flight agent PRs. Both
+configurable. Neither is derived from measurement.**
+
+RFC-010's 20-30 figure came from prior art elsewhere and should not be carried over: this
+repository has never run autonomous dispatch, so any number presented as measured would
+be invented.
+
+What can be reasoned about is which constraint binds first. CI minutes and GitHub API
+quota are real but elastic — they can be raised with money or backoff. **Human review
+capacity cannot**, and the risk register already names review fatigue as the failure that
+is worse than no gate, because a rubber stamp looks like oversight. The binding constraint
+is therefore the reviewer, and the cap belongs on in-flight PRs rather than on parallel
+workers.
+
+The defaults are deliberately conservative. Raise them from observation: if the PR queue
+drains faster than agents fill it, there is headroom; if `agent-blocked` issues
+accumulate, there is not.
+
+### The kill switch
+
+**Resolved: required, file-based, and checked by everything.**
+
+A file at `.agents/HALT` stops all dispatch and pauses orchestration at the next phase
+boundary. Any content is a reason string, surfaced when a run refuses to proceed.
+
+File-based rather than a GitHub label, for three reasons. It works identically under
+`--local` and under CI, so there is one mechanism rather than two that can disagree. It
+requires no API call, so it still works when the API is the thing that is broken. And it
+is operable by anyone with repository write access and no running session — which is the
+entire point of a kill switch, since the person who needs to stop a runaway is usually not
+the person driving it.
+
+The switch is checked before every dispatch and at every phase boundary in `supervised`
+and `autonomous` modes. It is **not** checked mid-task: interrupting a worker halfway
+leaves a worktree in an unknown state, and the phase boundary is the nearest point where
+stopping is clean.
+
+`.agents/HALT` is committed like the rest of `.agents/`, so halting is itself an auditable
+act.

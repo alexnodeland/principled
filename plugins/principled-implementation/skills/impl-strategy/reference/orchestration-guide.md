@@ -91,9 +91,53 @@ The orchestrator decides what to do based on failure context:
 | Merge conflict              | Pause for user           | Requires human judgment           |
 | All tasks in phase failed   | Pause for user           | Phase may need re-decomposition   |
 
-## Agent Teams Execution Mode
+## Autonomy: the `--mode` flag
 
-When `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1` is set, the orchestrator uses agent teams for parallel task execution within phases. See [ADR-016](../../../../docs/decisions/016-agent-teams-for-parallel-execution.md) for the architectural decision.
+Distinct from the parallelism setting below. **Parallelism asks how many tasks run at
+once; autonomy asks how much human involvement the run requires.** They are independent —
+any autonomy level runs under either parallelism strategy — and both get called "mode",
+which is the source of most confusion here.
+
+| `--mode`      | Behaviour                                 | Human involvement      |
+| ------------- | ----------------------------------------- | ---------------------- |
+| `interactive` | Default; unchanged from before RFC-012    | Continuous             |
+| `supervised`  | Runs on, pausing at decision points       | At decision gates      |
+| `autonomous`  | Runs end to end, posts results for review | Post-completion review |
+
+### Stop conditions
+
+Active in `supervised` and `autonomous`. Each encodes the same judgement: the evidence
+says the next attempt fails the same way, so stop and surface it rather than escalate
+([ADR-022](../../../../docs/decisions/022-agent-governance-constraints.md)).
+
+| Condition                  | Default | Action                                     |
+| -------------------------- | ------- | ------------------------------------------ |
+| `.agents/HALT` exists      | —       | Pause at the next phase boundary           |
+| Task retry budget exceeded | 2       | Abandon the task, file `agent-blocked`     |
+| Phase task-failure rate    | 50%     | Stop the run — systemic, not one hard task |
+
+**The halt switch is checked only at phase boundaries.** Interrupting a worker mid-task
+leaves a worktree in an unknown state; the phase boundary is the nearest clean stop.
+
+principled-agent owns `.agents/HALT`, but plugins cannot reference each other's
+`${CLAUDE_PLUGIN_ROOT}` ([ADR-018](../../../../docs/decisions/018-shared-plugin-lib-over-copies.md)),
+so **the path is the contract** — test for the file directly rather than calling into
+another plugin. An absent `.agents/` directory means no halt switch, not a halted run.
+
+A run stopped by any of these is **halted, not complete**. Report it that way; a run that
+stopped early and a run that finished are different outcomes.
+
+### Autonomous mode obligations
+
+Before opening anything, run `/pr-describe`, `/review-checklist`, and `/release-ready`,
+then open a **draft** PR labelled `agent-authored`. Both are load-bearing: promotion to
+ready-for-review is a human act, and the in-flight PR budget is counted by that label, so
+an unlabelled agent PR is invisible to the review-capacity circuit breaker. Never
+approve, promote, or merge — no mode auto-merges.
+
+## Parallelism: Agent Teams Execution Mode
+
+When `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1` is set, the orchestrator uses agent teams for parallel task execution within phases, capped by `--max-workers` (default 3). See [ADR-016](../../../../docs/decisions/016-agent-teams-for-parallel-execution.md) for the architectural decision.
 
 ### Dual State Model
 
