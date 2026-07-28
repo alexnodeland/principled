@@ -19,9 +19,9 @@ AGENT_NAME=""
 if command -v jq &> /dev/null; then
   AGENT_NAME="$(echo "$INPUT" | jq -r '.agent_name // .agent // empty' 2> /dev/null || echo "")"
 else
-  AGENT_NAME="$(echo "$INPUT" | grep -oP '"agent_name"\s*:\s*"[^"]*"' | head -1 | grep -oP ':\s*"\K[^"]*' || echo "")"
+  AGENT_NAME="$(echo "$INPUT" | sed -n 's/.*"agent_name"[[:space:]]*:[[:space:]]*"\([^"]*\)".*/\1/p' | head -1)"
   if [[ -z "$AGENT_NAME" ]]; then
-    AGENT_NAME="$(echo "$INPUT" | grep -oP '"agent"\s*:\s*"[^"]*"' | head -1 | grep -oP ':\s*"\K[^"]*' || echo "")"
+    AGENT_NAME="$(echo "$INPUT" | sed -n 's/.*"agent"[[:space:]]*:[[:space:]]*"\([^"]*\)".*/\1/p' | head -1)"
   fi
 fi
 
@@ -50,7 +50,7 @@ if command -v jq &> /dev/null; then
   ORPHANED_TASKS="$(jq -r '.tasks[] | select(.status == "in_progress") | .id' "$MANIFEST" 2> /dev/null || echo "")"
 else
   # Fallback: grep for in_progress status
-  ORPHANED_TASKS="$(grep -B5 '"status".*"in_progress"' "$MANIFEST" | grep '"id"' | grep -oP ':\s*"\K[^"]*' || echo "")"
+  ORPHANED_TASKS="$(grep -B5 '"status".*"in_progress"' "$MANIFEST" | grep '"id"' | sed -n 's/.*:[[:space:]]*"\([^"]*\)".*/\1/p' | head -1)"
 fi
 
 if [[ -n "$ORPHANED_TASKS" ]]; then

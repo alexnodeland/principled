@@ -27,16 +27,19 @@ All six first-party plugins are installed via `.claude/settings.json`. See root 
 - Run `bash plugins/principled-docs/skills/scaffold/scripts/check-template-drift.sh` to verify zero drift.
 - Forgetting to propagate = CI failure.
 
-### Modifying Scripts/Templates (principled-implementation)
+### Modifying Shared Code (principled-implementation, principled-tasks)
 
-- **Always edit the canonical version first:**
-  - `task-manifest.sh` → canonical in `plugins/principled-implementation/skills/decompose/scripts/`
-  - `parse-plan.sh` → canonical in `plugins/principled-implementation/skills/decompose/scripts/`
-  - `run-checks.sh` → canonical in `plugins/principled-implementation/skills/check-impl/scripts/`
-  - `claude-task.md` → canonical in `plugins/principled-implementation/skills/spawn/templates/`
-- Then propagate copies to consuming skills.
-- Run `bash plugins/principled-implementation/scripts/check-template-drift.sh` to verify zero drift.
-- Forgetting to propagate = CI failure.
+These plugins use the `lib/` pattern (ADR-018) — one copy, no propagation:
+
+- `plugins/principled-implementation/lib/{task-manifest,parse-plan,run-checks}.sh`
+- `plugins/principled-implementation/lib/templates/claude-task.md`
+- `plugins/principled-tasks/lib/task-db.sh`
+
+Edit in place. Skills reference them as `${CLAUDE_PLUGIN_ROOT}/lib/<name>`.
+
+- Run `bash scripts/check-skill-references.sh` to verify every reference still resolves.
+- Referencing a file that does not exist = CI failure. This is what caught
+  `spawn/SKILL.md` invoking a `parse-plan.sh` that was never copied into `spawn`.
 
 ### Editing Hook Scripts (principled-github)
 
@@ -87,7 +90,10 @@ All six first-party plugins are installed via `.claude/settings.json`. See root 
 
 1. Run `/lint` or `pre-commit run --all-files` to check formatting and lint
 2. Run `/validate --root` to check root structure (plugin skill, from dogfooding)
-3. If you modified templates or scripts, propagate copies first and run drift checks for all six plugins
+3. If you modified shared code in a `lib/`, run `just refs` to confirm references resolve
+4. If you modified a drift-checked template (principled-docs scaffolding, or the
+   cross-plugin `check-gh-cli.sh`), propagate copies first and run `just drift`
+5. Run `just test` for the bats suite
 
 ## Dev Skills
 

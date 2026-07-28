@@ -77,11 +77,11 @@ extract_version() {
     if command -v jq &> /dev/null; then
       version="$(jq -r '.version // empty' "$manifest" 2> /dev/null || echo "")"
     else
-      version="$(grep -oP '"version"\s*:\s*"\K[^"]*' "$manifest" | head -1 || echo "")"
+      version="$(sed -n 's/.*"version"[[:space:]]*:[[:space:]]*"\([^"]*\)".*/\1/p' "$manifest" | head -1 || echo "")"
     fi
     ;;
   Cargo.toml | pyproject.toml)
-    version="$(grep -oP '^version\s*=\s*"\K[^"]*' "$manifest" | head -1 || echo "")"
+    version="$(sed -n 's/^version[[:space:]]*=[[:space:]]*"\([^"]*\)".*/\1/p' "$manifest" | head -1 || echo "")"
     ;;
   VERSION)
     version="$(head -1 "$manifest" | xargs)"

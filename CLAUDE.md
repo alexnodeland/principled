@@ -154,13 +154,17 @@ The `spawn` skill delegates to `impl-worker` via `context: fork` + `agent: impl-
 - `validate-structure.sh` is canonical in `plugins/principled-docs/skills/scaffold/scripts/`, copied to `plugins/principled-docs/skills/validate/scripts/`.
 - Same drift rules apply — copies must be byte-identical.
 
-### Script/Template Duplication (principled-implementation)
+### Shared Code (principled-implementation)
 
-- `task-manifest.sh` is canonical in `plugins/principled-implementation/skills/decompose/scripts/`, copied to `spawn`, `check-impl`, `merge-work`, and `orchestrate`.
-- `parse-plan.sh` is canonical in `plugins/principled-implementation/skills/decompose/scripts/`, copied to `orchestrate`.
-- `run-checks.sh` is canonical in `plugins/principled-implementation/skills/check-impl/scripts/`, copied to `orchestrate`.
-- `claude-task.md` is canonical in `plugins/principled-implementation/skills/spawn/templates/`, copied to `orchestrate`.
-- `plugins/principled-implementation/scripts/check-template-drift.sh` verifies all 7 pairs. Drift = CI failure.
+Migrated to the `lib/` pattern (ADR-018). One copy each, no drift checker:
+
+- `lib/task-manifest.sh` — used by decompose, spawn, check-impl, merge-work, orchestrate
+- `lib/parse-plan.sh` — used by decompose, spawn, orchestrate
+- `lib/run-checks.sh` — used by check-impl, orchestrate
+- `lib/templates/claude-task.md` — used by spawn, orchestrate
+
+Referenced as `${CLAUDE_PLUGIN_ROOT}/lib/<name>`. `scripts/check-skill-references.sh`
+verifies every referenced path resolves. A missing file = CI failure.
 
 ### Script Duplication (principled-github)
 
@@ -180,7 +184,7 @@ The `spawn` skill delegates to `impl-worker` via `context: fork` + `agent: impl-
 
 ### Cross-Plugin Dependencies
 
-- `task-manifest.sh`: Canonical in `plugins/principled-implementation/skills/decompose/scripts/`. A read-only subset copy exists in `plugins/principled-github/skills/pr-describe/scripts/` for manifest format compatibility. This copy is intentionally different (not byte-identical) and is **not drift-checked** — it maintains only the interface contract for reading task manifests.
+- `task-manifest.sh`: Lives at `plugins/principled-implementation/lib/task-manifest.sh`. A read-only subset copy exists in `plugins/principled-github/skills/pr-describe/scripts/` for manifest format compatibility. It is intentionally different (not byte-identical) and is **not drift-checked** — it maintains only the interface contract for reading task manifests. Cross-plugin sharing is an open question in ADR-018.
 - `check-gh-cli.sh`: Canonical in `plugins/principled-github/skills/sync-issues/scripts/`. Byte-identical copies exist in 4 principled-quality skills and 4 principled-release skills. Drift-checked by `plugins/principled-quality/scripts/check-template-drift.sh` and `plugins/principled-release/scripts/check-template-drift.sh`.
 
 ### Canonical Source Convention
@@ -346,11 +350,12 @@ Advisory only — warns when a written source file contains imports violating mo
 ## Testing
 
 - **Template drift (docs):** `plugins/principled-docs/skills/scaffold/scripts/check-template-drift.sh` — exits non-zero if any copy diverges from canonical.
-- **Template drift (impl):** `plugins/principled-implementation/scripts/check-template-drift.sh` — exits non-zero if any of 7 pairs diverge.
 - **Template drift (github):** `plugins/principled-github/scripts/check-template-drift.sh` — exits non-zero if any of 6 pairs diverge.
 - **Template drift (quality):** `plugins/principled-quality/scripts/check-template-drift.sh` — exits non-zero if any of 4 cross-plugin pairs diverge.
 - **Template drift (release):** `plugins/principled-release/scripts/check-template-drift.sh` — exits non-zero if any of 4 cross-plugin pairs diverge.
 - **Template drift (architecture):** `plugins/principled-architecture/scripts/check-template-drift.sh` — placeholder for future drift pairs (no copies in v0.1.0).
+- **Reference integrity:** `scripts/check-skill-references.sh` — exits non-zero if any script or template referenced by a SKILL.md or hooks.json does not exist.
+- **Tests:** `npx bats tests/` — bats suite covering the task graph library. Also run on macOS bash 3.2 in CI.
 - **Structure validation:** `plugins/principled-docs/skills/scaffold/scripts/validate-structure.sh --module-path <path> [--type <type>] [--strict] [--json]` — checks a module's docs structure.
 - **Root validation:** `plugins/principled-docs/skills/scaffold/scripts/validate-structure.sh --root` — checks repo-level docs structure.
 - **Hook testing (docs):** Feed JSON with `tool_input.file_path` to guard scripts via stdin. Exit 0 = allow, exit 2 = block.

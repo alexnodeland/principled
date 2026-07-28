@@ -91,11 +91,11 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Check skill and hook script references resolve
+        run: bash scripts/check-skill-references.sh
+
       - name: Check principled-docs template drift
         run: bash plugins/principled-docs/skills/scaffold/scripts/check-template-drift.sh
-
-      - name: Check principled-implementation template drift
-        run: bash plugins/principled-implementation/scripts/check-template-drift.sh
 
       - name: Check principled-github template drift
         run: bash plugins/principled-github/scripts/check-template-drift.sh
