@@ -238,7 +238,11 @@ test-hooks: test-hook-adr test-hook-proposal test-hook-manifest test-hook-pr tes
 
 # ─── Aggregate ───────────────────────────────────────────────────────────────
 
+# Run the bats test suite
+test:
+    npx bats tests/
+
 # Run the full CI pipeline locally
-ci: lint drift validate test-hooks
+ci: lint drift validate test test-hooks
     @echo ""
     @echo "All CI checks passed."

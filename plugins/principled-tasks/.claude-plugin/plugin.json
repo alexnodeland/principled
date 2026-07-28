@@ -1,0 +1,15 @@
+{
+  "name": "principled-tasks",
+  "version": "0.1.0",
+  "description": "Git-native, graph-structured task tracking backed by an append-only event log. Tracks tasks with typed dependency edges across plans and agents, and merges cleanly across parallel agent branches.",
+  "author": "Alex Nodeland",
+  "homepage": "https://github.com/alexnodeland/principled",
+  "keywords": [
+    "tasks",
+    "tracking",
+    "sqlite",
+    "graph",
+    "dependencies",
+    "orchestration"
+  ]
+}

@@ -98,6 +98,21 @@
         "module-boundaries",
         "dependency-rules"
       ]
+    },
+    {
+      "name": "principled-tasks",
+      "source": "./plugins/principled-tasks",
+      "description": "Git-native, graph-structured task tracking backed by an append-only event log. Tracks tasks with typed dependency edges across plans and agents, and merges cleanly across parallel agent branches.",
+      "version": "0.1.0",
+      "category": "tracking",
+      "keywords": [
+        "tasks",
+        "tracking",
+        "graph",
+        "dependencies",
+        "orchestration",
+        "event-log"
+      ]
     }
   ]
 }

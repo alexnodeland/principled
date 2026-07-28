@@ -22,7 +22,8 @@ PLUGIN_ROOT="$REPO_ROOT/plugins/principled-architecture"
 DRIFTED=0
 CHECKED=0
 
-# shellcheck disable=SC2317  # compare() is called dynamically when drift pairs exist
+# shellcheck disable=SC2317,SC2329  # compare() has no call sites until drift pairs are
+# added; ShellCheck 0.11+ reports SC2329 for that in addition to SC2317.
 compare() {
   local canonical="$1"
   local copy="$2"
