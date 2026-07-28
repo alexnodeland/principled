@@ -336,4 +336,4 @@ If you develop with Claude Code, the `.claude/skills/` directory provides projec
 | `propagate-templates` | `/propagate-templates` | Propagate canonical templates to copies |
 | `check-ci`            | `/check-ci`            | Run full CI pipeline locally            |
 
-All six first-party plugins are self-installed (dogfooding), so all 41 plugin skills and enforcement hooks are active while developing.
+All seven first-party plugins are self-installed (dogfooding), so all 48 plugin skills and enforcement hooks are active while developing.

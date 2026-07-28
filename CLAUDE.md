@@ -6,7 +6,7 @@ core
 
 ## What This Is
 
-This repo is the **Principled methodology plugin marketplace** (v1.0.0). It hosts Claude Code plugins for specification-first development, organized as a curated directory with two tiers: first-party plugins in `plugins/` and community plugins in `external_plugins/`. Seven first-party plugins ship today:
+This repo is the **Principled methodology plugin marketplace** (v0.4.0, pre-1.0). It hosts Claude Code plugins for specification-first development, organized as a curated directory with two tiers: first-party plugins in `plugins/` and community plugins in `external_plugins/`. Seven first-party plugins ship today:
 
 - **principled-docs** (v0.3.1) — Scaffold, author, and enforce module documentation structure for monorepos.
 - **principled-implementation** (v0.1.0) — Orchestrate DDD plan execution via worktree-isolated Claude Code agents.
@@ -227,6 +227,25 @@ This repo uses its own documentation pipeline at the root level (governing the m
 - `docs/architecture/` — Living design docs.
   - plugin-system.md, documentation-pipeline.md, enforcement-system.md
 
+## Versioning
+
+The marketplace and its plugins are pre-1.0. Nothing here promises a stable interface
+yet: skill flags, manifest schemas, and storage formats can still change without a
+major bump.
+
+- **Marketplace version** tracks the catalog itself — plugins added or removed.
+- **Plugin versions** are independent and follow semver within their own surface:
+  skill names and flags, hook contracts, script CLIs, and on-disk formats.
+
+The marketplace previously read `1.0.0` while every plugin sat at `0.1.0`. That was
+not a defensible claim: the first automated tests landed in July 2026 and immediately
+surfaced correctness bugs in shipped skills, and two of the governing ADRs (017, 018)
+are still `proposed`. `0.4.0` reflects a catalog of seven plugins that works and is
+still moving.
+
+Reach 1.0 per plugin when its interface has stopped changing, it has test coverage,
+and its governing ADRs are `accepted`.
+
 ## Contributing
 
 See `CONTRIBUTING.md` for the full contributor guide. Key points:
@@ -237,7 +256,7 @@ See `CONTRIBUTING.md` for the full contributor guide. Key points:
 
 ## Dogfooding
 
-This repo installs all six first-party plugins (via `.claude/settings.json`):
+This repo installs all seven first-party plugins (via `.claude/settings.json`):
 
 - **principled-docs** — All 9 skills, 8 enforcement hooks, and 2 agents are active during development.
 - **principled-implementation** — All 6 skills, the `impl-worker` agent, and 5 hooks (1 advisory + 4 lifecycle) are active during development. Agent teams available when `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1`.
@@ -245,6 +264,7 @@ This repo installs all six first-party plugins (via `.claude/settings.json`):
 - **principled-quality** — All 5 skills, 1 advisory hook, and the `pr-reviewer` agent are active during development.
 - **principled-release** — All 6 skills and 1 advisory hook are active during development.
 - **principled-architecture** — All 6 skills, 1 advisory hook, and the `boundary-checker` agent are active during development.
+- **principled-tasks** — All 7 skills and 1 advisory hook are active during development. Shared code lives in `lib/task-db.sh` (ADR-018).
 
 See `.claude/CLAUDE.md` for development-specific context.
 
