@@ -3,7 +3,7 @@
 </p>
 
 <p align="center">
-  <em>SQLite-backed, Git-committed, graph-structured task tracking for principled orchestration.</em>
+  <em>Git-native, graph-structured task tracking with an append-only event log for principled orchestration.</em>
 </p>
 
 <p align="center">
@@ -33,7 +33,7 @@ flowchart LR
     D -->|spawned_by| A
 ```
 
-Beads track status, agent assignment, plan linkage, and discovery provenance. Edges encode typed relationships: **blocks**, **spawned_by**, **part_of**, and **related_to**.
+Tasks track status, agent assignment, plan linkage, and discovery provenance. Edges encode typed relationships: **blocks**, **spawned_by**, **part_of**, and **related_to**.
 
 ## Quick Start
 
@@ -62,7 +62,7 @@ claude plugin add <path-to-principled-tasks>
 
 ## Skills
 
-7 skills: 1 background knowledge + 6 user-invocable slash commands. Each skill is self-contained with its own SKILL.md and scripts.
+7 skills: 1 background knowledge + 6 user-invocable slash commands. Each skill is backed by a single shared library at `${CLAUDE_PLUGIN_ROOT}/lib/task-db.sh`.
 
 ### Knowledge
 
@@ -83,50 +83,67 @@ claude plugin add <path-to-principled-tasks>
 
 ## Enforcement Hook
 
-| Hook                  | Event                    | Behavior                                                   |
-| --------------------- | ------------------------ | ---------------------------------------------------------- |
-| DB Integrity Advisory | PreToolUse (Edit\|Write) | Warns on direct `.impl/tasks.db` edits. Advisory (exit 0). |
+| Hook                  | Event                    | Behavior                                                      |
+| --------------------- | ------------------------ | ------------------------------------------------------------- |
+| DB Integrity Advisory | PreToolUse (Edit\|Write) | Warns on direct edits to the log or cache. Advisory (exit 0). |
 
 ## Architecture
 
+Storage is split between a committed record and a disposable index (ADR-017):
+
 ```
-.impl/tasks.db          SQLite database (Git-committed)
-  tasks                 Task nodes with status, agent, plan
-  task_edges            Typed directed edges between beads
+.principled/tasks.jsonl   Append-only event log — SOURCE OF TRUTH, committed to Git
+  {"op":"open",...}       one JSON object per line, one line per mutation
+
+.impl/tasks.db            SQLite cache — DERIVED, gitignored, rebuilt on demand
+  tasks                   Task nodes with status, agent, plan
+  task_edges              Typed directed edges between tasks
 ```
+
+State is the ordered fold of the event log. Delete `.impl/` at any time and
+`task-db.sh --sync` reconstructs it exactly.
+
+The log is text and append-only, so two agents working on separate branches append
+different lines and Git merges them cleanly. `--init` registers a union merge driver
+in `.gitattributes` to make that automatic:
+
+```
+.principled/tasks.jsonl merge=union
+```
+
+A committed binary database cannot do this — every concurrent write conflicts, which
+defeats the purpose of a task graph built for parallel agents.
 
 ### Data Flow
 
 ```
-/task-open ──→ task-db.sh --open ──→ sqlite3 ──→ .impl/tasks.db ──→ git commit
-/task-close ──→ task-db.sh --close ──→ sqlite3 ──→ .impl/tasks.db ──→ git commit
-/task-update ──→ task-db.sh --update ──→ sqlite3 ──→ .impl/tasks.db ──→ git commit
-/task-graph ──→ task-db.sh --graph ──→ sqlite3 ──→ stdout (table or DOT)
-/task-audit ──→ task-db.sh --audit ──→ sqlite3 ──→ stdout (report)
-/task-query ──→ Claude SQL gen ──→ sqlite3 ──→ stdout (results)
+/task-open   ──→ task-db.sh --open   ──→ append event ──→ rebuild cache ──→ git commit log
+/task-close  ──→ task-db.sh --close  ──→ append event ──→ rebuild cache ──→ git commit log
+/task-update ──→ task-db.sh --update ──→ append event ──→ rebuild cache ──→ git commit log
+/task-graph  ──→ task-db.sh --graph  ──→ query cache   ──→ stdout (table or DOT)
+/task-audit  ──→ task-db.sh --audit  ──→ query cache   ──→ stdout (report)
+/task-query  ──→ Claude SQL gen      ──→ query cache   ──→ stdout (results)
 ```
 
-## Script Duplication
+## Shared Code
 
-| Script       | Canonical Location                    | Copies                                                      |
-| ------------ | ------------------------------------- | ----------------------------------------------------------- |
-| `task-db.sh` | `skills/task-open/scripts/task-db.sh` | task-close, task-update, task-graph, task-audit, task-query |
-
-Drift verified by `scripts/check-template-drift.sh`. Drift = CI failure.
+`lib/task-db.sh` is a single shared copy referenced by every skill as
+`${CLAUDE_PLUGIN_ROOT}/lib/task-db.sh`. There are no duplicate copies and no drift
+checker to maintain (ADR-018).
 
 ## Dependencies
 
-| Dependency          | Required | Notes                              |
-| ------------------- | -------- | ---------------------------------- |
-| Claude Code v2.1.3+ | Yes      | Plugin system with skills          |
-| Bash                | Yes      | All scripts are pure bash          |
-| `sqlite3` CLI       | Yes      | Database operations                |
-| Git                 | Yes      | DB committed after every write     |
-| `jq`                | No       | Optional — hook falls back to grep |
+| Dependency          | Required | Notes                                 |
+| ------------------- | -------- | ------------------------------------- |
+| Claude Code v2.1.3+ | Yes      | Plugin system with skills             |
+| Bash 3.2+           | Yes      | Pure bash; runs on stock macOS bash   |
+| `sqlite3` CLI 3.38+ | Yes      | Query engine and JSON encoding        |
+| Git                 | Yes      | Event log committed after every write |
+| `jq`                | No       | Optional — hook falls back to grep    |
 
 ## Related
 
 - [principled-docs](../principled-docs/) — Documentation pipeline that produces plans
 - [principled-implementation](../principled-implementation/) — Orchestrated plan execution
-- [ADR-017](../../docs/decisions/017-sqlite-task-graph.md) — SQLite task graph storage decision
+- [ADR-017](../../docs/decisions/017-event-log-task-graph.md) — Event log as record, SQLite as cache
 - [RFC-009](../../docs/proposals/009-principled-tasks.md) — Plugin proposal

@@ -2,7 +2,7 @@
 name: task-strategy
 description: >
   Task tracking strategy for the Principled framework.
-  Consult when working with .impl/tasks.db, the bead graph model,
+  Consult when working with the task graph model,
   task dependencies, discovery chains, or cross-plan task visibility.
   Covers the SQLite schema, edge semantics, and audit patterns.
 user-invocable: false
@@ -16,11 +16,11 @@ This skill provides Claude Code with comprehensive knowledge of the Principled t
 
 Activate this knowledge when:
 
-- Working with `.impl/tasks.db` or the bead graph
+- Working with the task graph
 - Creating, closing, or querying tasks
 - Analyzing task dependencies or blocked chains
 - Discussing cross-plan task visibility
-- Translating natural-language questions to SQL queries against the bead schema
+- Translating natural-language questions to SQL queries against the task schema
 - Auditing task health: orphans, stale in_progress, agent workload
 
 ## Reference Documentation
@@ -37,9 +37,10 @@ Read these files for detailed guidance on specific topics:
 
 ## Key Principles
 
-1. **Beads are the universal task unit.** Every trackable piece of work — plan tasks, discovered bugs, follow-up items — is a bead in the graph.
+1. **Tasks are the universal task unit.** Every trackable piece of work — plan tasks, discovered bugs, follow-up items — is a task in the graph.
 2. **Edges are typed and directional.** `blocks` means A must complete before B. `spawned_by` means A was discovered during B. `part_of` means A is a subtask of B. `related_to` is a soft link.
-3. **Git is the persistence layer.** `.impl/tasks.db` is committed after every write. The Git log is the audit trail.
-4. **SQLite is the query engine.** Use SQL for filtering, aggregation, and graph traversal. The `sqlite3` CLI is the only runtime dependency.
-5. **Skills own the write path.** Only `/task-open` and `/task-close` modify the database. Read skills (`/task-graph`, `/task-audit`, `/task-query`) are pure queries.
-6. **Natural-language queries map to SQL.** When a user asks a question, translate it to a SQL query against the beads and bead_edges tables.
+3. **The event log is the source of truth.** `.principled/tasks.jsonl` is append-only and committed after every write. `.impl/tasks.db` is a derived cache: gitignored, disposable, and rebuilt with `--sync`. The log is the audit trail.
+4. **Append-only means mergeable.** Two agents on separate branches append different lines, so Git merges their work without conflict. A committed binary database could not — every concurrent write would collide.
+5. **SQLite is the query engine, not the record.** Use SQL for filtering, aggregation, and graph traversal against the cache. The `sqlite3` CLI (3.38+) is the only runtime dependency.
+6. **Skills own the write path.** Only `/task-open`, `/task-update`, and `/task-close` modify the graph. Read skills (`/task-graph`, `/task-audit`, `/task-query`) are pure queries.
+7. **Natural-language queries map to SQL.** When a user asks a question, translate it to a SQL query against the tasks and task_edges tables.

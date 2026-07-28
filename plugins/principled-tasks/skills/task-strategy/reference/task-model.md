@@ -1,6 +1,6 @@
 # Task Model
 
-The task model is the core abstraction of the principled-tasks plugin. Every trackable piece of work is a **bead** — a node in a directed graph with typed edges.
+The task model is the core abstraction of the principled-tasks plugin. Every trackable piece of work is a **task** — a node in a directed graph with typed edges.
 
 ## Task Lifecycle
 
@@ -21,7 +21,7 @@ open ──→ in_progress ──→ done
 | `open`        | Ready for work, not yet started                  |
 | `in_progress` | Actively being worked on by an agent or human    |
 | `done`        | Completed successfully                           |
-| `blocked`     | Cannot proceed until a blocking bead is resolved |
+| `blocked`     | Cannot proceed until a blocking task is resolved |
 | `abandoned`   | Will not be completed (superseded or irrelevant) |
 
 ### Transitions
@@ -46,7 +46,7 @@ Edges are directed: `from_id → to_id`. The `kind` field determines the relatio
 
 ## Discovery Chains
 
-When an agent works on bead A and discovers additional work, the new bead B is created with:
+When an agent works on task A and discovers additional work, the new task B is created with:
 
 - `discovered_from` field set to A's ID
 - A `spawned_by` edge from B to A
@@ -55,15 +55,15 @@ This creates a traceable discovery chain: you can follow `spawned_by` edges to s
 
 ## Cross-Plan Tracking
 
-Beads can optionally be linked to a plan via the `plan` field and to a specific plan task via `task_id`. This enables:
+Tasks can optionally be linked to a plan via the `plan` field and to a specific plan task via `task_id`. This enables:
 
 - Filtering the graph by plan: `/task-graph --plan 003`
 - Auditing completion by plan: `/task-audit --plan 003`
-- Correlating beads with manifest tasks in principled-implementation
+- Correlating tasks with manifest tasks in principled-implementation
 
 ## Integration with principled-implementation
 
-The `plan` and `task_id` fields on beads correspond to the plan number and task ID in `.impl/manifest.json`. While principled-tasks does not depend on principled-implementation, the fields enable cross-referencing:
+The `plan` and `task_id` fields on tasks correspond to the plan number and task ID in `.impl/manifest.json`. While principled-tasks does not depend on principled-implementation, the fields enable cross-referencing:
 
-- A bead with `plan: "003"` and `task_id: "1.1"` maps to task 1.1 in Plan-003
-- The `/task-audit` skill can compare bead status against manifest status for drift detection
+- A task with `plan: "003"` and `task_id: "1.1"` maps to task 1.1 in Plan-003
+- The `/task-audit` skill can compare task status against manifest status for drift detection

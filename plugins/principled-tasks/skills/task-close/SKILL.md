@@ -1,7 +1,7 @@
 ---
 name: task-close
 description: >
-  Close a task (bead) in the persistent task graph by marking it as done
+  Close a task in the persistent task graph by marking it as done
   or abandoned. Optionally attach notes explaining the resolution.
   The change is committed to Git. Use when a task is completed or
   no longer relevant.
@@ -9,9 +9,9 @@ allowed-tools: Read, Bash(bash plugins/*), Bash(bash scripts/*), Bash(sqlite3 *)
 user-invocable: true
 ---
 
-# Task Close — Resolve a Bead
+# Task Close — Resolve a Task
 
-Close a task (bead) in the `.impl/tasks.db` graph by setting its status to `done` or `abandoned`, and commit the change to Git.
+Close a task in the task graph by setting its status to `done` or `abandoned`, and commit the change to Git.
 
 ## Command
 
@@ -23,27 +23,27 @@ Close a task (bead) in the `.impl/tasks.db` graph by setting its status to `done
 
 | Argument         | Required | Description                                 |
 | ---------------- | -------- | ------------------------------------------- |
-| `<id>`           | Yes      | Bead ID to close (e.g., `bead-0a3f`)        |
+| `<id>`           | Yes      | Task ID to close (e.g., `task-0a3f`)        |
 | `--notes <text>` | No       | Resolution notes (e.g., "Fixed via PR #42") |
 
 ## Workflow
 
 1. **Parse arguments.** Extract `<id>` and optional `--notes` from `$ARGUMENTS`.
 
-2. **Verify the bead exists.** Run:
+2. **Verify the task exists.** Run:
 
    ```bash
-   bash scripts/task-db.sh --get --id <id>
+   bash "${CLAUDE_PLUGIN_ROOT}/lib/task-db.sh" --get --id <id>
    ```
 
-   If no bead found, report: _"No bead found with id '\<id\>'."_
+   If no task found, report: _"No task found with id '\<id\>'."_
 
-3. **Confirm closure intent.** If the bead status is already `done` or `abandoned`, report: _"Bead '\<id\>' is already closed (status: \<status\>)."_ and stop.
+3. **Confirm closure intent.** If the task status is already `done` or `abandoned`, report: _"Task '\<id\>' is already closed (status: \<status\>)."_ and stop.
 
-4. **Close the bead.** Run:
+4. **Close the task.** Run:
 
    ```bash
-   bash scripts/task-db.sh --close \
+   bash "${CLAUDE_PLUGIN_ROOT}/lib/task-db.sh" --close \
      --id <id> \
      [--notes "<text>"] \
      --status done
@@ -54,15 +54,15 @@ Close a task (bead) in the `.impl/tasks.db` graph by setting its status to `done
 5. **Commit to Git.** Run:
 
    ```bash
-   bash scripts/task-db.sh --commit "tasks: close <id> — done"
+   bash "${CLAUDE_PLUGIN_ROOT}/lib/task-db.sh" --commit "tasks: close <id> — done"
    ```
 
 6. **Report result.** Display:
-   - Closed bead ID and title
+   - Closed task ID and title
    - New status and closed_at timestamp
    - Notes if provided
-   - Remaining open beads count: _"N beads still open."_
+   - Remaining open tasks count: _"N tasks still open."_
 
 ## Scripts
 
-- `scripts/task-db.sh` — SQLite interface for bead graph operations (copy from task-open)
+- `${CLAUDE_PLUGIN_ROOT}/lib/task-db.sh` — task graph interface (single shared copy, ADR-018)

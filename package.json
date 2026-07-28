@@ -8,6 +8,7 @@
     "format:md:fix": "prettier --write '**/*.md'"
   },
   "devDependencies": {
+    "bats": "^1.13.0",
     "markdownlint-cli2": "^0.17.0",
     "prettier": "^3.4.0"
   }
