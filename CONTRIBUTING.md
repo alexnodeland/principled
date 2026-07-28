@@ -6,7 +6,7 @@ Thank you for your interest in contributing to the Principled plugin marketplace
 
 ### Prerequisites
 
-- **Bash 4+** — all scripts are pure bash
+- **Bash 3.2+** — all scripts are pure bash and must run on stock macOS bash (no `declare -A`, `local -n`, `mapfile`, or `${var,,}`)
 - **Git** — version control
 - **Node.js 18+** — required for Markdown linting/formatting (`markdownlint-cli2`, `prettier`)
 - **ShellCheck** — shell script static analysis
@@ -231,15 +231,29 @@ echo '{"tool_input":{"file_path":"docs/decisions/001-example.md"}}' \
 echo $?  # 0 = allow, 2 = block
 ```
 
-## Template Management
+## Shared Code and Templates
 
-### Canonical Sources
+### Shared code lives in `lib/` (ADR-018)
 
-All canonical templates for the principled-docs plugin live in `plugins/principled-docs/skills/scaffold/templates/{core,lib,app}/`.
+Code used by more than one skill in a plugin lives in that plugin's `lib/` and is
+referenced as `${CLAUDE_PLUGIN_ROOT}/lib/<name>`. One copy — nothing to propagate and
+nothing that can drift.
 
-### Copy Rules
+```bash
+bash "${CLAUDE_PLUGIN_ROOT}/lib/task-manifest.sh" --get-task --task-id 1.1
+```
 
-Consuming skills keep byte-identical copies:
+Never reference a script by bare relative path (`bash scripts/foo.sh`) — it only
+resolves when the working directory happens to be the skill directory. Never reach into
+a sibling skill (`bash ../other-skill/scripts/foo.sh`) — move the script to `lib/`
+instead. `scripts/check-skill-references.sh` fails CI on both.
+
+If you find yourself copying a `lib/` script into a skill directory, that is a
+regression against ADR-018.
+
+### Two things are still duplicated, deliberately
+
+**Scaffolding templates**, because each generative skill ships the template it writes:
 
 | Canonical                                 | Copy                                             |
 | ----------------------------------------- | ------------------------------------------------ |
@@ -248,34 +262,47 @@ Consuming skills keep byte-identical copies:
 | `scaffold/templates/core/decision.md`     | `new-adr/templates/decision.md`                  |
 | `scaffold/templates/core/architecture.md` | `new-architecture-doc/templates/architecture.md` |
 
-Scripts with copies:
+Paths are relative to `plugins/principled-docs/skills/`.
 
-| Canonical                                | Copy                                                                |
-| ---------------------------------------- | ------------------------------------------------------------------- |
-| `new-proposal/scripts/next-number.sh`    | `new-plan/scripts/next-number.sh`, `new-adr/scripts/next-number.sh` |
-| `scaffold/scripts/validate-structure.sh` | `validate/scripts/validate-structure.sh`                            |
+**`check-gh-cli.sh` across three plugins**, because principled-github,
+principled-quality and principled-release install independently and
+`${CLAUDE_PLUGIN_ROOT}` cannot cross a plugin boundary:
 
-All paths above are relative to `plugins/principled-docs/skills/`.
+| Canonical                                       | Copy                                                                 |
+| ----------------------------------------------- | -------------------------------------------------------------------- |
+| `plugins/principled-github/lib/check-gh-cli.sh` | `plugins/principled-quality/lib/`, `plugins/principled-release/lib/` |
 
-### Propagation Workflow
+### Propagation workflow (for those two only)
 
 1. Edit the **canonical** version first
-2. Copy to all consuming locations
-3. Run `bash plugins/principled-docs/skills/scaffold/scripts/check-template-drift.sh` to verify
-4. Or use `/propagate-templates` if working with Claude Code
+2. Copy to all consuming locations, or run `/propagate-templates`
+3. Verify:
 
-Drift = CI failure. Always propagate after modifying canonical sources.
+```bash
+bash plugins/principled-docs/skills/scaffold/scripts/check-template-drift.sh
+bash scripts/check-cross-plugin-drift.sh
+```
+
+Drift = CI failure.
 
 ## Testing Locally
 
 ```bash
-# Template drift checks (all six plugins)
+# Everything at once
+just ci
+
+# Or individually — drift checks
 bash plugins/principled-docs/skills/scaffold/scripts/check-template-drift.sh
-bash plugins/principled-implementation/scripts/check-template-drift.sh
-bash plugins/principled-github/scripts/check-template-drift.sh
-bash plugins/principled-quality/scripts/check-template-drift.sh
-bash plugins/principled-release/scripts/check-template-drift.sh
-bash plugins/principled-architecture/scripts/check-template-drift.sh
+bash scripts/check-cross-plugin-drift.sh
+
+# Reference integrity: every referenced script exists and uses a portable path
+bash scripts/check-skill-references.sh
+
+# Pipeline audit: declared document state vs. the repository
+bash scripts/pipeline-audit.sh
+
+# Test suite (58 tests)
+npx bats tests/
 
 # Root structure validation
 bash plugins/principled-docs/lib/validate-structure.sh --root
@@ -329,11 +356,11 @@ To bypass in emergencies: `git commit --no-verify` (use sparingly).
 
 If you develop with Claude Code, the `.claude/skills/` directory provides project-specific dev skills:
 
-| Skill                 | Command                | Purpose                                 |
-| --------------------- | ---------------------- | --------------------------------------- |
-| `lint`                | `/lint`                | Run full lint suite                     |
-| `test-hooks`          | `/test-hooks`          | Smoke-test enforcement hooks            |
-| `propagate-templates` | `/propagate-templates` | Propagate canonical templates to copies |
-| `check-ci`            | `/check-ci`            | Run full CI pipeline locally            |
+| Skill                 | Command                | Purpose                                          |
+| --------------------- | ---------------------- | ------------------------------------------------ |
+| `lint`                | `/lint`                | Run full lint suite                              |
+| `test-hooks`          | `/test-hooks`          | Smoke-test enforcement hooks                     |
+| `propagate-templates` | `/propagate-templates` | Propagate the two remaining duplicated artifacts |
+| `check-ci`            | `/check-ci`            | Run full CI pipeline locally                     |
 
 All seven first-party plugins are self-installed (dogfooding), so all 48 plugin skills and enforcement hooks are active while developing.

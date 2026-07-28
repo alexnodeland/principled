@@ -18,7 +18,7 @@ This repo is the **Principled methodology plugin marketplace** (v0.4.0, pre-1.0)
 
 ## Architecture
 
-Eight layers, top to bottom:
+Ten layers, top to bottom:
 
 | Layer                   | Location                                                           | Role                                                                                                                 |
 | ----------------------- | ------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------- |
@@ -106,7 +106,7 @@ Eight layers, top to bottom:
 | `arch-sync`     | `/arch-sync [--doc <path>] [--all]`             | Generative |
 | `arch-query`    | `/arch-query "<question>"`                      | Analytical |
 
-### principled-tasks (6 skills)
+### principled-tasks (7 skills)
 
 | Skill           | Command                                                     | Category   |
 | --------------- | ----------------------------------------------------------- | ---------- |
@@ -225,6 +225,7 @@ This repo uses its own documentation pipeline at the root level (governing the m
   - 016: Agent teams for parallel plan execution
   - 017: Event log as record, SQLite as cache (principled-tasks storage)
   - 018: Shared plugin `lib/` over copy-with-drift-detection (supersedes 009)
+  - 019: Bats for shell testing
 - `docs/architecture/` — Living design docs.
   - plugin-system.md, documentation-pipeline.md, enforcement-system.md
 
@@ -368,6 +369,17 @@ Declared in `plugins/principled-architecture/hooks/hooks.json`:
 
 Advisory only — warns when a written source file contains imports violating module dependency direction rules (always exits 0).
 
+### principled-tasks
+
+Declared in `plugins/principled-tasks/hooks/hooks.json`:
+
+| Hook                  | Event                    | Script                                                         | Timeout |
+| --------------------- | ------------------------ | -------------------------------------------------------------- | ------- |
+| DB Integrity Advisory | PreToolUse (Edit\|Write) | `plugins/principled-tasks/hooks/scripts/check-db-integrity.sh` | 10s     |
+
+Advisory only — warns on direct edits to `.principled/tasks.jsonl` (the record) or
+`.impl/tasks.db` (the derived cache). Always exits 0.
+
 ## Testing
 
 - **Template drift (docs):** `plugins/principled-docs/skills/scaffold/scripts/check-template-drift.sh` — exits non-zero if any copy diverges from canonical.
@@ -383,6 +395,8 @@ Advisory only — warns when a written source file contains imports violating mo
 - **Hook testing (quality):** Feed JSON with `tool_input.command` to `check-review-checklist.sh` via stdin. Always exits 0 (advisory).
 - **Hook testing (release):** Feed JSON with `tool_input.command` to `check-release-readiness.sh` via stdin. Always exits 0 (advisory).
 - **Hook testing (architecture):** Feed JSON with `tool_input.file_path` to `check-boundary-violation.sh` via stdin. Always exits 0 (advisory).
+- **Hook testing (tasks):** Feed JSON with `tool_input.file_path` to `check-db-integrity.sh` via stdin. Always exits 0 (advisory).
+- **Hook testing (all):** `npx bats tests/hooks.bats` — 30 tests covering allow, block, malformed input, and the no-jq fallback path for every hook.
 - **Shell lint:** `shellcheck --shell=bash` and `shfmt -i 2 -bn -sr -d` on all `.sh` files.
 - **Markdown lint:** `npx markdownlint-cli2 '**/*.md'` and `npx prettier --check '**/*.md'`.
 - **Marketplace validation:** Verify `.claude-plugin/marketplace.json` is valid and all plugin source directories exist.
@@ -391,7 +405,7 @@ Advisory only — warns when a written source file contains imports violating mo
 ## Dependencies
 
 - **Claude Code v2.1.3+** (skills/commands unification, agent support)
-- **Bash** (all plugin scripts are pure bash)
+- **Bash 3.2+** (all plugin scripts are pure bash and must run on stock macOS bash — no `declare -A`, `local -n`, `mapfile`, or `${var,,}`)
 - **Git** (for repository context and worktree management)
 - **jq** (optional — scripts fall back to grep-based extraction)
 - **gh CLI** (optional — required for principled-github plugin operations)
