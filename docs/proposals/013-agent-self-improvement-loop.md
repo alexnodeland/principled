@@ -1,7 +1,7 @@
 ---
 title: "Agent Self-Improvement Loop"
 number: "013"
-status: draft
+status: rejected
 author: Alex
 created: 2026-07-28
 updated: 2026-07-28
@@ -222,3 +222,64 @@ clone, and it cannot be reviewed or reverted.
   retention policy, or does `/improve` compact them once synthesized?
 - **Delivery order.** Should `/retro` and `/agent-metrics` ship first as read-only
   capability, with `/improve` gated behind evidence that the metrics are trustworthy?
+
+## Rejection
+
+Rejected 2026-07-28, after a 12-agent design workflow resolved the open questions above,
+produced a synthesized design, and then refuted it under three independent adversarial
+lenses. All three refuted. The reasoning is recorded here because the proposal is sound
+in its motivation — performance data really is discarded today — and a future attempt
+should start from these objections rather than rediscover them.
+
+### The three objections
+
+**1. The safety mechanism reproduces the failure it is meant to prevent.**
+
+The design's spine was a per-claim falsifier: an executable test asserting each memory
+item, so a claim that stops being true fails CI. But a falsifier is authored by the same
+agent, in the same session, from the same evidence, as the claim it asserts.
+
+That is precisely the blind spot that cost this repository #40 — where twelve passing
+tests hid a live defect because the test mutated state the same way the check inspected
+it. The lesson is already in `impl-worker` memory. The design would have rebuilt it as a
+safety feature and put a green CI check on top.
+
+**2. It targets a hazard with zero observed instances, and misses the one that occurred.**
+
+Across the 15 items in the live corpus, the count of "memory contained a false claim" is
+zero. The failure that actually happened (#39 → #41) was not a false belief: the contract
+check asked _"does the writing plugin reference this literal anywhere?"_ — a **true**
+predicate, correctly implemented, answering the wrong question. Every memory item could
+have been individually true and that defect still ships. The falsification ledger would
+have been green throughout.
+
+**3. The human gate binds on the commit; belief propagated from the working tree.**
+
+This one was verified against the code and was **real** — an uncommitted memory edit was
+injected into the very next spawn, so "an agent proposes, a human decides" was true of
+distribution and false of effect. Fixed in #44, independently of this proposal.
+
+### What was kept
+
+The workflow's genuine output was not a design. It was four verified defects in shipped
+code, all fixed in #44: injection reading the working tree, `--check` never validating
+`global.md`, the context budget measuring 45% of the real payload, and `global.md` writes
+drawing only a generic advisory.
+
+One reviewer claim did not survive checking — that the metric reconstruction
+`prior_ok = ct * cr` "compounds every session". Measured drift is 0.0014 and bounded.
+
+### What a future attempt would need
+
+Not a better synthesis engine. A **trustworthy fitness signal**, which this repository
+does not yet have — `success_rate` scored the defect-shipping run 1.00, and
+`defects_shipped` / `followup_prs` were added to retrospective frontmatter as a starting
+point, not a solution.
+
+Until a signal exists that distinguishes a run that shipped a latent defect from one that
+did not, an improvement loop optimising against the available metrics would learn most
+confidently from the runs it understands least. The read-only half — `/agent-metrics` and
+richer retrospectives — remains worth building and needs no new proposal to justify it.
+
+This rejection is reversible. A later proposal may supersede it once the signal problem
+is addressed.
