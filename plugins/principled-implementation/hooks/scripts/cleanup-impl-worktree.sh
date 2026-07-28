@@ -21,7 +21,7 @@ WORKTREE_PATH=""
 if command -v jq &> /dev/null; then
   WORKTREE_PATH="$(echo "$INPUT" | jq -r '.worktree_path // .tool_input.path // empty' 2> /dev/null || echo "")"
 else
-  WORKTREE_PATH="$(echo "$INPUT" | grep -oP '"worktree_path"\s*:\s*"[^"]*"' | head -1 | grep -oP ':\s*"\K[^"]*' || echo "")"
+  WORKTREE_PATH="$(echo "$INPUT" | sed -n 's/.*"worktree_path"[[:space:]]*:[[:space:]]*"\([^"]*\)".*/\1/p' | head -1)"
 fi
 
 # If we couldn't extract a path, nothing to do

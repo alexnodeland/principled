@@ -38,10 +38,6 @@ lint: lint-shfmt lint-shellcheck lint-markdown lint-prettier
 drift-docs:
     bash plugins/principled-docs/skills/scaffold/scripts/check-template-drift.sh
 
-# Check template drift for principled-implementation
-drift-impl:
-    bash plugins/principled-implementation/scripts/check-template-drift.sh
-
 # Check template drift for principled-github
 drift-github:
     bash plugins/principled-github/scripts/check-template-drift.sh
@@ -59,7 +55,7 @@ drift-arch:
     bash plugins/principled-architecture/scripts/check-template-drift.sh
 
 # Check all template drift
-drift: drift-docs drift-impl drift-github drift-quality drift-release drift-arch
+drift: drift-docs drift-github drift-quality drift-release drift-arch
 
 # ─── Validate ────────────────────────────────────────────────────────────────
 
@@ -238,11 +234,15 @@ test-hooks: test-hook-adr test-hook-proposal test-hook-manifest test-hook-pr tes
 
 # ─── Aggregate ───────────────────────────────────────────────────────────────
 
+# Verify every script referenced by a skill or hook actually exists
+refs:
+    bash scripts/check-skill-references.sh
+
 # Run the bats test suite
 test:
     npx bats tests/
 
 # Run the full CI pipeline locally
-ci: lint drift validate test test-hooks
+ci: lint drift refs validate test test-hooks
     @echo ""
     @echo "All CI checks passed."

@@ -34,7 +34,7 @@ Merge a task's implementation from its worktree branch back to the working branc
 2. **Load task from manifest.** Run:
 
    ```bash
-   bash scripts/task-manifest.sh --get-task --task-id <task-id>
+   bash "${CLAUDE_PLUGIN_ROOT}/lib/task-manifest.sh" --get-task --task-id <task-id>
    ```
 
    Verify:
@@ -79,7 +79,7 @@ Merge a task's implementation from its worktree branch back to the working branc
 6. **Update manifest.** Run:
 
    ```bash
-   bash scripts/task-manifest.sh --update-status \
+   bash "${CLAUDE_PLUGIN_ROOT}/lib/task-manifest.sh" --update-status \
      --task-id <task-id> \
      --status merged
    ```
@@ -92,4 +92,4 @@ Merge a task's implementation from its worktree branch back to the working branc
 
 ## Scripts
 
-- `scripts/task-manifest.sh` — Task manifest CRUD (copy from decompose)
+- `${CLAUDE_PLUGIN_ROOT}/lib/task-manifest.sh` — Task manifest CRUD (shared, ADR-018)

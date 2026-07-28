@@ -16,15 +16,19 @@ Execute task `$ARGUMENTS` from the current DDD implementation plan.
 
 ## Task Details
 
-!`bash scripts/task-manifest.sh --get-task --task-id $0 2>/dev/null || echo "Error: could not load task $0 from manifest"`
+<!-- Errors are surfaced, not swallowed. These blocks are the only way the forked
+     agent learns what it is supposed to build: if one fails silently, the agent
+     proceeds with no task description and implements the wrong thing. -->
+
+!`bash "${CLAUDE_PLUGIN_ROOT}/lib/task-manifest.sh" --get-task --task-id $0 || echo "FAILED to load task $0 from manifest — do not proceed; report this and stop."`
 
 ## Plan Context
 
-!`bash scripts/task-manifest.sh --get-plan-path 2>/dev/null | xargs -I{} bash scripts/parse-plan.sh --file {} --metadata 2>/dev/null || echo "Error: could not load plan metadata"`
+!`bash "${CLAUDE_PLUGIN_ROOT}/lib/task-manifest.sh" --get-plan-path | xargs -I{} bash "${CLAUDE_PLUGIN_ROOT}/lib/parse-plan.sh" --file {} --metadata || echo "FAILED to load plan metadata — do not proceed; report this and stop."`
 
 ## Related Tasks in This Phase
 
-!`bash scripts/task-manifest.sh --list-tasks --phase $(bash scripts/task-manifest.sh --get-task --task-id $0 2>/dev/null | grep '^phase=' | cut -d= -f2) 2>/dev/null || echo "No related tasks found"`
+!`bash "${CLAUDE_PLUGIN_ROOT}/lib/task-manifest.sh" --list-tasks --phase $(bash "${CLAUDE_PLUGIN_ROOT}/lib/task-manifest.sh" --get-task --task-id $0 | grep '^phase=' | cut -d= -f2) || echo "(no related tasks resolved)"`
 
 ## Instructions
 

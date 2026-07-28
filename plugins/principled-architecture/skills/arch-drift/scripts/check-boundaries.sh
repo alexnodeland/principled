@@ -72,8 +72,12 @@ if [[ -z "$ROOT_PATH" ]]; then
   ROOT_PATH="$(git rev-parse --show-toplevel 2> /dev/null || pwd)"
 fi
 
-# Build a map of all modules and their types
-declare -A MODULE_TYPES
+# Build a map of all modules and their types.
+#
+# A plain array of "path<TAB>type" records rather than an associative array:
+# `declare -A` requires bash 4.0 and macOS ships bash 3.2, where this script
+# aborted with "declare: -A: invalid option" before doing any work.
+MODULE_TYPES=()
 
 while IFS= read -r claude_file; do
   mod_dir="$(dirname "$claude_file")"
@@ -97,7 +101,7 @@ while IFS= read -r claude_file; do
   if [[ "$mod_dir" == "$ROOT_PATH" ]]; then
     local_path="."
   fi
-  MODULE_TYPES["$local_path"]="$mod_type"
+  MODULE_TYPES+=("${local_path}	${mod_type}")
 done < <(find "$ROOT_PATH" -name "CLAUDE.md" \
   -not -path "*/node_modules/*" \
   -not -path "*/.git/*" \
@@ -174,19 +178,19 @@ while IFS= read -r source_file; do
 
     # JavaScript/TypeScript: import ... from '...'
     if echo "$line" | grep -qE "^\s*(import|export)\s+.*\s+from\s+['\"]"; then
-      imported_path="$(echo "$line" | grep -oP "from\s+['\"]\\K[^'\"]*" || echo "")"
+      imported_path="$(echo "$line" | sed -n "s/.*from[[:space:]]*['\"]\\([^'\"]*\\).*/\\1/p")"
     # JavaScript: require('...')
     elif echo "$line" | grep -qE "require\s*\(\s*['\"]"; then
-      imported_path="$(echo "$line" | grep -oP "require\s*\(\s*['\"]\\K[^'\"]*" || echo "")"
+      imported_path="$(echo "$line" | sed -n "s/.*require[[:space:]]*([[:space:]]*['\"]\\([^'\"]*\\).*/\\1/p")"
     # Python: from ... import ...
     elif echo "$line" | grep -qE "^\s*from\s+\S+\s+import"; then
-      imported_path="$(echo "$line" | grep -oP "^\s*from\s+\\K\S+" || echo "")"
+      imported_path="$(echo "$line" | sed -n 's/^[[:space:]]*from[[:space:]][[:space:]]*\([^[:space:]]*\).*/\1/p')"
     # Python: import ...
     elif echo "$line" | grep -qE "^\s*import\s+\S+"; then
-      imported_path="$(echo "$line" | grep -oP "^\s*import\s+\\K\S+" || echo "")"
+      imported_path="$(echo "$line" | sed -n 's/^[[:space:]]*import[[:space:]][[:space:]]*\([^[:space:]]*\).*/\1/p')"
     # Go: import "..."
     elif echo "$line" | grep -qE '^\s*"[^"]+"\s*$' || echo "$line" | grep -qE 'import\s+"'; then
-      imported_path="$(echo "$line" | grep -oP '"\\K[^"]+' || echo "")"
+      imported_path="$(echo "$line" | sed -n 's/.*"\([^"]*\)".*/\1/p')"
     fi
 
     if [[ -z "$imported_path" ]]; then
@@ -194,7 +198,8 @@ while IFS= read -r source_file; do
     fi
 
     # Check if the import path matches any known module
-    for mod_path in "${!MODULE_TYPES[@]}"; do
+    for mod_record in ${MODULE_TYPES[@]+"${MODULE_TYPES[@]}"}; do
+      mod_path="${mod_record%%	*}"
       # Skip self
       if [[ "$mod_path" == "$REL_MODULE" ]] || [[ "$mod_path" == "." ]]; then
         continue
@@ -202,7 +207,7 @@ while IFS= read -r source_file; do
 
       # Check if the import references this module
       if [[ "$imported_path" == *"$mod_path"* ]] || [[ "$imported_path" == *"$(basename "$mod_path")"* && "$mod_path" != "." ]]; then
-        target_type="${MODULE_TYPES[$mod_path]}"
+        target_type="${mod_record#*	}"
 
         if ! check_dependency "$MODULE_TYPE" "$target_type"; then
           severity="$(get_severity "$MODULE_TYPE" "$target_type")"

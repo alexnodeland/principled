@@ -37,7 +37,7 @@ Extract concrete, executable tasks from a DDD implementation plan and create a t
 3. **Extract plan metadata.** Run:
 
    ```bash
-   bash scripts/parse-plan.sh --file <plan-path> --metadata
+   bash "${CLAUDE_PLUGIN_ROOT}/lib/parse-plan.sh" --file <plan-path> --metadata
    ```
 
    Captures: title, number, originating_proposal.
@@ -45,7 +45,7 @@ Extract concrete, executable tasks from a DDD implementation plan and create a t
 4. **Extract phases and tasks.** Run:
 
    ```bash
-   bash scripts/parse-plan.sh --file <plan-path> --tasks
+   bash "${CLAUDE_PLUGIN_ROOT}/lib/parse-plan.sh" --file <plan-path> --tasks
    ```
 
    Outputs pipe-delimited structured data: phase number, task ID, description, dependencies, and bounded contexts per task.
@@ -59,7 +59,7 @@ Extract concrete, executable tasks from a DDD implementation plan and create a t
 6. **Initialize task manifest.** Run:
 
    ```bash
-   bash scripts/task-manifest.sh --init \
+   bash "${CLAUDE_PLUGIN_ROOT}/lib/task-manifest.sh" --init \
      --plan-path <plan-path> \
      --plan-number <number> \
      --plan-title "<title>"
@@ -68,7 +68,7 @@ Extract concrete, executable tasks from a DDD implementation plan and create a t
 7. **Add each task to the manifest.** For each extracted task:
 
    ```bash
-   bash scripts/task-manifest.sh --add-task \
+   bash "${CLAUDE_PLUGIN_ROOT}/lib/task-manifest.sh" --add-task \
      --task-id <phase.task> \
      --phase <phase-number> \
      --description "<task description>" \
@@ -86,5 +86,5 @@ Extract concrete, executable tasks from a DDD implementation plan and create a t
 
 ## Scripts
 
-- `scripts/parse-plan.sh` — Extract metadata and tasks from DDD plan markdown (canonical copy)
-- `scripts/task-manifest.sh` — Initialize and populate task manifest (canonical copy)
+- `${CLAUDE_PLUGIN_ROOT}/lib/parse-plan.sh` — Extract metadata and tasks from DDD plan markdown (shared, ADR-018)
+- `${CLAUDE_PLUGIN_ROOT}/lib/task-manifest.sh` — Initialize and populate task manifest (shared, ADR-018)

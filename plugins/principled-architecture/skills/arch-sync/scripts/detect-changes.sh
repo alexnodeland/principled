@@ -62,8 +62,12 @@ if [[ -z "$ROOT_PATH" ]]; then
   ROOT_PATH="$(git rev-parse --show-toplevel 2> /dev/null || pwd)"
 fi
 
-# Build module inventory
-declare -A ACTUAL_MODULES
+# Build module inventory.
+#
+# A plain array of "path<TAB>type" records rather than an associative array:
+# `declare -A` requires bash 4.0 and macOS ships bash 3.2, where this script
+# aborted with "declare: -A: invalid option" before doing any work.
+ACTUAL_MODULES=()
 
 while IFS= read -r claude_file; do
   mod_dir="$(dirname "$claude_file")"
@@ -86,7 +90,7 @@ while IFS= read -r claude_file; do
   if [[ "$mod_dir" == "$ROOT_PATH" ]]; then
     local_path="."
   fi
-  ACTUAL_MODULES["$local_path"]="$mod_type"
+  ACTUAL_MODULES+=("${local_path}	${mod_type}")
 done < <(find "$ROOT_PATH" -name "CLAUDE.md" \
   -not -path "*/node_modules/*" \
   -not -path "*/.git/*" \
@@ -96,12 +100,10 @@ done < <(find "$ROOT_PATH" -name "CLAUDE.md" \
 # Read the architecture doc
 DOC_CONTENT="$(cat "$DOC_PATH")"
 
-# Track which actual modules are referenced in the doc
-declare -A REFERENCED_MODULES
-
 # Check each actual module against the doc
-# shellcheck disable=SC2034  # REFERENCED_MODULES populated for extensibility
-for mod_path in "${!ACTUAL_MODULES[@]}"; do
+for mod_record in ${ACTUAL_MODULES[@]+"${ACTUAL_MODULES[@]}"}; do
+  mod_path="${mod_record%%	*}"
+  mod_type="${mod_record#*	}"
   if [[ "$mod_path" == "." ]]; then
     continue
   fi
@@ -109,13 +111,11 @@ for mod_path in "${!ACTUAL_MODULES[@]}"; do
   mod_name="$(basename "$mod_path")"
 
   # Check if module path or name appears in the doc
-  if echo "$DOC_CONTENT" | grep -q "$mod_path" 2> /dev/null \
-    || echo "$DOC_CONTENT" | grep -q "$mod_name" 2> /dev/null; then
-    REFERENCED_MODULES["$mod_path"]=1
-  else
+  if ! echo "$DOC_CONTENT" | grep -q "$mod_path" 2> /dev/null \
+    && ! echo "$DOC_CONTENT" | grep -q "$mod_name" 2> /dev/null; then
     printf '%s\t%s\t%s\n' \
       "new_module" \
-      "${mod_path} (${ACTUAL_MODULES[$mod_path]})" \
+      "${mod_path} (${mod_type})" \
       "Add reference to ${mod_path} in the architecture doc"
   fi
 done
@@ -131,7 +131,8 @@ while IFS= read -r path_ref; do
 
   # Check if this referenced path exists as a module
   found=false
-  for mod_path in "${!ACTUAL_MODULES[@]}"; do
+  for mod_record in ${ACTUAL_MODULES[@]+"${ACTUAL_MODULES[@]}"}; do
+    mod_path="${mod_record%%	*}"
     if [[ "$mod_path" == "$path_ref"* ]] || [[ "$path_ref" == "$mod_path"* ]]; then
       found=true
       break
@@ -147,7 +148,7 @@ while IFS= read -r path_ref; do
         "Remove or update reference — directory no longer exists"
     fi
   fi
-done < <(grep -oP '`[a-zA-Z][a-zA-Z0-9_-]*/[a-zA-Z0-9_/-]+`' "$DOC_PATH" 2> /dev/null \
+done < <(grep -oE '`[a-zA-Z][a-zA-Z0-9_-]*/[a-zA-Z0-9_/-]+`' "$DOC_PATH" 2> /dev/null \
   | sed 's/`//g' | sort -u || echo "")
 
 exit 0

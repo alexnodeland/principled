@@ -19,8 +19,11 @@ FILE_PATH=""
 if command -v jq &> /dev/null; then
   FILE_PATH="$(echo "$INPUT" | jq -r '.tool_input.file_path // .file_path // empty' 2> /dev/null || echo "")"
 else
-  # Fallback: basic grep extraction
-  FILE_PATH="$(echo "$INPUT" | grep -oP '"file_path"\s*:\s*"[^"]*"' | head -1 | grep -oP ':\s*"\K[^"]*' || echo "")"
+  # Fallback: sed extraction. grep -oP is PCRE-only and stock macOS grep has no
+  # -P at all, so the previous form silently yielded an empty path there — the
+  # hook then exited 0 and never checked anything. This matches the fallback the
+  # other plugins' hooks already use.
+  FILE_PATH="$(echo "$INPUT" | sed -n 's/.*"file_path"[[:space:]]*:[[:space:]]*"\([^"]*\)".*/\1/p' | head -1)"
 fi
 
 # If we couldn't extract a file path, allow

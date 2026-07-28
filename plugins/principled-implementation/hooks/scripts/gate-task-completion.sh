@@ -26,7 +26,7 @@ TASK_ID=""
 if command -v jq &> /dev/null; then
   TASK_ID="$(echo "$INPUT" | jq -r '.task_id // .tool_input.task_id // empty' 2> /dev/null || echo "")"
 else
-  TASK_ID="$(echo "$INPUT" | grep -oP '"task_id"\s*:\s*"[^"]*"' | head -1 | grep -oP ':\s*"\K[^"]*' || echo "")"
+  TASK_ID="$(echo "$INPUT" | sed -n 's/.*"task_id"[[:space:]]*:[[:space:]]*"\([^"]*\)".*/\1/p' | head -1)"
 fi
 
 # If we couldn't extract a task ID, allow (can't validate without it)
@@ -57,7 +57,7 @@ else
   # Fallback: basic grep. Look for the task block and extract status.
   TASK_BLOCK="$(grep -A20 "\"id\".*\"${TASK_ID}\"" "$MANIFEST" || echo "")"
   if [[ -n "$TASK_BLOCK" ]]; then
-    TASK_STATUS="$(echo "$TASK_BLOCK" | grep '"status"' | head -1 | grep -oP ':\s*"\K[^"]*' || echo "")"
+    TASK_STATUS="$(echo "$TASK_BLOCK" | grep '"status"' | head -1 | sed -n 's/.*:[[:space:]]*"\([^"]*\)".*/\1/p' | head -1)"
   fi
 fi
 

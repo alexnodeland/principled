@@ -222,7 +222,7 @@ if [[ "$OPERATION" == "get-plan-path" ]]; then
   if $HAS_JQ; then
     jq -r '.plan.path' "$MANIFEST"
   else
-    grep -oP '"path"\s*:\s*"\K[^"]*' "$MANIFEST" | head -1
+    sed -n 's/.*"path"[[:space:]]*:[[:space:]]*"\([^"]*\)".*/\1/p' "$MANIFEST" | head -1
   fi
   exit 0
 fi
@@ -405,7 +405,7 @@ if [[ "$OPERATION" == "list-tasks" ]]; then
       "$MANIFEST"
   else
     # Fallback: basic listing
-    grep -oP '"id": "\K[^"]*' "$MANIFEST"
+    sed -n 's/.*"id"[[:space:]]*:[[:space:]]*"\([^"]*\)".*/\1/p' "$MANIFEST"
   fi
   exit 0
 fi
@@ -460,7 +460,7 @@ if [[ "$OPERATION" == "summary" ]]; then
       } | to_entries[] | "\(.key)=\(.value)"
     ' "$MANIFEST"
   else
-    echo "plan_title=$(grep -oP '"title"\s*:\s*"\K[^"]*' "$MANIFEST" | head -1)"
+    echo "plan_title=$(sed -n 's/.*"title"[[:space:]]*:[[:space:]]*"\([^"]*\)".*/\1/p' "$MANIFEST" | head -1)"
     echo "total_tasks=$(grep -c '"id":' "$MANIFEST" || echo "0")"
   fi
   exit 0
