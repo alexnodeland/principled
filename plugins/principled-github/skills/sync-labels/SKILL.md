@@ -42,7 +42,7 @@ Create and synchronize GitHub labels for the principled workflow lifecycle stage
 2. **Load label definitions.** Read the label taxonomy from `scripts/label-definitions.sh`:
 
    ```bash
-   bash scripts/label-definitions.sh --list
+   bash "${CLAUDE_PLUGIN_ROOT}/skills/sync-labels/scripts/label-definitions.sh" --list
    ```
 
    Returns all label definitions: name, color, and description.

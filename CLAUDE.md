@@ -147,18 +147,22 @@ Code used by more than one skill in a plugin lives in that plugin's `lib/` and i
 referenced as `${CLAUDE_PLUGIN_ROOT}/lib/<name>`. One copy, no propagation step, no
 drift checker — drift is impossible rather than detected.
 
-| Plugin                    | `lib/` contents                                                                  |
-| ------------------------- | -------------------------------------------------------------------------------- |
-| principled-docs           | `validate-structure.sh`, `next-number.sh`                                        |
-| principled-implementation | `task-manifest.sh`, `parse-plan.sh`, `run-checks.sh`, `templates/claude-task.md` |
-| principled-github         | `check-gh-cli.sh`                                                                |
-| principled-quality        | `check-gh-cli.sh` (vendored)                                                     |
-| principled-release        | `check-gh-cli.sh` (vendored)                                                     |
-| principled-tasks          | `task-db.sh`                                                                     |
+| Plugin                    | `lib/` contents                                                                               |
+| ------------------------- | --------------------------------------------------------------------------------------------- |
+| principled-docs           | `validate-structure.sh`, `next-number.sh`                                                     |
+| principled-implementation | `task-manifest.sh`, `parse-plan.sh`, `run-checks.sh`, `templates/claude-task.md`              |
+| principled-github         | `check-gh-cli.sh`                                                                             |
+| principled-quality        | `check-gh-cli.sh` (vendored)                                                                  |
+| principled-release        | `check-gh-cli.sh` (vendored), `collect-changes.sh`, `check-readiness.sh`, `detect-modules.sh` |
+| principled-architecture   | `scan-modules.sh`                                                                             |
+| principled-tasks          | `task-db.sh`                                                                                  |
 
-`scripts/check-skill-references.sh` verifies every referenced path resolves. This is
-what the old drift checkers could not do: they compared copies that existed and never
-noticed a referenced file that was missing.
+`scripts/check-skill-references.sh` verifies every referenced path resolves **and**
+that it uses `${CLAUDE_PLUGIN_ROOT}`. Both halves matter. The old drift checkers
+compared copies that existed and never noticed a referenced file that was missing; and
+a bare relative path like `bash scripts/foo.sh` only resolves when the working
+directory happens to be the skill directory, which nothing guarantees at runtime.
+Cross-skill `../sibling/` paths fail the check too — that is what `lib/` replaces.
 
 ### What is still duplicated, and why
 

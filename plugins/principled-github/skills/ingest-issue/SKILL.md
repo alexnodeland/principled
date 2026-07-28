@@ -46,7 +46,7 @@ Ingest a GitHub issue into the principled documentation pipeline. Automatically 
 2. **Fetch the issue.** Extract issue metadata:
 
    ```bash
-   bash scripts/extract-issue-metadata.sh --number <issue-number>
+   bash "${CLAUDE_PLUGIN_ROOT}/skills/ingest-issue/scripts/extract-issue-metadata.sh" --number <issue-number>
    ```
 
    Returns: title, body, labels, author, created date, comments, and state.
@@ -54,7 +54,7 @@ Ingest a GitHub issue into the principled documentation pipeline. Automatically 
 3. **Check for existing principled documents.** Search for an existing sync marker linking this issue to principled documents:
 
    ```bash
-   bash scripts/find-ingested-docs.sh --issue <issue-number>
+   bash "${CLAUDE_PLUGIN_ROOT}/skills/ingest-issue/scripts/find-ingested-docs.sh" --issue <issue-number>
    ```
 
    If documents already exist, report them and ask if the user wants to update or create additional ones.

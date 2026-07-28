@@ -45,7 +45,7 @@ Process open GitHub issues through the principled pipeline. Finds untriaged issu
 2. **List untriaged issues.** Find open issues that have not been ingested into the principled pipeline:
 
    ```bash
-   bash scripts/list-untriaged.sh [--label <filter>]
+   bash "${CLAUDE_PLUGIN_ROOT}/skills/triage/scripts/list-untriaged.sh" [--label <filter>]
    ```
 
    An issue is considered **untriaged** if it:

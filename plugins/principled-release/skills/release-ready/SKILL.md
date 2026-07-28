@@ -50,7 +50,7 @@ Verify that all proposals, plans, and ADRs referenced by commits since the last 
 3. **Check readiness.** Run the readiness checker:
 
    ```bash
-   bash scripts/check-readiness.sh --since <tag> [--strict]
+   bash "${CLAUDE_PLUGIN_ROOT}/lib/check-readiness.sh" --since <tag> [--strict]
    ```
 
    This collects all pipeline references from commits since the tag and checks each referenced document's frontmatter status.

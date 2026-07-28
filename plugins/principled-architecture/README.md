@@ -100,7 +100,7 @@ The plugin is built in three layers:
 flowchart TB
     S["SKILLS — architecture governance<br/>6 skills, each self-contained"]
     H["HOOKS — advisory guardrails<br/>Boundary violation detector · always advisory"]
-    F["FOUNDATION — scripts, templates<br/>scan-modules.sh · check-boundaries.sh · detect-changes.sh"]
+    F["FOUNDATION — lib/ + skill scripts<br/>lib/scan-modules.sh · check-boundaries.sh · detect-changes.sh"]
 
     S --> H --> F
 ```

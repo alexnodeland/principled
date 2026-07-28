@@ -58,13 +58,13 @@ Generate a structured PR description from a DDD plan task, with full cross-refer
 4. **Extract task details.** If manifest exists:
 
    ```bash
-   bash scripts/task-manifest.sh --get-task --task-id <task-id>
+   bash "${CLAUDE_PLUGIN_ROOT}/skills/pr-describe/scripts/task-manifest.sh" --get-task --task-id <task-id>
    ```
 
 5. **Analyze the branch.** Determine changes:
 
    ```bash
-   bash scripts/analyze-branch.sh --branch <branch>
+   bash "${CLAUDE_PLUGIN_ROOT}/skills/pr-describe/scripts/analyze-branch.sh" --branch <branch>
    ```
 
    Returns: files changed, commit messages, diff summary.

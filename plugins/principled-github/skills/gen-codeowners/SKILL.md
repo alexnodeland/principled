@@ -32,7 +32,7 @@ Generate or update a `.github/CODEOWNERS` file from the repository's module stru
 1. **Detect modules.** Scan for directories containing `CLAUDE.md`, `docs/`, or `package.json`:
 
    ```bash
-   bash scripts/detect-modules.sh [--modules-dir <path>]
+   bash "${CLAUDE_PLUGIN_ROOT}/skills/gen-codeowners/scripts/detect-modules.sh" [--modules-dir <path>]
    ```
 
    Returns a list of module paths.
@@ -40,7 +40,7 @@ Generate or update a `.github/CODEOWNERS` file from the repository's module stru
 2. **Analyze ownership.** For each module, determine primary contributors:
 
    ```bash
-   bash scripts/analyze-ownership.sh --module <module-path>
+   bash "${CLAUDE_PLUGIN_ROOT}/skills/gen-codeowners/scripts/analyze-ownership.sh" --module <module-path>
    ```
 
    Uses `git shortlog -sne` on the module directory to rank contributors by commit count.
