@@ -206,6 +206,31 @@ agent_memory_path() {
 }
 
 # Ids of every agent the registry marks memory:true.
+# Role of an agent, from the registry. This is the routing key: it is populated for
+# every agent and stable, unlike `specializations` which nothing writes (#37).
+agent_role() {
+  [[ -f "$REGISTRY" ]] || return 0
+  if $HAS_JQ; then
+    jq -r --arg id "$1" '.agents[] | select(.id == $id) | .role' "$REGISTRY" 2> /dev/null
+  else
+    awk -v want="$1" '
+      /"id"[[:space:]]*:/ {
+        line = $0
+        sub(/.*"id"[[:space:]]*:[[:space:]]*"/, "", line)
+        sub(/".*/, "", line)
+        current = line
+      }
+      current == want && /"role"[[:space:]]*:/ {
+        line = $0
+        sub(/.*"role"[[:space:]]*:[[:space:]]*"/, "", line)
+        sub(/".*/, "", line)
+        print line
+        exit
+      }
+    ' "$REGISTRY"
+  fi
+}
+
 registry_agent_ids() {
   [[ -f "$REGISTRY" ]] || return 0
   if $HAS_JQ; then
@@ -415,19 +440,20 @@ if [[ "$OPERATION" == "list" ]]; then
     done
     printf '\n  ]\n}\n'
   else
-    printf '%-18s %8s %9s %7s %9s  %s\n' "AGENT" "BYTES" "SESSIONS" "TASKS" "SUCCESS" "UPDATED"
+    printf '%-18s %-10s %8s %9s %7s %9s  %s\n' "AGENT" "ROLE" "BYTES" "SESSIONS" "TASKS" "SUCCESS" "UPDATED"
     for id in $(registry_agent_ids); do
       mem_file="$(agent_memory_path "$id")"
       if [[ -f "$mem_file" ]]; then
-        printf '%-18s %8s %9s %7s %9s  %s\n' \
+        printf '%-18s %-10s %8s %9s %7s %9s  %s\n' \
           "$id" \
+          "$(agent_role "$id")" \
           "$(file_size_bytes "$mem_file")" \
           "$(fm_get "$mem_file" session_count)" \
           "$(fm_get "$mem_file" total_tasks)" \
           "$(fm_get "$mem_file" success_rate)" \
           "$(fm_get "$mem_file" last_updated)"
       else
-        printf '%-18s %8s %9s %7s %9s  %s\n' "$id" "-" "-" "-" "-" "(no memory file)"
+        printf '%-18s %-10s %8s %9s %7s %9s  %s\n' "$id" "$(agent_role "$id")" "-" "-" "-" "-" "(no memory file)"
       fi
     done
   fi

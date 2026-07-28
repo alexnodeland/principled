@@ -26,7 +26,10 @@ Issues filed by humans are often incomplete. Triage fixes this:
 Delegate to `/ingest-issue` which determines the right document types:
 
 - **RFC + Plan** for features, design changes, architectural work
-- **Plan only** for bugs, fixes, well-scoped improvements
+- **No documents** for bugs, fixes and well-scoped improvements — implement directly and
+  let the PR close the issue. A plan with no proposal is blocked by
+  `check-plan-proposal-link.sh`, and inventing an RFC to get around that puts a fake
+  design on the permanent record.
 
 ### 3. Link Back
 

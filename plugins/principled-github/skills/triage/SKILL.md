@@ -71,7 +71,7 @@ Process open GitHub issues through the principled pipeline. Finds untriaged issu
 
 4. **Process each issue sequentially.** For each issue in the queue, follow the `/ingest-issue` SKILL.md workflow inline (steps 2–11). This means each issue gets the full treatment:
    - **Metadata normalization** — missing labels, vague titles are fixed on GitHub
-   - **Classification** — determines RFC + Plan vs Plan only
+   - **Classification** — determines RFC + Plan vs no documents at all
    - **Document creation** — proposals and/or plans created, pre-populated from issue content
    - **Issue comment** — links to created documents posted on the issue
    - **Label application** — principled lifecycle labels added
@@ -80,9 +80,9 @@ Process open GitHub issues through the principled pipeline. Finds untriaged issu
 
    ```
    [2/5] Processing #15 — Fix login timeout on slow connections
-         → Classification: Plan only
-         → Created: docs/plans/003-fix-login-timeout.md
-         → Labels: type:plan, plan:active
+         → Classification: No documents (one-PR fix)
+         → Created: nothing; implement directly
+         → Labels: unchanged
    ```
 
 5. **Handle errors gracefully.** If processing an individual issue fails (e.g., network error, permission issue), log the failure and continue to the next issue. Do not abort the entire triage run for a single issue failure.

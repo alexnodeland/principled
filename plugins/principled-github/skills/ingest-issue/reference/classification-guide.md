@@ -23,16 +23,27 @@ When ingesting a GitHub issue, determine what principled documents to create. Th
 
 1. **Start by checking labels.** Labels are the strongest signal because humans applied them intentionally.
    - `feature`, `enhancement`, `rfc`, `proposal`, `design` → RFC + Plan
-   - `bug`, `fix`, `patch`, `hotfix`, `chore`, `task` → Plan only
+   - `bug`, `fix`, `patch`, `hotfix`, `chore`, `task` → No documents; implement directly
    - No labels or ambiguous labels → continue to body analysis
 
 2. **Analyze body content.** Look for signals of design scope:
    - Mentions of architecture, API design, data model changes, new abstractions → RFC + Plan
-   - Mentions of specific files, error messages, stack traces, concrete steps → Plan only
+   - Mentions of specific files, error messages, stack traces, concrete steps → No documents
 
-3. **Consider body length.** Longer issues with discussion of tradeoffs and alternatives suggest RFC-level scope. Short, action-oriented issues suggest plan-only.
+3. **Consider body length.** Longer issues with discussion of tradeoffs and alternatives suggest RFC-level scope. Short, action-oriented issues suggest no documents at all.
 
-4. **Default to RFC + Plan.** When in doubt, create both. An RFC that turns out to be unnecessary is cheap; a plan without proper design review can be expensive.
+4. **Ask what will consume the plan.** Plans exist to be executed by `/orchestrate`,
+   `/decompose`, or `/spawn`. If nothing will orchestrate this work, a plan is ceremony —
+   take **No documents** instead.
+
+5. **Default to RFC + Plan for design work; default to No documents for fixes.** An RFC
+   that turns out unnecessary is cheap. Inventing an RFC purely to unlock a plan is not:
+   it puts a fake design on the permanent record to satisfy a guard.
+
+**There is no "Plan only" outcome.** `check-plan-proposal-link.sh` blocks any plan whose
+`originating_proposal` is missing (exit 2), and that guard is correct — a plan is a DDD
+decomposition of an accepted design, so a plan with no design is a decomposition of
+nothing. Every plan in this repository has an RFC behind it; most fixes have neither.
 
 ## Mapping Issue Content to Documents
 

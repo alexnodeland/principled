@@ -116,6 +116,9 @@ cannot be deleted compounds on every spawn.
 
 Metric fields are script-owned. Use `--update-metrics`, don't hand-edit them.
 
+`specializations` is reserved and unused — nothing populates it, so dispatch routes by
+`role` from the registry instead (#37).
+
 ## Forks
 
 `.agents/` is committed, so a fork inherits everything. Knowledge should transfer;

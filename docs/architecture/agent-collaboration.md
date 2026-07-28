@@ -34,6 +34,18 @@ letting agents open PRs against a repository.
 owns every irreversible decision. Steps 3, 5, 8 and 11 are cheap to redo; steps 4, 6, 10
 and 12 are not.
 
+### Not every issue takes the long path
+
+Steps 3–6 apply to **design work**. `/ingest-issue` classifies first, and a fix or chore
+worth roughly one PR produces **no pipeline documents at all** — implement, self-review,
+draft PR, human merges. That is how most fixes in this repository have actually shipped.
+
+There is deliberately no "plan without a proposal" option:
+`check-plan-proposal-link.sh` blocks it, and correctly — a plan is a DDD decomposition of
+an accepted design, so a plan with no design is a decomposition of nothing. The trap is
+inventing an RFC purely to unlock a plan for work nothing will orchestrate, which puts a
+fake design on the permanent record to satisfy a guard (#38).
+
 The protocol is a workflow pattern, not a platform. It runs identically with
 `/agent-dispatch --local` in a terminal and through CI.
 
