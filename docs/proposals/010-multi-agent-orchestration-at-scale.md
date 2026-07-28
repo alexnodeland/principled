@@ -1,6 +1,6 @@
 ---
 title: "Multi-Agent Orchestration at Scale"
-number: 009
+number: "010"
 status: draft
 author: Alex
 created: 2026-02-23
@@ -9,7 +9,7 @@ supersedes: null
 superseded_by: null
 ---
 
-# RFC-009: Multi-Agent Orchestration at Scale
+# RFC-010: Multi-Agent Orchestration at Scale
 
 ## Audience
 
@@ -845,7 +845,7 @@ All criteria are binary and testable:
 
 RFC-008 (Hooks, Subagents, and Agent Teams Integration) is a partial prerequisite for this proposal. The dependency is precise:
 
-| RFC-009 Phase                    | RFC-008 Prerequisite | Specific Dependency                                                                                         |
+| RFC-010 Phase                    | RFC-008 Prerequisite | Specific Dependency                                                                                         |
 | -------------------------------- | :------------------: | ----------------------------------------------------------------------------------------------------------- |
 | Phase 1: Memory & Resumability   |         None         | Uses existing manifest schema (ADR-008), worktree isolation (ADR-007)                                       |
 | Phase 2: GitHub Integration      |         None         | Uses existing principled-github skills (shipped in v1.0.0)                                                  |
@@ -861,4 +861,55 @@ If RFC-008 is modified or rejected:
 - Phase 3 falls back to sequential execution with supervised/interactive modes only (no parallel roles)
 - The five RFC-008 sub-agents (module-auditor, decision-auditor, issue-ingester, pr-reviewer, boundary-checker) would not exist, but principal-agents' design degrades gracefully — the agent identity table in System 7 shows that only 3 of the 6 agents benefit from persistent identity, and `impl-worker` (the primary beneficiary) is already shipped
 
-This proposal (RFC-009) extends RFC-008's foundation with persistent identity, autonomous lifecycle, and self-improvement — the capabilities needed to scale from "agent tool" to "agent workforce."
+This proposal (RFC-010) extends RFC-008's foundation with persistent identity, autonomous lifecycle, and self-improvement — the capabilities needed to scale from "agent tool" to "agent workforce."
+
+## Relationship to RFC-009 (principled-tasks)
+
+RFC-009 shipped a persistent task graph while this proposal was still in draft. The
+two overlap deliberately, and this section fixes the boundary so they do not diverge.
+
+**principled-tasks provides the substrate this proposal assumed it would have to
+build.** System 1's "shared backlog" and the work-unit persistence underpinning
+Nondeterministic Idempotence are exactly what `.principled/tasks.jsonl` is: an
+append-only, git-committed record of work units with typed dependency edges, agent
+assignment, and discovery provenance.
+
+This proposal should therefore **not** define its own backlog format. Concretely:
+
+| This proposal's need                        | Provided by principled-tasks                         |
+| ------------------------------------------- | ---------------------------------------------------- |
+| Shared backlog agents can claim work from   | `task-db.sh --list --status open`                    |
+| Work units surviving session crashes        | Event log is committed; state is the fold of the log |
+| Discovery chains (agent finds new work)     | `--discovered-from`, `spawned_by` edges              |
+| Which agent worked on what                  | `agent` field, `--audit` agent workload              |
+| Dependency ordering for parallel scheduling | `blocks` edges, `--graph`                            |
+
+What remains genuinely this proposal's to build is **agent identity and memory** —
+`.agents/` registries, accumulated learnings, retrospectives, performance metrics.
+Those are properties of the _worker_, not of the _work_, and principled-tasks
+deliberately models only the latter.
+
+### The data plane question is settled
+
+Architectural Principle 1 states that all agent state lives in git, with no external
+databases. ADR-017 originally committed a binary SQLite file, which conflicted with
+that principle in letter and — more importantly — could not merge across parallel
+agent branches, since every concurrent write collided.
+
+ADR-017 was revised before principled-tasks shipped: the git-committed record is now
+an append-only JSONL event log with a union merge driver, and SQLite is a derived,
+gitignored cache. Parallel agents on separate branches now merge cleanly. The
+principle and the implementation agree, and this proposal can build on the task graph
+without inheriting a merge-conflict problem.
+
+Any state this proposal adds should follow the same shape: **append-only text in git
+as the record, derived indexes as disposable caches.** Agent memory files, the
+registry, and retrospectives should be reviewed against that standard before
+implementation.
+
+### Sequencing implication
+
+Phase 1 (Memory & Resumability) previously implied building backlog persistence. It
+should be re-scoped to identity and memory only, consuming principled-tasks for work
+tracking. That reduces Phase 1's surface substantially and removes a duplicate
+work-unit model before it can be written.

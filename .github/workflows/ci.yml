@@ -94,6 +94,11 @@ jobs:
       - name: Check skill and hook script references resolve
         run: bash scripts/check-skill-references.sh
 
+      # Guards are write-time and cannot see git merges or out-of-session edits.
+      # This reconciles declared pipeline state against the repository as a whole.
+      - name: Audit pipeline consistency
+        run: bash scripts/pipeline-audit.sh
+
       - name: Check principled-docs template drift
         run: bash plugins/principled-docs/skills/scaffold/scripts/check-template-drift.sh
 

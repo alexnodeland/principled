@@ -1,10 +1,10 @@
 ---
 title: "Hooks, Subagents, and Agent Teams Integration"
 number: "008"
-status: active
+status: complete
 author: Alex
 created: 2026-02-23
-updated: 2026-02-23
+updated: 2026-07-28
 originating_proposal: "008"
 related_adrs: "015, 016"
 ---

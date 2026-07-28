@@ -238,11 +238,15 @@ test-hooks: test-hook-adr test-hook-proposal test-hook-manifest test-hook-pr tes
 refs:
     bash scripts/check-skill-references.sh
 
+# Reconcile declared pipeline state (statuses, numbering, links) against reality
+audit:
+    bash scripts/pipeline-audit.sh
+
 # Run the bats test suite
 test:
     npx bats tests/
 
 # Run the full CI pipeline locally
-ci: lint drift refs validate test test-hooks
+ci: lint drift refs audit validate test test-hooks
     @echo ""
     @echo "All CI checks passed."

@@ -4,7 +4,7 @@ This file supplements the root `CLAUDE.md` with development-specific guidance fo
 
 ## Dogfooding
 
-All six first-party plugins are installed via `.claude/settings.json`. See root `CLAUDE.md` § Dogfooding for the full list of available skills and active hooks.
+All seven first-party plugins are installed via `.claude/settings.json`. See root `CLAUDE.md` § Dogfooding for the full list of available skills and active hooks.
 
 ## Common Pitfalls
 
@@ -97,7 +97,7 @@ Edit in place. Skills reference them as `${CLAUDE_PLUGIN_ROOT}/lib/<name>`.
 
 ## Dev Skills
 
-These supplement the 41 plugin skills available via dogfooding:
+These supplement the 48 plugin skills available via dogfooding:
 
 | Skill                 | Command                | What It Does                                                   |
 | --------------------- | ---------------------- | -------------------------------------------------------------- |

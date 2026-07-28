@@ -1,10 +1,10 @@
 ---
 title: "Principled Quality Plugin"
 number: "005"
-status: active
+status: complete
 author: Alex
 created: 2026-02-22
-updated: 2026-02-22
+updated: 2026-07-28
 originating_proposal: "003"
 ---
 
