@@ -51,7 +51,7 @@ Generate changelog entries by mapping commits to proposals, plans, and ADRs merg
 3. **Collect changes.** Run the change collector to map commits to pipeline documents:
 
    ```bash
-   bash scripts/collect-changes.sh --since <tag> [--module <path>]
+   bash "${CLAUDE_PLUGIN_ROOT}/lib/collect-changes.sh" --since <tag> [--module <path>]
    ```
 
    This outputs tab-separated lines: `<hash>\t<category>\t<references>\t<subject>`.

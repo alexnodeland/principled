@@ -35,7 +35,7 @@ Coordinate version bumps across a monorepo by detecting modules, determining the
 1. **Detect modules.** Run the module detector:
 
    ```bash
-   bash scripts/detect-modules.sh [--module <path>]
+   bash "${CLAUDE_PLUGIN_ROOT}/lib/detect-modules.sh" [--module <path>]
    ```
 
    This finds modules via `CLAUDE.md` files and locates their version manifests (package.json, Cargo.toml, pyproject.toml, VERSION, plugin.json).

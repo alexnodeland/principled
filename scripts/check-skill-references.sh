@@ -109,13 +109,22 @@ done
 echo ""
 echo "Checked ${CHECKED} references."
 
-if [[ "$WARNINGS" -gt 0 ]]; then
-  echo "${WARNINGS} warning(s) — non-portable reference style."
-fi
-
 if [[ "$BROKEN" -gt 0 ]]; then
   echo "FAIL: ${BROKEN} reference(s) do not resolve."
   exit 1
 fi
 
-echo "PASS: All referenced scripts and templates exist."
+# Every reference now uses ${CLAUDE_PLUGIN_ROOT}, so a bare-relative or cross-skill
+# path is a regression rather than a leftover. Fail on it: relative paths only resolve
+# when the working directory happens to be the skill directory, and cross-skill
+# reaching is what lib/ exists to replace (ADR-018).
+if [[ "$WARNINGS" -gt 0 ]]; then
+  echo "FAIL: ${WARNINGS} non-portable reference(s)."
+  echo ""
+  echo "Use \${CLAUDE_PLUGIN_ROOT}/skills/<skill>/scripts/<name> for a skill's own"
+  echo "scripts, or move shared code to the plugin's lib/ and reference"
+  echo "\${CLAUDE_PLUGIN_ROOT}/lib/<name>."
+  exit 1
+fi
+
+echo "PASS: All ${CHECKED} references resolve and use a portable path."

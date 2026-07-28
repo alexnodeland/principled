@@ -46,7 +46,7 @@ Surface the specification context a reviewer needs for a pull request. Lists cha
 3. **Map files to modules.** For each changed file, identify its module:
 
    ```bash
-   bash scripts/map-files-to-modules.sh --files <comma-separated-files>
+   bash "${CLAUDE_PLUGIN_ROOT}/skills/review-context/scripts/map-files-to-modules.sh" --files <comma-separated-files>
    ```
 
    This walks up from each file to the nearest CLAUDE.md and extracts the module type.

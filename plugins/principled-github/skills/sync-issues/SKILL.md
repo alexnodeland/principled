@@ -52,7 +52,7 @@ Create or update GitHub issues from principled proposal and plan documents.
 3. **For each document, extract metadata.** Run:
 
    ```bash
-   bash scripts/extract-doc-metadata.sh --file <doc-path>
+   bash "${CLAUDE_PLUGIN_ROOT}/skills/sync-issues/scripts/extract-doc-metadata.sh" --file <doc-path>
    ```
 
    Returns: title, number, status, author, type (proposal or plan), and a content excerpt.
@@ -60,7 +60,7 @@ Create or update GitHub issues from principled proposal and plan documents.
 4. **Check for existing issue.** Search for an existing GitHub issue with the sync marker:
 
    ```bash
-   bash scripts/find-synced-issue.sh --doc-path <doc-path>
+   bash "${CLAUDE_PLUGIN_ROOT}/skills/sync-issues/scripts/find-synced-issue.sh" --doc-path <doc-path>
    ```
 
    This searches for issues containing the sync marker `<!-- principled-sync: <doc-path> -->`.
