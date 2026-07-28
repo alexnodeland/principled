@@ -1,15 +1,35 @@
 ---
 title: "Multi-Agent Orchestration at Scale"
 number: "010"
-status: draft
+status: superseded
 author: Alex
 created: 2026-02-23
-updated: 2026-02-23
+updated: 2026-07-28
 supersedes: null
-superseded_by: null
+superseded_by: "011"
 ---
 
 # RFC-010: Multi-Agent Orchestration at Scale
+
+> **Superseded.** This proposal has been split into three independently reviewable and
+> deliverable proposals. It is retained as the strategic vision and as the record of how
+> the systems relate; it is no longer the thing to implement against.
+>
+> | Proposal                                            | Covers          | Depends on                 |
+> | --------------------------------------------------- | --------------- | -------------------------- |
+> | [RFC-011](011-agent-memory-and-resumability.md)     | Systems 1, 2, 6 | Nothing new                |
+> | [RFC-012](012-github-native-agent-collaboration.md) | Systems 3, 4    | RFC-011, RFC-008 (partial) |
+> | [RFC-013](013-agent-self-improvement-loop.md)       | System 5        | RFC-011, RFC-012           |
+>
+> System 7 (the `principled-agent` plugin) is distributed across all three: each
+> declares what it contributes.
+>
+> **Two things changed in the split.** The `.agents/backlog.json` proposed here is
+> withdrawn — principled-tasks (ADR-017) already provides a git-committed work queue
+> with dependency edges. And the rejection of "JSONL + SQLite" as a memory format is
+> revisited in RFC-011, since ADR-017 shipped exactly that pattern for the task graph;
+> the conclusion is that memory and the task graph are different kinds of state, and
+> both rejections were right for their own case.
 
 ## Audience
 

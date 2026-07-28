@@ -1,7 +1,7 @@
 ---
 title: "Event Log as Record, SQLite as Cache"
 number: "017"
-status: proposed
+status: accepted
 author: Alex
 created: 2026-02-27
 updated: 2026-07-28
@@ -14,7 +14,7 @@ superseded_by: null
 
 ## Status
 
-Proposed
+Accepted
 
 <!-- Valid values: proposed, accepted, deprecated, superseded -->
 <!-- Once accepted, this document is IMMUTABLE. -->

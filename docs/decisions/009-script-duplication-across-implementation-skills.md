@@ -1,20 +1,27 @@
 ---
 title: "Script Duplication Across Implementation Skills"
 number: "009"
-status: accepted
+status: superseded
 author: Alex
 created: 2026-02-22
-updated: 2026-02-22
+updated: 2026-07-28
 from_proposal: "006"
 supersedes: null
-superseded_by: null
+superseded_by: "018"
 ---
 
 # ADR-009: Script Duplication Across Implementation Skills
 
 ## Status
 
-Accepted
+Superseded by [ADR-018](018-shared-plugin-lib-over-copies.md).
+
+The reasoning below is retained as the historical record. It is no longer current
+guidance: shared code now lives in each plugin's `lib/` and is referenced via
+`${CLAUDE_PLUGIN_ROOT}`. In practice this decision produced 15 copies of one 31-line
+script, 3,382 redundant lines across `plugins/` (20% of the tree), six drift checkers,
+and a drift checker that silently missed an already-diverged copy. ADR-018 records the
+measurements.
 
 <!-- Valid values: proposed, accepted, deprecated, superseded -->
 <!-- Once accepted, this document is IMMUTABLE. -->
