@@ -1,7 +1,7 @@
 ---
 title: "Agent Memory, Identity, and Resumability"
 number: "011"
-status: draft
+status: accepted
 author: Alex
 created: 2026-07-28
 updated: 2026-07-28
@@ -281,15 +281,92 @@ granularity with no contract change.
   ADR-017's event log
 - **New ADR:** manifest checkpoint schema, extending ADR-008
 
-## Open Questions
+## Resolved Questions
 
-- **Memory pruning.** At what size does a memory file stop helping and start diluting
-  context? Is pruning periodic, size-triggered, or an explicit `/improve` step?
-- **Memory and forks.** Should identity and memory carry across a repository fork?
-  Codebase knowledge transfers; performance metrics probably do not. A reasonable
-  default: memory transfers, registry metrics reset.
-- **Correlating with principled-tasks.** Tasks carry `plan` and `task_id` fields
-  intended to line up with the manifest, but nothing verifies the correspondence.
-  Should `/resume` reconcile the two, and what does it do when they disagree?
-- **Does `.agents/` belong in a new plugin at all**, or should memory live in
-  principled-implementation alongside the manifest it extends?
+These were open when this proposal was drafted. Each is answered below; the answers are
+binding on the implementation plan.
+
+### Memory pruning
+
+**Resolved: a soft size budget, warned advisorily, remedied by synthesis — never by
+automatic truncation.**
+
+The cost of an oversized memory file is not storage, it is context budget: every byte
+injected at spawn competes with the task description. The budget is therefore expressed
+in the unit that matters, and set where a file still reads as curated knowledge rather
+than a log:
+
+| Threshold     | Behaviour                                             |
+| ------------- | ----------------------------------------------------- |
+| under 8 KB    | silent                                                |
+| 8 KB to 16 KB | `check-memory-integrity.sh` warns, suggests synthesis |
+| over 16 KB    | warns more loudly; injection still proceeds           |
+
+Injection is never silently truncated. Dropping the second half of a memory file would
+give an agent a confidently incomplete picture — worse than a large file, because the
+loss is invisible. Pruning stays an explicit, reviewable act.
+
+Automatic synthesis is **out of scope here** and belongs to `/improve` (RFC-013).
+Until that ships, the remedy is a human editing the file, which is exactly the
+reviewability this proposal argues for. Shipping a warning without an automatic fix is
+the honest position: we can detect dilution, and we cannot yet safely cure it.
+
+### Memory and forks
+
+**Resolved: memory transfers, registry metrics reset — on explicit command, not by
+detection.**
+
+Because `.agents/` is committed, a fork inherits everything by default. The question is
+only what _should not_ survive, and that is the performance data: `session_count`,
+`total_tasks`, and `success_rate` describe an agent's record against the parent
+repository's codebase and CI, and carrying them into a fork makes a fresh agent look
+seasoned.
+
+Fork detection is unreliable — a fork, a template instantiation, and a plain clone are
+not distinguishable from inside the repository — so the reset is a command, not an
+inference:
+
+```
+agent-memory.sh --reset-metrics [--agent <id>]
+```
+
+Knowledge in the markdown body always transfers. It describes the code, which the fork
+still has.
+
+### Correlating with principled-tasks
+
+**Resolved: `/resume` reports divergence and never reconciles it silently.**
+
+Two records exist and each is authoritative for its own domain: the manifest owns
+implementation state (ADR-008), and the task graph owns the backlog (ADR-017). Neither
+may overwrite the other, because a disagreement between them is evidence — usually that
+a session died between writing one and writing the other — and auto-reconciling would
+destroy exactly the signal a human needs to see.
+
+`/resume` therefore joins on `plan` plus `task_id` and prints a divergence report:
+manifest tasks with no graph task, graph tasks with no manifest task, and status
+disagreements. It exits successfully regardless; divergence is information, not failure.
+
+principled-tasks is an independent install, so this correlation is **conditional**. When
+the plugin is absent or `.principled/tasks.jsonl` does not exist, `/resume` skips the
+section silently rather than erroring.
+
+### Where `.agents/` lives
+
+**Resolved: a new `principled-agent` plugin.**
+
+The decisive constraint is that the three memory-bearing agents live in three different
+plugins — `impl-worker` in principled-implementation, `issue-ingester` in
+principled-github, `pr-reviewer` in principled-quality — and plugins install
+independently and cannot reference each other's `${CLAUDE_PLUGIN_ROOT}` (the same
+constraint that keeps three copies of `check-gh-cli.sh` alive). Housing memory in
+principled-implementation would make GitHub and quality agents depend on a plugin they
+have no other reason to install.
+
+`.agents/` itself is a repository-root convention, not a plugin-internal path, so any
+plugin can read it. What belongs to the new plugin is the code that manages it: the
+registry, the injection hook, and the integrity check.
+
+The split is therefore along ownership, matching the Delivery table above: state _about
+the worker_ goes to principled-agent; state _about the work_ — checkpoint, acceptance
+criteria, `/resume` — stays in principled-implementation with the manifest it extends.

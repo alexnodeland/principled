@@ -100,6 +100,21 @@
       ]
     },
     {
+      "name": "principled-agent",
+      "source": "./plugins/principled-agent",
+      "description": "Persistent agent identity and memory. Git-committed, reviewable knowledge that agents accumulate across sessions, injected at spawn and revised in pull requests.",
+      "version": "0.1.0",
+      "category": "orchestration",
+      "keywords": [
+        "agent",
+        "memory",
+        "identity",
+        "resumability",
+        "orchestration",
+        "retrospective"
+      ]
+    },
+    {
       "name": "principled-tasks",
       "source": "./plugins/principled-tasks",
       "description": "Git-native, graph-structured task tracking backed by an append-only event log. Tracks tasks with typed dependency edges across plans and agents, and merges cleanly across parallel agent branches.",

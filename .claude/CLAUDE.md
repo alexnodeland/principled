@@ -4,7 +4,7 @@ This file supplements the root `CLAUDE.md` with development-specific guidance fo
 
 ## Dogfooding
 
-All seven first-party plugins are installed via `.claude/settings.json`. See root `CLAUDE.md` § Dogfooding for the full list of available skills and active hooks.
+All eight first-party plugins are installed via `.claude/settings.json`. See root `CLAUDE.md` § Dogfooding for the full list of available skills and active hooks.
 
 ## Common Pitfalls
 
@@ -27,13 +27,14 @@ All seven first-party plugins are installed via `.claude/settings.json`. See roo
 - Run `bash plugins/principled-docs/skills/scaffold/scripts/check-template-drift.sh` to verify zero drift.
 - Forgetting to propagate = CI failure.
 
-### Modifying Shared Code (principled-implementation, principled-tasks)
+### Modifying Shared Code (`lib/`)
 
-These plugins use the `lib/` pattern (ADR-018) — one copy, no propagation:
+Every plugin now uses the `lib/` pattern (ADR-018) — one copy, no propagation:
 
 - `plugins/principled-implementation/lib/{task-manifest,parse-plan,run-checks}.sh`
 - `plugins/principled-implementation/lib/templates/claude-task.md`
 - `plugins/principled-tasks/lib/task-db.sh`
+- `plugins/principled-agent/lib/agent-memory.sh`
 
 Edit in place. Skills reference them as `${CLAUDE_PLUGIN_ROOT}/lib/<name>`.
 
@@ -81,6 +82,29 @@ ADR-018.
 - Advisory only --- always exits 0. Never blocks.
 - Triggers on Write of source files (`.ts`, `.tsx`, `.js`, `.jsx`, `.py`, `.go`, `.rs`, `.java`).
 - Checks for module dependency direction violations by scanning imports against the module type system (ADR-003, ADR-014).
+
+### Editing Hook Scripts (principled-agent)
+
+- Injection reads an agent id from stdin JSON, trying `agent_id`, `subagent_type`,
+  `agent_type`, then `agent` — the field name has varied across Claude Code versions:
+  `echo '{"agent_id":"impl-worker"}' | bash plugins/principled-agent/hooks/scripts/inject-agent-memory.sh`
+- Integrity uses `tool_input.file_path` and only reacts to paths under `.agents/`.
+- Both always exit 0. Injection runs on `SubagentStart`, so a non-zero exit would block
+  agent spawning outright.
+- **Never make injection truncate.** An agent handed a silently halved memory file has a
+  confidently incomplete picture and no way to notice. Oversized memory is reported by
+  the integrity hook; it is never trimmed on the way in.
+
+### Editing the Manifest Schema (principled-implementation)
+
+- `checkpoint` and `acceptance_criteria` are additive and optional (ADR-021). Every
+  consumer must tolerate their absence and ignore unknown fields.
+- **Do not use `sed -i`.** BSD sed reads the next argument as a backup suffix, so
+  `sed -i <expr> <file>` misparses on stock macOS. The no-jq fallback was broken this way
+  for the second task onward and for every status update. Use `awk` into a temp file and
+  `mv`, which behaves identically on both platforms.
+- Test both paths. `tests/manifest-checkpoint.bats` runs each operation with jq and with
+  a PATH that genuinely lacks it, then validates the result with the real jq.
 
 ### Changing Frontmatter Schema
 

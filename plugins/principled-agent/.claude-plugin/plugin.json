@@ -1,0 +1,15 @@
+{
+  "name": "principled-agent",
+  "version": "0.1.0",
+  "description": "Persistent agent identity and memory. Git-committed, reviewable knowledge that agents accumulate across sessions, injected at spawn and revised in pull requests.",
+  "author": "Alex Nodeland",
+  "homepage": "https://github.com/alexnodeland/principled",
+  "keywords": [
+    "agent",
+    "memory",
+    "identity",
+    "resumability",
+    "orchestration",
+    "retrospective"
+  ]
+}

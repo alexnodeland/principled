@@ -29,6 +29,7 @@
     "principled-quality@principled-marketplace": true,
     "principled-release@principled-marketplace": true,
     "principled-architecture@principled-marketplace": true,
-    "principled-tasks@principled-marketplace": true
+    "principled-tasks@principled-marketplace": true,
+    "principled-agent@principled-marketplace": true
   }
 }
