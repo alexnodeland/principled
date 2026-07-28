@@ -1,10 +1,10 @@
 ---
 title: "Principled Tasks Plugin"
 number: "009"
-status: active
+status: complete
 author: Alex
 created: 2026-02-27
-updated: 2026-02-27
+updated: 2026-07-28
 originating_proposal: "009"
 ---
 

@@ -34,38 +34,22 @@ lint: lint-shfmt lint-shellcheck lint-markdown lint-prettier
 
 # ─── Template Drift ─────────────────────────────────────────────────────────
 
+# Check cross-plugin script drift (check-gh-cli.sh)
+drift-cross:
+    bash scripts/check-cross-plugin-drift.sh
+
 # Check template drift for principled-docs
 drift-docs:
     bash plugins/principled-docs/skills/scaffold/scripts/check-template-drift.sh
 
-# Check template drift for principled-implementation
-drift-impl:
-    bash plugins/principled-implementation/scripts/check-template-drift.sh
-
-# Check template drift for principled-github
-drift-github:
-    bash plugins/principled-github/scripts/check-template-drift.sh
-
-# Check template drift for principled-quality
-drift-quality:
-    bash plugins/principled-quality/scripts/check-template-drift.sh
-
-# Check template drift for principled-release
-drift-release:
-    bash plugins/principled-release/scripts/check-template-drift.sh
-
-# Check template drift for principled-architecture
-drift-arch:
-    bash plugins/principled-architecture/scripts/check-template-drift.sh
-
 # Check all template drift
-drift: drift-docs drift-impl drift-github drift-quality drift-release drift-arch
+drift: drift-docs drift-cross
 
 # ─── Validate ────────────────────────────────────────────────────────────────
 
 # Validate root documentation structure
 validate-root:
-    bash plugins/principled-docs/skills/scaffold/scripts/validate-structure.sh --root
+    bash plugins/principled-docs/lib/validate-structure.sh --root
 
 # Validate marketplace manifest
 validate-marketplace:
@@ -238,11 +222,19 @@ test-hooks: test-hook-adr test-hook-proposal test-hook-manifest test-hook-pr tes
 
 # ─── Aggregate ───────────────────────────────────────────────────────────────
 
+# Verify every script referenced by a skill or hook actually exists
+refs:
+    bash scripts/check-skill-references.sh
+
+# Reconcile declared pipeline state (statuses, numbering, links) against reality
+audit:
+    bash scripts/pipeline-audit.sh
+
 # Run the bats test suite
 test:
     npx bats tests/
 
 # Run the full CI pipeline locally
-ci: lint drift validate test test-hooks
+ci: lint drift refs audit validate test test-hooks
     @echo ""
     @echo "All CI checks passed."

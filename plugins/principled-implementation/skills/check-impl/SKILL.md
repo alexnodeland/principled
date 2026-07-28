@@ -31,13 +31,13 @@ Run the project's test suite and checks against a task's implementation to verif
 1. **Parse arguments.** Determine target task(s) from `$ARGUMENTS`.
 
 2. **Identify worktree path(s).** For each target task:
-   - Read the task's branch from the manifest: `bash scripts/task-manifest.sh --get-task --task-id <id>`
+   - Read the task's branch from the manifest: `bash "${CLAUDE_PLUGIN_ROOT}/lib/task-manifest.sh" --get-task --task-id <id>`
    - Discover the worktree path via `git worktree list` matching the branch name
 
 3. **Discover check commands.** Run:
 
    ```bash
-   bash scripts/run-checks.sh --discover --cwd <worktree-path>
+   bash "${CLAUDE_PLUGIN_ROOT}/lib/run-checks.sh" --discover --cwd <worktree-path>
    ```
 
    Reports which checks were discovered and their sources. See `reference/check-discovery.md` for supported project types.
@@ -45,7 +45,7 @@ Run the project's test suite and checks against a task's implementation to verif
 4. **Run checks.** For each task, within its worktree:
 
    ```bash
-   bash scripts/run-checks.sh --execute --cwd <worktree-path>
+   bash "${CLAUDE_PLUGIN_ROOT}/lib/run-checks.sh" --execute --cwd <worktree-path>
    ```
 
    Runs each discovered check and captures exit code + output.
@@ -53,7 +53,7 @@ Run the project's test suite and checks against a task's implementation to verif
 5. **Update manifest.** Run:
 
    ```bash
-   bash scripts/task-manifest.sh --update-status \
+   bash "${CLAUDE_PLUGIN_ROOT}/lib/task-manifest.sh" --update-status \
      --task-id <task-id> \
      --status passed|failed \
      --check-results "<summary>"
@@ -68,8 +68,8 @@ Run the project's test suite and checks against a task's implementation to verif
 
 ## Scripts
 
-- `scripts/run-checks.sh` — Check discovery and execution (canonical copy)
-- `scripts/task-manifest.sh` — Task manifest CRUD (copy from decompose)
+- `${CLAUDE_PLUGIN_ROOT}/lib/run-checks.sh` — Check discovery and execution (shared, ADR-018)
+- `${CLAUDE_PLUGIN_ROOT}/lib/task-manifest.sh` — Task manifest CRUD (shared, ADR-018)
 
 ## Reference
 

@@ -31,7 +31,7 @@ Generate a map between code modules and their governing ADRs and architecture do
 1. **Scan modules.** Discover all modules by finding CLAUDE.md files:
 
    ```bash
-   bash scripts/scan-modules.sh [--module <path>]
+   bash "${CLAUDE_PLUGIN_ROOT}/lib/scan-modules.sh" [--module <path>]
    ```
 
    This outputs tab-separated lines: `<module-path>\t<module-type>\t<module-name>`.

@@ -118,13 +118,18 @@ flowchart TB
 
 The `--type` flag on `/version-bump` overrides automatic detection.
 
-## Script Duplication
+## Shared Code
 
-Following the principled convention, shared scripts are duplicated across consuming skills with byte-identical copies. This plugin uses **cross-plugin drift detection** --- the canonical `check-gh-cli.sh` lives in principled-github.
+`check-gh-cli.sh` is canonical in `principled-github/lib/`. Because plugins install
+independently, `${CLAUDE_PLUGIN_ROOT}` cannot reach across plugin boundaries, so this
+plugin vendors its own copy in `lib/` (ADR-018). The two are kept identical by:
 
 ```bash
-bash plugins/principled-release/scripts/check-template-drift.sh
+bash scripts/check-cross-plugin-drift.sh
 ```
+
+All other shared code in this plugin lives in `lib/` with a single copy, referenced as
+`${CLAUDE_PLUGIN_ROOT}/lib/<name>` — no duplication, no drift checker.
 
 | Canonical (principled-github)         | Copies To (principled-release)                                          |
 | ------------------------------------- | ----------------------------------------------------------------------- |

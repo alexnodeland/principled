@@ -154,28 +154,30 @@ The `/gh-scaffold` skill creates:
 | `.github/workflows/principled-pr-check.yml` | PR validation workflow                |
 | `.github/workflows/principled-labels.yml`   | Label sync workflow                   |
 
-## 🔄 Script Duplication
+## 🔄 Shared Code
 
-Following the principled convention, shared scripts are duplicated across consuming skills with byte-identical copies. A drift check verifies all copies match:
+`lib/check-gh-cli.sh` is a single copy referenced by every skill as
+`${CLAUDE_PLUGIN_ROOT}/lib/check-gh-cli.sh` (ADR-018). It was previously duplicated
+into seven skill directories.
+
+It is also canonical for principled-quality and principled-release, which vendor their
+own copies because plugins install independently and `${CLAUDE_PLUGIN_ROOT}` cannot
+cross a plugin boundary. Those two copies are drift-checked:
 
 ```bash
-bash plugins/principled-github/scripts/check-template-drift.sh
+bash scripts/check-cross-plugin-drift.sh
 ```
-
-| Canonical                             | Copies To                                                                                       |
-| ------------------------------------- | ----------------------------------------------------------------------------------------------- |
-| `sync-issues/scripts/check-gh-cli.sh` | `sync-labels/`, `pr-check/`, `gh-scaffold/`, `ingest-issue/`, `triage/`, `pr-describe/` scripts |
 
 ## 🚀 CI Integration
 
-### Template Drift Check
+### Cross-Plugin Drift Check
 
 ```yaml
-- name: Check principled-github template drift
-  run: bash plugins/principled-github/scripts/check-template-drift.sh
+- name: Check cross-plugin script drift
+  run: bash scripts/check-cross-plugin-drift.sh
 ```
 
-Exits non-zero if any script copy has diverged from canonical.
+Exits non-zero if a vendored copy has diverged from canonical.
 
 ### Hook Smoke-test
 

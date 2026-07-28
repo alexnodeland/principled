@@ -38,7 +38,7 @@ Generate a review checklist for a pull request by combining plan acceptance crit
 1. **Verify prerequisites.** Check that `gh` is available and authenticated:
 
    ```bash
-   bash scripts/check-gh-cli.sh
+   bash "${CLAUDE_PLUGIN_ROOT}/lib/check-gh-cli.sh"
    ```
 
 2. **Resolve the PR.** Fetch PR metadata including title, body, and changed files:
@@ -56,7 +56,7 @@ Generate a review checklist for a pull request by combining plan acceptance crit
 4. **Extract acceptance criteria.** If a plan was identified, extract criteria:
 
    ```bash
-   bash scripts/extract-plan-criteria.sh --plan <path> [--task <id>]
+   bash "${CLAUDE_PLUGIN_ROOT}/skills/review-checklist/scripts/extract-plan-criteria.sh" --plan <path> [--task <id>]
    ```
 
    Each criterion becomes a checklist item in the "Acceptance Criteria" section.
@@ -70,7 +70,7 @@ Generate a review checklist for a pull request by combining plan acceptance crit
 6. **Find relevant ADRs.** Identify ADRs that apply to the changed files:
 
    ```bash
-   bash scripts/find-relevant-adrs.sh --files <comma-separated-files> [--decisions-dir <path>]
+   bash "${CLAUDE_PLUGIN_ROOT}/skills/review-checklist/scripts/find-relevant-adrs.sh" --files <comma-separated-files> [--decisions-dir <path>]
    ```
 
    For each ADR found, read its "Decision" section and create a compliance checklist item summarizing what to verify.
@@ -140,7 +140,7 @@ Standard checks that apply to all PRs:
 
 ## Scripts
 
-- `scripts/check-gh-cli.sh` --- Verify gh CLI availability and auth status (copy from principled-github canonical)
+- `${CLAUDE_PLUGIN_ROOT}/lib/check-gh-cli.sh` --- Verify gh CLI availability and auth status (copy from principled-github canonical)
 - `scripts/extract-plan-criteria.sh` --- Extract acceptance criteria from a DDD plan file
 - `scripts/find-relevant-adrs.sh` --- Find ADRs relevant to changed files by module scope
 

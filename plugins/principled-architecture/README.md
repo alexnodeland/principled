@@ -100,7 +100,7 @@ The plugin is built in three layers:
 flowchart TB
     S["SKILLS — architecture governance<br/>6 skills, each self-contained"]
     H["HOOKS — advisory guardrails<br/>Boundary violation detector · always advisory"]
-    F["FOUNDATION — scripts, templates<br/>scan-modules.sh · check-boundaries.sh · detect-changes.sh"]
+    F["FOUNDATION — lib/ + skill scripts<br/>lib/scan-modules.sh · check-boundaries.sh · detect-changes.sh"]
 
     S --> H --> F
 ```
@@ -136,14 +136,14 @@ Drift detection uses file-level pattern matching (regex on import statements), n
 
 ## CI Integration
 
-### Template Drift Check
+### Reference Integrity Check
 
 ```yaml
-- name: Check principled-architecture template drift
-  run: bash plugins/principled-architecture/scripts/check-template-drift.sh
+- name: Check skill and hook script references resolve
+  run: bash scripts/check-skill-references.sh
 ```
 
-Exits non-zero if any script copy has diverged from canonical.
+Exits non-zero if a SKILL.md references a script that does not exist.
 
 ### Hook Smoke-test
 

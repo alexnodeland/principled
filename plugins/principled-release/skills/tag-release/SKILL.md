@@ -36,7 +36,7 @@ Validate, tag, and finalize a release with generated release notes. This is the 
 1. **Validate the tag.** Check format and uniqueness:
 
    ```bash
-   bash scripts/validate-tag.sh <version>
+   bash "${CLAUDE_PLUGIN_ROOT}/skills/tag-release/scripts/validate-tag.sh" <version>
    ```
 
    Ensures the version follows semver format and the tag doesn't already exist.
@@ -52,7 +52,7 @@ Validate, tag, and finalize a release with generated release notes. This is the 
 3. **Verify release readiness.** Run the strict readiness check:
 
    ```bash
-   bash ../release-ready/scripts/check-readiness.sh --since <previous-tag> --strict
+   bash "${CLAUDE_PLUGIN_ROOT}/lib/check-readiness.sh" --since <previous-tag> --strict
    ```
 
    If any referenced pipeline document is not in terminal status, report the failures and stop (unless `--dry-run`).
@@ -66,7 +66,7 @@ Validate, tag, and finalize a release with generated release notes. This is the 
 5. **Generate changelog.** Collect and format changes since the previous tag:
 
    ```bash
-   bash ../changelog/scripts/collect-changes.sh --since <previous-tag>
+   bash "${CLAUDE_PLUGIN_ROOT}/lib/collect-changes.sh" --since <previous-tag>
    ```
 
    Format the output into release notes using the changelog template.
@@ -111,5 +111,5 @@ Validate, tag, and finalize a release with generated release notes. This is the 
 
 ## Scripts
 
-- `scripts/check-gh-cli.sh` --- Verify gh CLI availability and auth status (copy from principled-github canonical)
+- `${CLAUDE_PLUGIN_ROOT}/lib/check-gh-cli.sh` --- Verify gh CLI availability and auth status (copy from principled-github canonical)
 - `scripts/validate-tag.sh` --- Validate tag format and check for duplicates

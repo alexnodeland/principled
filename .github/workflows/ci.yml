@@ -91,26 +91,22 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Check skill and hook script references resolve
+        run: bash scripts/check-skill-references.sh
+
+      # Guards are write-time and cannot see git merges or out-of-session edits.
+      # This reconciles declared pipeline state against the repository as a whole.
+      - name: Audit pipeline consistency
+        run: bash scripts/pipeline-audit.sh
+
       - name: Check principled-docs template drift
         run: bash plugins/principled-docs/skills/scaffold/scripts/check-template-drift.sh
 
-      - name: Check principled-implementation template drift
-        run: bash plugins/principled-implementation/scripts/check-template-drift.sh
-
-      - name: Check principled-github template drift
-        run: bash plugins/principled-github/scripts/check-template-drift.sh
-
-      - name: Check principled-quality template drift
-        run: bash plugins/principled-quality/scripts/check-template-drift.sh
-
-      - name: Check principled-release template drift
-        run: bash plugins/principled-release/scripts/check-template-drift.sh
-
-      - name: Check principled-architecture template drift
-        run: bash plugins/principled-architecture/scripts/check-template-drift.sh
+      - name: Check cross-plugin script drift
+        run: bash scripts/check-cross-plugin-drift.sh
 
       - name: Validate root structure
-        run: bash plugins/principled-docs/skills/scaffold/scripts/validate-structure.sh --root
+        run: bash plugins/principled-docs/lib/validate-structure.sh --root
 
       - name: Validate marketplace manifest
         run: |

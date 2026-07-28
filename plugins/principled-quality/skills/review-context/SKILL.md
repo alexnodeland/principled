@@ -34,7 +34,7 @@ Surface the specification context a reviewer needs for a pull request. Lists cha
 1. **Verify prerequisites.** Check that `gh` is available and authenticated:
 
    ```bash
-   bash scripts/check-gh-cli.sh
+   bash "${CLAUDE_PLUGIN_ROOT}/lib/check-gh-cli.sh"
    ```
 
 2. **Get changed files.** List all files changed in the PR:
@@ -46,7 +46,7 @@ Surface the specification context a reviewer needs for a pull request. Lists cha
 3. **Map files to modules.** For each changed file, identify its module:
 
    ```bash
-   bash scripts/map-files-to-modules.sh --files <comma-separated-files>
+   bash "${CLAUDE_PLUGIN_ROOT}/skills/review-context/scripts/map-files-to-modules.sh" --files <comma-separated-files>
    ```
 
    This walks up from each file to the nearest CLAUDE.md and extracts the module type.
@@ -104,5 +104,5 @@ Surface the specification context a reviewer needs for a pull request. Lists cha
 
 ## Scripts
 
-- `scripts/check-gh-cli.sh` --- Verify gh CLI availability and auth status (copy from principled-github canonical)
+- `${CLAUDE_PLUGIN_ROOT}/lib/check-gh-cli.sh` --- Verify gh CLI availability and auth status (copy from principled-github canonical)
 - `scripts/map-files-to-modules.sh` --- Map file paths to modules via CLAUDE.md discovery

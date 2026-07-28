@@ -30,7 +30,7 @@ Detect whether the codebase conforms to documented architectural decisions. Chec
 1. **Scan modules.** Discover all modules:
 
    ```bash
-   bash ../arch-map/scripts/scan-modules.sh [--module <path>]
+   bash "${CLAUDE_PLUGIN_ROOT}/lib/scan-modules.sh" [--module <path>]
    ```
 
 2. **Read accepted ADRs.** For each ADR in `docs/decisions/` with status `accepted`:
@@ -41,7 +41,7 @@ Detect whether the codebase conforms to documented architectural decisions. Chec
 3. **Check dependency direction.** For each module, run the boundary checker:
 
    ```bash
-   bash scripts/check-boundaries.sh --module <path> --type <type>
+   bash "${CLAUDE_PLUGIN_ROOT}/skills/arch-drift/scripts/check-boundaries.sh" --module <path> --type <type>
    ```
 
    This scans source files for import statements and checks them against the dependency direction rules:

@@ -36,7 +36,7 @@ Verify that all proposals, plans, and ADRs referenced by commits since the last 
 1. **Verify prerequisites.** Check that `gh` is available:
 
    ```bash
-   bash scripts/check-gh-cli.sh
+   bash "${CLAUDE_PLUGIN_ROOT}/lib/check-gh-cli.sh"
    ```
 
    If not available, proceed with commit-based reference resolution only.
@@ -50,7 +50,7 @@ Verify that all proposals, plans, and ADRs referenced by commits since the last 
 3. **Check readiness.** Run the readiness checker:
 
    ```bash
-   bash scripts/check-readiness.sh --since <tag> [--strict]
+   bash "${CLAUDE_PLUGIN_ROOT}/lib/check-readiness.sh" --since <tag> [--strict]
    ```
 
    This collects all pipeline references from commits since the tag and checks each referenced document's frontmatter status.
@@ -79,5 +79,5 @@ Verify that all proposals, plans, and ADRs referenced by commits since the last 
 
 ## Scripts
 
-- `scripts/check-gh-cli.sh` --- Verify gh CLI availability and auth status (copy from principled-github canonical)
+- `${CLAUDE_PLUGIN_ROOT}/lib/check-gh-cli.sh` --- Verify gh CLI availability and auth status (copy from principled-github canonical)
 - `scripts/check-readiness.sh` --- Check pipeline document statuses against terminal criteria

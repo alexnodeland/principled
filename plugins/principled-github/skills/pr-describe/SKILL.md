@@ -38,7 +38,7 @@ Generate a structured PR description from a DDD plan task, with full cross-refer
 1. **Verify prerequisites.** Check that `gh` is available and authenticated:
 
    ```bash
-   bash scripts/check-gh-cli.sh
+   bash "${CLAUDE_PLUGIN_ROOT}/lib/check-gh-cli.sh"
    ```
 
    If not available, report: _"The `gh` CLI is required. Install it from <https://cli.github.com/>."_
@@ -58,13 +58,13 @@ Generate a structured PR description from a DDD plan task, with full cross-refer
 4. **Extract task details.** If manifest exists:
 
    ```bash
-   bash scripts/task-manifest.sh --get-task --task-id <task-id>
+   bash "${CLAUDE_PLUGIN_ROOT}/skills/pr-describe/scripts/task-manifest.sh" --get-task --task-id <task-id>
    ```
 
 5. **Analyze the branch.** Determine changes:
 
    ```bash
-   bash scripts/analyze-branch.sh --branch <branch>
+   bash "${CLAUDE_PLUGIN_ROOT}/skills/pr-describe/scripts/analyze-branch.sh" --branch <branch>
    ```
 
    Returns: files changed, commit messages, diff summary.
@@ -87,7 +87,7 @@ The skill recognizes the `impl/<plan-number>/<task-id>` branch naming convention
 
 ## Scripts
 
-- `scripts/check-gh-cli.sh` --- Verify gh CLI availability and auth status (copy from sync-issues)
+- `${CLAUDE_PLUGIN_ROOT}/lib/check-gh-cli.sh` --- Verify gh CLI availability and auth status (copy from sync-issues)
 - `scripts/task-manifest.sh` --- Read task details from manifest (copy from principled-implementation)
 - `scripts/analyze-branch.sh` --- Analyze branch changes for PR description
 

@@ -37,7 +37,7 @@ Create a new proposal (RFC) document with correct numbering, naming, and templat
 2. **Get next sequence number.** Run:
 
    ```bash
-   bash scripts/next-number.sh --dir <target-proposals-dir>
+   bash "${CLAUDE_PLUGIN_ROOT}/lib/next-number.sh" --dir <target-proposals-dir>
    ```
 
    This returns the next available `NNN` (zero-padded to 3 digits).
@@ -83,4 +83,4 @@ The short title must follow these rules:
 
 ## Scripts
 
-- `scripts/next-number.sh` — Determines the next NNN sequence number for a directory
+- `${CLAUDE_PLUGIN_ROOT}/lib/next-number.sh` — Determines the next NNN sequence number for a directory

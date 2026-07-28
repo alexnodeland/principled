@@ -35,7 +35,7 @@ Draft a release plan document summarizing all changes since the last tag, groupe
 1. **Verify prerequisites.** Check that `gh` is available:
 
    ```bash
-   bash scripts/check-gh-cli.sh
+   bash "${CLAUDE_PLUGIN_ROOT}/lib/check-gh-cli.sh"
    ```
 
 2. **Determine the starting tag.** If `--since` is provided, use it. Otherwise, find the most recent tag:
@@ -47,19 +47,19 @@ Draft a release plan document summarizing all changes since the last tag, groupe
 3. **Collect changes.** Use the changelog skill's collector to map commits to pipeline documents:
 
    ```bash
-   bash ../changelog/scripts/collect-changes.sh --since <tag>
+   bash "${CLAUDE_PLUGIN_ROOT}/lib/collect-changes.sh" --since <tag>
    ```
 
 4. **Detect modules.** Run the module detector to identify modules and versions:
 
    ```bash
-   bash ../version-bump/scripts/detect-modules.sh
+   bash "${CLAUDE_PLUGIN_ROOT}/lib/detect-modules.sh"
    ```
 
 5. **Check readiness.** Run the readiness checker to identify outstanding items:
 
    ```bash
-   bash ../release-ready/scripts/check-readiness.sh --since <tag>
+   bash "${CLAUDE_PLUGIN_ROOT}/lib/check-readiness.sh" --since <tag>
    ```
 
    Documents not in terminal status become "Outstanding Items" in the plan.
@@ -97,7 +97,7 @@ Draft a release plan document summarizing all changes since the last tag, groupe
 
 ## Scripts
 
-- `scripts/check-gh-cli.sh` --- Verify gh CLI availability and auth status (copy from principled-github canonical)
+- `${CLAUDE_PLUGIN_ROOT}/lib/check-gh-cli.sh` --- Verify gh CLI availability and auth status (copy from principled-github canonical)
 
 ## Templates
 

@@ -40,7 +40,7 @@ Create a new ADR, either standalone or linked to an accepted proposal. In the pi
 3. **Get next sequence number.** Run:
 
    ```bash
-   bash scripts/next-number.sh --dir <target-decisions-dir>
+   bash "${CLAUDE_PLUGIN_ROOT}/lib/next-number.sh" --dir <target-decisions-dir>
    ```
 
 4. **Create the ADR file.** Read `templates/decision.md` and create `<target>/NNN-<short-title>.md`.
@@ -90,4 +90,4 @@ Once an ADR is accepted, it is **immutable**. The only permitted change is setti
 
 ## Scripts
 
-- `scripts/next-number.sh` — Determines the next NNN sequence number
+- `${CLAUDE_PLUGIN_ROOT}/lib/next-number.sh` — Determines the next NNN sequence number

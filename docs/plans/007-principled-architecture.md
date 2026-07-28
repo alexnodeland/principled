@@ -1,10 +1,10 @@
 ---
 title: "Principled Architecture Plugin"
 number: "007"
-status: active
+status: complete
 author: Alex
 created: 2026-02-22
-updated: 2026-02-22
+updated: 2026-07-28
 originating_proposal: "005"
 related_adrs: [003, 014]
 ---

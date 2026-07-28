@@ -1,10 +1,10 @@
 ---
 title: "Hooks, Subagents, and Agent Teams Integration"
 number: 008
-status: draft
+status: accepted
 author: Alex
 created: 2026-02-23
-updated: 2026-02-23
+updated: 2026-07-28
 supersedes: null
 superseded_by: null
 ---

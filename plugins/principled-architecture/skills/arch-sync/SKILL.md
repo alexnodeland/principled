@@ -34,7 +34,7 @@ If neither `--doc` nor `--all` is provided, list available architecture docs and
 2. **Detect changes.** For each target doc, run the change detector:
 
    ```bash
-   bash scripts/detect-changes.sh --doc <path>
+   bash "${CLAUDE_PLUGIN_ROOT}/skills/arch-sync/scripts/detect-changes.sh" --doc <path>
    ```
 
    This outputs discrepancies:

@@ -21,7 +21,7 @@ You are a documentation structure auditor. Your job is to validate that modules 
 2. **Validate each module.** For each module path, run the validation script:
 
    ```bash
-   bash plugins/principled-docs/skills/scaffold/scripts/validate-structure.sh \
+   bash plugins/principled-docs/lib/validate-structure.sh \
      --module-path <path> --type <type> --json
    ```
 

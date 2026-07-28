@@ -56,15 +56,15 @@ See [ADR-016](../../docs/decisions/016-agent-teams-for-parallel-execution.md) fo
 3. **Extract plan metadata and tasks.** Run:
 
    ```bash
-   bash scripts/parse-plan.sh --file <plan-path> --metadata
-   bash scripts/parse-plan.sh --file <plan-path> --tasks
+   bash "${CLAUDE_PLUGIN_ROOT}/lib/parse-plan.sh" --file <plan-path> --metadata
+   bash "${CLAUDE_PLUGIN_ROOT}/lib/parse-plan.sh" --file <plan-path> --tasks
    ```
 
 4. **Initialize manifest.**
 
    ```bash
    mkdir -p .impl
-   bash scripts/task-manifest.sh --init \
+   bash "${CLAUDE_PLUGIN_ROOT}/lib/task-manifest.sh" --init \
      --plan-path <plan-path> \
      --plan-number <number> \
      --plan-title "<title>"
@@ -73,7 +73,7 @@ See [ADR-016](../../docs/decisions/016-agent-teams-for-parallel-execution.md) fo
 5. **Populate all tasks.** For each extracted task:
 
    ```bash
-   bash scripts/task-manifest.sh --add-task \
+   bash "${CLAUDE_PLUGIN_ROOT}/lib/task-manifest.sh" --add-task \
      --task-id <id> --phase <N> --description "<desc>" \
      --depends-on "<deps>" --bounded-contexts "<BCs>"
    ```
@@ -87,7 +87,7 @@ For each phase (in numerical order, or just `--phase <N>` if specified):
 1. **Check phase readiness.** A phase is ready when all tasks in its dependency phases have status `merged` or `abandoned`. Run:
 
    ```bash
-   bash scripts/task-manifest.sh --phase-status --phase <dep>
+   bash "${CLAUDE_PLUGIN_ROOT}/lib/task-manifest.sh" --phase-status --phase <dep>
    ```
 
    If any dependency phase has non-terminal tasks, wait or report the blocker.
@@ -95,7 +95,7 @@ For each phase (in numerical order, or just `--phase <N>` if specified):
 2. **Identify pending tasks** in the current phase:
 
    ```bash
-   bash scripts/task-manifest.sh --list-tasks --phase <N> --status pending
+   bash "${CLAUDE_PLUGIN_ROOT}/lib/task-manifest.sh" --list-tasks --phase <N> --status pending
    ```
 
 ### Stage 3: Task Execution
@@ -107,7 +107,7 @@ For each task in the phase:
 1. **Update manifest to in_progress.**
 
    ```bash
-   bash scripts/task-manifest.sh --update-status \
+   bash "${CLAUDE_PLUGIN_ROOT}/lib/task-manifest.sh" --update-status \
      --task-id <id> --status in_progress
    ```
 
@@ -125,7 +125,7 @@ For each task in the phase:
 4. **Update manifest to validating.**
 
    ```bash
-   bash scripts/task-manifest.sh --update-status \
+   bash "${CLAUDE_PLUGIN_ROOT}/lib/task-manifest.sh" --update-status \
      --task-id <id> --status validating \
      --branch <branch-name>
    ```
@@ -133,8 +133,8 @@ For each task in the phase:
 5. **Run validation.** Discover the worktree path and run checks:
 
    ```bash
-   bash scripts/run-checks.sh --discover --cwd <worktree-path>
-   bash scripts/run-checks.sh --execute --cwd <worktree-path>
+   bash "${CLAUDE_PLUGIN_ROOT}/lib/run-checks.sh" --discover --cwd <worktree-path>
+   bash "${CLAUDE_PLUGIN_ROOT}/lib/run-checks.sh" --execute --cwd <worktree-path>
    ```
 
 6. **If checks pass:**
@@ -168,7 +168,7 @@ For each task in the phase:
 1. **Check phase status.** After all tasks in the phase are processed:
 
    ```bash
-   bash scripts/task-manifest.sh --phase-status --phase <N>
+   bash "${CLAUDE_PLUGIN_ROOT}/lib/task-manifest.sh" --phase-status --phase <N>
    ```
 
 2. **Report phase results.** Display: tasks merged, failed, abandoned.
@@ -180,7 +180,7 @@ For each task in the phase:
 1. **Final summary.** Run:
 
    ```bash
-   bash scripts/task-manifest.sh --summary
+   bash "${CLAUDE_PLUGIN_ROOT}/lib/task-manifest.sh" --summary
    ```
 
    Report:
@@ -208,10 +208,10 @@ For each task in the phase:
 
 ## Scripts
 
-- `scripts/parse-plan.sh` — Plan parsing (copy from decompose)
-- `scripts/task-manifest.sh` — Manifest CRUD (copy from decompose)
-- `scripts/run-checks.sh` — Check runner (copy from check-impl)
+- `${CLAUDE_PLUGIN_ROOT}/lib/parse-plan.sh` — Plan parsing (shared, ADR-018)
+- `${CLAUDE_PLUGIN_ROOT}/lib/task-manifest.sh` — Manifest CRUD (shared, ADR-018)
+- `${CLAUDE_PLUGIN_ROOT}/lib/run-checks.sh` — Check runner (shared, ADR-018)
 
 ## Templates
 
-- `templates/claude-task.md` — Sub-agent instructions (copy from spawn)
+- `${CLAUDE_PLUGIN_ROOT}/lib/templates/claude-task.md` — Sub-agent instructions (shared, ADR-018)

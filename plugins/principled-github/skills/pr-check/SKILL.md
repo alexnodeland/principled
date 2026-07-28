@@ -42,7 +42,7 @@ Validate that a pull request follows principled conventions for cross-referencin
 2. **Fetch PR metadata.** Get PR details:
 
    ```bash
-   bash scripts/fetch-pr-metadata.sh --pr <number>
+   bash "${CLAUDE_PLUGIN_ROOT}/skills/pr-check/scripts/fetch-pr-metadata.sh" --pr <number>
    ```
 
    Returns: title, body, labels, base branch, head branch, file count, and file paths.
@@ -50,7 +50,7 @@ Validate that a pull request follows principled conventions for cross-referencin
 3. **Run checks.** Execute each validation:
 
    ```bash
-   bash scripts/validate-pr.sh --pr-body "<body>" --pr-labels "<labels>" --branch "<head-branch>" --files "<files>" [--strict]
+   bash "${CLAUDE_PLUGIN_ROOT}/skills/pr-check/scripts/validate-pr.sh" --pr-body "<body>" --pr-labels "<labels>" --branch "<head-branch>" --files "<files>" [--strict]
    ```
 
    The script checks:
@@ -75,6 +75,6 @@ Validate that a pull request follows principled conventions for cross-referencin
 
 ## Scripts
 
-- `scripts/check-gh-cli.sh` --- Verify gh CLI availability (copy)
+- `${CLAUDE_PLUGIN_ROOT}/lib/check-gh-cli.sh` --- Verify gh CLI availability (copy)
 - `scripts/fetch-pr-metadata.sh` --- Fetch PR details from GitHub
 - `scripts/validate-pr.sh` --- Run PR validation checks
