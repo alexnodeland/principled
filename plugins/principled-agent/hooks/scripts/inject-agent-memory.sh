@@ -94,6 +94,49 @@ read_memory() {
   cat "$file"
 }
 
+# The reviewed baseline: the default branch, if one is reachable.
+#
+# Reading HEAD stops an *uncommitted* edit from taking effect, but not an agent that
+# commits memory on its own branch — that branch's HEAD contains it, so it is injected
+# for the rest of the run. Injecting from the baseline instead would close that, at the
+# cost of making memory changes untestable on the branch that proposes them.
+#
+# So the hole is made visible rather than closed: if what is being injected differs from
+# the baseline, the agent is told the content is unreviewed. Silent is the failure mode;
+# an agent acting on unreviewed memory should at least know that is what it is doing.
+baseline_ref() {
+  local ref
+  for ref in origin/HEAD origin/main origin/master main master; do
+    if git -C "$REPO_ROOT" rev-parse --verify --quiet "${ref}^{commit}" > /dev/null 2>&1; then
+      echo "$ref"
+      return 0
+    fi
+  done
+  return 1
+}
+
+# Emit a warning when a file's committed content differs from the baseline.
+warn_if_unreviewed() {
+  local file="$1" base="$2"
+  [[ -n "$base" ]] || return 0
+
+  local rel
+  rel="${file#"${REPO_ROOT}/"}"
+
+  # Not on the baseline at all — wholly unreviewed.
+  if ! git -C "$REPO_ROOT" cat-file -e "${base}:${rel}" 2> /dev/null; then
+    echo "[UNREVIEWED: ${rel} does not exist on ${base}. This memory has not been merged.]"
+    return 0
+  fi
+
+  local here there
+  here="$(git -C "$REPO_ROOT" rev-parse "HEAD:${rel}" 2> /dev/null || echo "")"
+  there="$(git -C "$REPO_ROOT" rev-parse "${base}:${rel}" 2> /dev/null || echo "")"
+  if [[ -n "$here" && -n "$there" && "$here" != "$there" ]]; then
+    echo "[UNREVIEWED: ${rel} differs from ${base}. Treat the differences as proposed, not settled.]"
+  fi
+}
+
 # Print everything after the closing frontmatter delimiter. Frontmatter is
 # metadata for scripts; the agent only needs the prose.
 emit_body() {
@@ -114,9 +157,15 @@ emit_body() {
   '
 }
 
+BASELINE="$(baseline_ref || true)"
+
 {
   echo "=== Accumulated memory for '${agent_id}' ==="
   echo "Source: .agents/memory/ as of HEAD — uncommitted edits are NOT injected (ADR-020, ADR-022)"
+  if [[ -n "$BASELINE" ]]; then
+    warn_if_unreviewed "$GLOBAL_MEMORY" "$BASELINE"
+    warn_if_unreviewed "$AGENT_MEMORY" "$BASELINE"
+  fi
   echo ""
 
   if [[ -f "$GLOBAL_MEMORY" ]]; then

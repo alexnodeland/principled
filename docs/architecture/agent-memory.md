@@ -105,11 +105,26 @@ Reading `HEAD` stops an _uncommitted_ edit from taking effect. It does not stop 
 that **commits** a memory change on its own branch: that branch's `HEAD` contains it, so
 it is injected for the rest of that run.
 
-Closing that would mean injecting from the default branch instead, which would make
-memory changes untestable before merge — you could not exercise a memory edit on the
-branch that proposes it. The residual is accepted deliberately, and the protection is the
-same one that covers any other code an agent commits: **it does not reach anyone else
-until a human merges it.**
+Closing that outright would mean injecting from the default branch instead, which would
+make memory changes untestable before merge — you could not exercise a memory edit on the
+branch that proposes it. So the hole is **made visible rather than closed**. Injection
+compares what it is about to deliver against the reviewed baseline (`origin/HEAD`,
+falling back through `origin/main`, `main`, `master`) and prefixes the payload when they
+differ:
+
+```
+[UNREVIEWED: .agents/memory/agents/impl-worker.md differs from origin/HEAD.
+             Treat the differences as proposed, not settled.]
+```
+
+A file absent from the baseline entirely is announced as wholly unreviewed. A repository
+with no baseline branch injects normally — an unknown baseline is not a warning.
+
+The content is still delivered, deliberately: an agent must be able to exercise a memory
+change on the branch proposing it. What changes is that an agent acting on unreviewed
+memory now knows that is what it is doing, and the transcript records it. Silence was the
+real defect. The remaining protection is the same one covering any other code an agent
+commits: **it reaches nobody else until a human merges it.**
 
 Two further limits worth stating plainly:
 
