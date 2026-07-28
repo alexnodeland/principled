@@ -115,8 +115,8 @@ append_event() {
 generate_id() {
   local title="$1" attempt=0 candidate hash
   while [[ $attempt -lt 10 ]]; do
-    hash=$(printf '%s|%s|%s|%s|%s' "$title" "$(timestamp)" "$$" "$RANDOM" "$attempt" |
-      shasum -a 256 | cut -c1-8)
+    hash=$(printf '%s|%s|%s|%s|%s' "$title" "$(timestamp)" "$$" "$RANDOM" "$attempt" \
+      | shasum -a 256 | cut -c1-8)
     candidate="task-${hash}"
     if [[ ! -f "$LOG_PATH" ]] || ! grep -q "\"id\":\"${candidate}\"" "$LOG_PATH" 2> /dev/null; then
       echo "$candidate"
@@ -461,8 +461,8 @@ do_update() {
   done
 
   [[ -n "$id" ]] || die "--id is required for --update"
-  [[ -n "$status" || -n "$notes" || -n "$agent" ]] ||
-    die "--update requires at least one of --status, --notes, --agent"
+  [[ -n "$status" || -n "$notes" || -n "$agent" ]] \
+    || die "--update requires at least one of --status, --notes, --agent"
   [[ -n "$status" ]] && validate_status "$status"
 
   check_db
@@ -504,8 +504,8 @@ do_close() {
   done
 
   [[ -n "$id" ]] || die "--id is required for --close"
-  [[ "$status" == "done" || "$status" == "abandoned" ]] ||
-    die "--status must be 'done' or 'abandoned' for --close"
+  [[ "$status" == "done" || "$status" == "abandoned" ]] \
+    || die "--status must be 'done' or 'abandoned' for --close"
 
   check_db
   assert_task_exists "$id"
