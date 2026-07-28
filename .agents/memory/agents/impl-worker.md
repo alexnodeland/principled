@@ -31,5 +31,3 @@ specializations: []
 - A `case " $list " in *" $item "*)` membership test needs **space** separators. `sort -u`
   and `grep -o` emit newlines, so the glob silently never matches. Normalize with
   `tr '\n' ' '` first.
-- Never use `sed -i` — BSD sed reads the next argument as a backup suffix, so the same
-  invocation behaves differently on macOS and Linux. Use `awk` into a temp file and `mv`.

@@ -316,3 +316,62 @@ run_without_jq() {
   [ "$status" -eq 0 ]
   echo "$output" | grep -q 'soft budget'
 }
+
+# --- Memory committed on a branch is announced as unreviewed ---
+#
+# Reading HEAD stops an uncommitted edit taking effect, but not an agent that COMMITS
+# memory on its own branch. Closing that fully would mean injecting from the default
+# branch, which would make memory changes untestable on the branch proposing them. So
+# the hole is made visible instead: an agent acting on unreviewed memory is told so.
+
+@test "memory matching the baseline injects with no unreviewed warning" {
+  git add -A && git commit -qm "baseline"
+  run bash -c "cd '$WORK' && echo '{\"agent_id\":\"impl-worker\"}' | bash '${REPO_ROOT}/plugins/principled-agent/hooks/scripts/inject-agent-memory.sh' 2>&1"
+  [ "$status" -eq 0 ]
+  ! echo "$output" | grep -q 'UNREVIEWED'
+}
+
+@test "memory committed on a branch is announced as unreviewed" {
+  git add -A && git commit -qm "baseline"
+  git checkout -q -b feature
+  printf -- '- A CLAIM COMMITTED ONLY ON A BRANCH\n' >> "$MEM"
+  git add -A && git commit -qm "agent commits a learning"
+  run bash -c "cd '$WORK' && echo '{\"agent_id\":\"impl-worker\"}' | bash '${REPO_ROOT}/plugins/principled-agent/hooks/scripts/inject-agent-memory.sh' 2>&1"
+  [ "$status" -eq 0 ]
+  # The content is still injected — testability is preserved deliberately...
+  echo "$output" | grep -q 'A CLAIM COMMITTED ONLY ON A BRANCH'
+  # ...but the agent is told it is unreviewed.
+  echo "$output" | grep -q 'UNREVIEWED'
+  echo "$output" | grep -q 'impl-worker.md differs'
+}
+
+@test "a memory file absent from the baseline is announced as wholly unreviewed" {
+  # A brand-new agent memory file, created only on a branch, has never been reviewed.
+  git add -A && git commit -qm "scaffold"
+  git rm -q .agents/memory/agents/pr-reviewer.md
+  git commit -qm "baseline without pr-reviewer"
+  git checkout -q -b feature
+  bash "$LIB" --init > /dev/null
+  git add -A && git commit -qm "agent adds a new memory file on a branch"
+  run bash -c "cd '$WORK' && echo '{\"agent_id\":\"pr-reviewer\"}' | bash '${REPO_ROOT}/plugins/principled-agent/hooks/scripts/inject-agent-memory.sh' 2>&1"
+  [ "$status" -eq 0 ]
+  echo "$output" | grep -q 'does not exist on'
+}
+
+@test "no baseline branch at all does not break injection" {
+  # A repository with no main/master/origin must still inject and exit 0.
+  git add -A && git commit -qm "only branch"
+  git branch -m solo-branch
+  run bash -c "cd '$WORK' && echo '{\"agent_id\":\"impl-worker\"}' | bash '${REPO_ROOT}/plugins/principled-agent/hooks/scripts/inject-agent-memory.sh' 2>&1"
+  [ "$status" -eq 0 ]
+  echo "$output" | grep -q 'Accumulated memory'
+}
+
+@test "the sed -i rule lives in global memory only, not duplicated per agent" {
+  # It is a repository-wide shell constraint, so global is its home. Duplicating it
+  # into an agent file spends the same bytes twice in that agent's context.
+  run bash -c "grep -c 'sed -i' '${REPO_ROOT}/.agents/memory/agents/impl-worker.md' || true"
+  [ "$output" = "0" ]
+  run bash -c "grep -c 'sed -i' '${REPO_ROOT}/.agents/memory/global.md' || true"
+  [ "$output" -ge 1 ]
+}
