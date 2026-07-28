@@ -430,7 +430,7 @@ Declared in `plugins/principled-agent/hooks/hooks.json`:
 - **Template drift (docs):** `plugins/principled-docs/skills/scaffold/scripts/check-template-drift.sh` — exits non-zero if any copy diverges from canonical.
 - **Cross-plugin drift:** `scripts/check-cross-plugin-drift.sh` — exits non-zero if a vendored `check-gh-cli.sh` diverges from canonical.
 - **Pipeline audit:** `scripts/pipeline-audit.sh` — reconciles declared document state against the repository (numbering, plan/proposal links, statuses, supersession chains).
-- **Reference integrity:** `scripts/check-skill-references.sh` — exits non-zero if any script or template referenced by a SKILL.md or hooks.json does not exist.
+- **Reference integrity:** `scripts/check-skill-references.sh` — exits non-zero if any script or template referenced by a SKILL.md or hooks.json does not exist, and verifies the cross-plugin file-path contracts declared in `docs/architecture/plugin-system.md` (writer present, readers agree on the literal, no undeclared readers). Compares strings, not behaviour.
 - **Tests:** `npx bats tests/` — bats suite covering the task graph library, agent memory, agent governance, the manifest checkpoint and criteria, and every hook. Also run on macOS bash 3.2 in CI.
 - **Structure validation:** `plugins/principled-docs/lib/validate-structure.sh --module-path <path> [--type <type>] [--strict] [--json]` — checks a module's docs structure.
 - **Root validation:** `plugins/principled-docs/lib/validate-structure.sh --root` — checks repo-level docs structure.
