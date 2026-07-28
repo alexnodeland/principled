@@ -102,20 +102,11 @@ jobs:
       - name: Check principled-docs template drift
         run: bash plugins/principled-docs/skills/scaffold/scripts/check-template-drift.sh
 
-      - name: Check principled-github template drift
-        run: bash plugins/principled-github/scripts/check-template-drift.sh
-
-      - name: Check principled-quality template drift
-        run: bash plugins/principled-quality/scripts/check-template-drift.sh
-
-      - name: Check principled-release template drift
-        run: bash plugins/principled-release/scripts/check-template-drift.sh
-
-      - name: Check principled-architecture template drift
-        run: bash plugins/principled-architecture/scripts/check-template-drift.sh
+      - name: Check cross-plugin script drift
+        run: bash scripts/check-cross-plugin-drift.sh
 
       - name: Validate root structure
-        run: bash plugins/principled-docs/skills/scaffold/scripts/validate-structure.sh --root
+        run: bash plugins/principled-docs/lib/validate-structure.sh --root
 
       - name: Validate marketplace manifest
         run: |

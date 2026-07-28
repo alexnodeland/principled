@@ -46,17 +46,22 @@ Edit in place. Skills reference them as `${CLAUDE_PLUGIN_ROOT}/lib/<name>`.
 - Uses stdin JSON with `tool_input.command`: `echo '{"tool_input":{"command":"gh pr create ..."}}' | bash plugins/principled-github/hooks/scripts/check-pr-references.sh`
 - Advisory only --- always exits 0. Never blocks.
 
-### Modifying Scripts (principled-github)
+### Modifying `check-gh-cli.sh` (cross-plugin)
 
-- **Always edit the canonical version first:**
-  - `check-gh-cli.sh` -> canonical in `plugins/principled-github/skills/sync-issues/scripts/`
-- Then propagate copies to `sync-labels`, `pr-check`, `gh-scaffold`, `ingest-issue`, `triage`, and `pr-describe`.
-- **Also propagate to principled-quality:** `review-checklist`, `review-context`, `review-coverage`, and `review-summary`.
-- **Also propagate to principled-release:** `changelog`, `release-ready`, `release-plan`, and `tag-release`.
-- Run `bash plugins/principled-github/scripts/check-template-drift.sh` to verify zero drift within principled-github.
-- Run `bash plugins/principled-quality/scripts/check-template-drift.sh` to verify zero cross-plugin drift.
-- Run `bash plugins/principled-release/scripts/check-template-drift.sh` to verify zero cross-plugin drift.
+This is the only script still duplicated across plugins. principled-github,
+principled-quality and principled-release install independently, so
+`${CLAUDE_PLUGIN_ROOT}` cannot reach across the boundary and each needs its own copy.
+Three copies, down from fifteen.
+
+- **Canonical:** `plugins/principled-github/lib/check-gh-cli.sh`
+- Propagate to `plugins/principled-quality/lib/` and `plugins/principled-release/lib/`
+  (or run `/propagate-templates`).
+- Verify with `bash scripts/check-cross-plugin-drift.sh`.
 - Forgetting to propagate = CI failure.
+
+Within a single plugin, shared code lives in `lib/` with one copy — nothing to
+propagate. Copying a `lib/` script into a skill directory is a regression against
+ADR-018.
 
 ### Editing Hook Scripts (principled-quality)
 

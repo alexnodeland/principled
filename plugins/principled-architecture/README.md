@@ -136,14 +136,14 @@ Drift detection uses file-level pattern matching (regex on import statements), n
 
 ## CI Integration
 
-### Template Drift Check
+### Reference Integrity Check
 
 ```yaml
-- name: Check principled-architecture template drift
-  run: bash plugins/principled-architecture/scripts/check-template-drift.sh
+- name: Check skill and hook script references resolve
+  run: bash scripts/check-skill-references.sh
 ```
 
-Exits non-zero if any script copy has diverged from canonical.
+Exits non-zero if a SKILL.md references a script that does not exist.
 
 ### Hook Smoke-test
 

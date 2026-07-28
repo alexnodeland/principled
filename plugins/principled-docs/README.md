@@ -179,10 +179,10 @@ Configure via `.claude/settings.json`:
 - name: Validate module docs structure
   run: |
     for module in packages/*/; do
-      ./principled-docs/skills/scaffold/scripts/validate-structure.sh \
+      ./principled-docs/lib/validate-structure.sh \
         --module-path "$module" --json >> results.json
     done
-    ./principled-docs/skills/scaffold/scripts/validate-structure.sh \
+    ./principled-docs/lib/validate-structure.sh \
       --root --json >> results.json
     jq -e '.[] | select(.status == "fail")' results.json && exit 1 || exit 0
 ```

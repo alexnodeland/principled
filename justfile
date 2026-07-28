@@ -34,34 +34,22 @@ lint: lint-shfmt lint-shellcheck lint-markdown lint-prettier
 
 # ─── Template Drift ─────────────────────────────────────────────────────────
 
+# Check cross-plugin script drift (check-gh-cli.sh)
+drift-cross:
+    bash scripts/check-cross-plugin-drift.sh
+
 # Check template drift for principled-docs
 drift-docs:
     bash plugins/principled-docs/skills/scaffold/scripts/check-template-drift.sh
 
-# Check template drift for principled-github
-drift-github:
-    bash plugins/principled-github/scripts/check-template-drift.sh
-
-# Check template drift for principled-quality
-drift-quality:
-    bash plugins/principled-quality/scripts/check-template-drift.sh
-
-# Check template drift for principled-release
-drift-release:
-    bash plugins/principled-release/scripts/check-template-drift.sh
-
-# Check template drift for principled-architecture
-drift-arch:
-    bash plugins/principled-architecture/scripts/check-template-drift.sh
-
 # Check all template drift
-drift: drift-docs drift-github drift-quality drift-release drift-arch
+drift: drift-docs drift-cross
 
 # ─── Validate ────────────────────────────────────────────────────────────────
 
 # Validate root documentation structure
 validate-root:
-    bash plugins/principled-docs/skills/scaffold/scripts/validate-structure.sh --root
+    bash plugins/principled-docs/lib/validate-structure.sh --root
 
 # Validate marketplace manifest
 validate-marketplace:

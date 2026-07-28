@@ -41,7 +41,7 @@ Audit documentation health across all modules in the monorepo and produce an agg
 4. **Validate each module.** For each module with a known type, run the structural validation:
 
    ```bash
-   bash "${CLAUDE_PLUGIN_ROOT}/skills/scaffold/scripts/validate-structure.sh" \
+   bash "${CLAUDE_PLUGIN_ROOT}/lib/validate-structure.sh" \
      --module-path <module-path> --type <type>
    ```
 
@@ -50,7 +50,7 @@ Audit documentation health across all modules in the monorepo and produce an agg
 5. **Validate root (if `--include-root`).** Run:
 
    ```bash
-   bash "${CLAUDE_PLUGIN_ROOT}/skills/scaffold/scripts/validate-structure.sh" --root
+   bash "${CLAUDE_PLUGIN_ROOT}/lib/validate-structure.sh" --root
    ```
 
 6. **Aggregate results.** Compute:

@@ -111,5 +111,5 @@ Validate, tag, and finalize a release with generated release notes. This is the 
 
 ## Scripts
 
-- `scripts/check-gh-cli.sh` --- Verify gh CLI availability and auth status (copy from principled-github canonical)
+- `${CLAUDE_PLUGIN_ROOT}/lib/check-gh-cli.sh` --- Verify gh CLI availability and auth status (copy from principled-github canonical)
 - `scripts/validate-tag.sh` --- Validate tag format and check for duplicates

@@ -137,31 +137,31 @@ Key constraints:
 - **Merge conflicts**: pause for manual resolution, resume with `--continue`
 - **Interrupted**: resume from manifest state with `--continue`
 
-## 🔄 Script Duplication
+## 🔄 Shared Code
 
-Following the principled convention, shared scripts are duplicated across consuming skills with byte-identical copies. A drift check verifies all copies match:
+All shared code lives in `lib/` with one copy each, referenced as
+`${CLAUDE_PLUGIN_ROOT}/lib/<name>` (ADR-018):
 
-```bash
-bash plugins/principled-implementation/scripts/check-template-drift.sh
-```
+| File                           | Used by                                               |
+| ------------------------------ | ----------------------------------------------------- |
+| `lib/task-manifest.sh`         | decompose, spawn, check-impl, merge-work, orchestrate |
+| `lib/parse-plan.sh`            | decompose, spawn, orchestrate                         |
+| `lib/run-checks.sh`            | check-impl, orchestrate                               |
+| `lib/templates/claude-task.md` | spawn, orchestrate                                    |
 
-| Canonical                            | Copies To                                                      |
-| ------------------------------------ | -------------------------------------------------------------- |
-| `decompose/scripts/parse-plan.sh`    | `orchestrate/scripts/`                                         |
-| `decompose/scripts/task-manifest.sh` | `spawn/`, `check-impl/`, `merge-work/`, `orchestrate/` scripts |
-| `check-impl/scripts/run-checks.sh`   | `orchestrate/scripts/`                                         |
-| `spawn/templates/claude-task.md`     | `orchestrate/templates/`                                       |
+There is no drift checker: with one copy, drift is impossible rather than detected.
+`scripts/check-skill-references.sh` verifies every reference resolves.
 
 ## 🚀 CI Integration
 
-### Template Drift Check
+### Reference Integrity Check
 
 ```yaml
-- name: Check implementation template drift
-  run: bash plugins/principled-implementation/scripts/check-template-drift.sh
+- name: Check skill and hook script references resolve
+  run: bash scripts/check-skill-references.sh
 ```
 
-Exits non-zero if any script or template copy has diverged from canonical.
+Exits non-zero if a SKILL.md references a script that does not exist.
 
 ### Hook Smoke-test
 

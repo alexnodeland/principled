@@ -35,7 +35,7 @@ Generate a structured summary of a PR's review state. Collects checklist status,
 1. **Verify prerequisites.** Check that `gh` is available and authenticated:
 
    ```bash
-   bash scripts/check-gh-cli.sh
+   bash "${CLAUDE_PLUGIN_ROOT}/lib/check-gh-cli.sh"
    ```
 
 2. **Collect review state.** Gather all review data for the PR:
@@ -111,7 +111,7 @@ Generate a structured summary of a PR's review state. Collects checklist status,
 
 ## Scripts
 
-- `scripts/check-gh-cli.sh` --- Verify gh CLI availability and auth status (copy from principled-github canonical)
+- `${CLAUDE_PLUGIN_ROOT}/lib/check-gh-cli.sh` --- Verify gh CLI availability and auth status (copy from principled-github canonical)
 
 ## Templates
 

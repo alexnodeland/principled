@@ -37,13 +37,13 @@ Check that a module's documentation structure matches the expected standard for 
 3. **Run the validation engine:**
 
    ```bash
-   bash scripts/validate-structure.sh --module-path <path> --type <type> [--strict] [--json]
+   bash "${CLAUDE_PLUGIN_ROOT}/lib/validate-structure.sh" --module-path <path> --type <type> [--strict] [--json]
    ```
 
    Or for root validation:
 
    ```bash
-   bash scripts/validate-structure.sh --root [--strict] [--json]
+   bash "${CLAUDE_PLUGIN_ROOT}/lib/validate-structure.sh" --root [--strict] [--json]
    ```
 
 4. **Present results** to the user.
@@ -81,4 +81,4 @@ Machine-readable output suitable for CI pipelines. Each component is reported wi
 
 ## Scripts
 
-- `scripts/validate-structure.sh` — Validation engine (copy of `scaffold/scripts/validate-structure.sh`)
+- `${CLAUDE_PLUGIN_ROOT}/lib/validate-structure.sh` — Validation engine (copy of `scaffold/scripts/validate-structure.sh`)

@@ -67,10 +67,10 @@ Generate the complete documentation structure for a new module or the repo root.
    - **lib:** Write `INTERFACE.md` from `templates/lib/INTERFACE.md`
    - **app:** (No additional root files — app extensions are directories with template docs)
 
-6. **Run validation** using `scripts/validate-structure.sh`:
+6. **Run validation** using `${CLAUDE_PLUGIN_ROOT}/lib/validate-structure.sh`:
 
    ```bash
-   bash scripts/validate-structure.sh --module-path <module-path> --type <type>
+   bash "${CLAUDE_PLUGIN_ROOT}/lib/validate-structure.sh" --module-path <module-path> --type <type>
    ```
 
 7. **Report results** to the user: list created directories and files, and validation status.
@@ -89,7 +89,7 @@ Generate the complete documentation structure for a new module or the repo root.
 2. Run root validation:
 
    ```bash
-   bash scripts/validate-structure.sh --root
+   bash "${CLAUDE_PLUGIN_ROOT}/lib/validate-structure.sh" --root
    ```
 
 3. Report results.
@@ -104,5 +104,5 @@ All canonical templates live in this skill's `templates/` directory:
 
 ## Scripts
 
-- `scripts/validate-structure.sh` — Structural validation engine (canonical copy)
+- `${CLAUDE_PLUGIN_ROOT}/lib/validate-structure.sh` — Structural validation engine (canonical copy)
 - `scripts/check-template-drift.sh` — CI script to verify template copies match canonical
