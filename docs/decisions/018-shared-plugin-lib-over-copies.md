@@ -1,7 +1,7 @@
 ---
 title: "Shared Plugin lib/ Over Copy-With-Drift-Detection"
 number: "018"
-status: proposed
+status: accepted
 author: Alex
 created: 2026-07-28
 updated: 2026-07-28
@@ -13,7 +13,7 @@ superseded_by: null
 
 ## Status
 
-Proposed
+Accepted
 
 <!-- Valid values: proposed, accepted, deprecated, superseded -->
 <!-- Once accepted, this document is IMMUTABLE. -->

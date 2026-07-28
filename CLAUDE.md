@@ -201,6 +201,10 @@ All pipeline documents (proposals, plans, decisions) use YAML frontmatter betwee
 This repo uses its own documentation pipeline at the root level (governing the marketplace):
 
 - `docs/proposals/` — RFCs. RFC-000 is the plugin's own PRD. RFC-002 established the marketplace.
+  - RFC-010 (multi-agent orchestration) is `superseded`: it covered seven systems in
+    one document and was split into RFC-011 (agent memory and resumability), RFC-012
+    (GitHub-native collaboration and autonomous execution), and RFC-013 (self-improvement
+    loop). RFC-010 is retained as the strategic vision.
 - `docs/plans/` — DDD implementation plans. Plan-000 tracks the plugin build.
 - `docs/decisions/` — ADRs (immutable after acceptance).
   - 001: Pure bash frontmatter parsing strategy
@@ -219,6 +223,8 @@ This repo uses its own documentation pipeline at the root level (governing the m
   - 014: Heuristic architecture governance
   - 015: Event-driven lifecycle hooks for pipeline enforcement
   - 016: Agent teams for parallel plan execution
+  - 017: Event log as record, SQLite as cache (principled-tasks storage)
+  - 018: Shared plugin `lib/` over copy-with-drift-detection (supersedes 009)
 - `docs/architecture/` — Living design docs.
   - plugin-system.md, documentation-pipeline.md, enforcement-system.md
 
@@ -275,7 +281,7 @@ Proposals → Plans → Implementation. Decisions (ADRs) at any point.
 ## Important Constraints
 
 - **Proposals** with terminal status (`accepted`, `rejected`, `superseded`) must NOT be modified. Enforced by `check-proposal-lifecycle.sh`.
-- **ADRs** with status `accepted` must NOT be modified, except the `superseded_by` field. Enforced by `check-adr-immutability.sh`.
+- **ADRs** with status `accepted` must NOT be modified, except to record supersession: the `superseded_by` field, the `status` transition to `superseded`, and a pointer in the Status section. The reasoning body stays as written. Enforced by `check-adr-immutability.sh`; the chain is validated by `scripts/pipeline-audit.sh`.
 - **Plans** require an accepted proposal (`--from-proposal NNN`). Enforced by `check-plan-proposal-link.sh`.
 - **Pipeline documents** must have valid frontmatter. Enforced by `check-required-frontmatter.sh`.
 - **Document numbers** must be unique within their directory. Enforced by `check-doc-numbering.sh`.
