@@ -166,7 +166,8 @@ it dilutes context forever without preventing anything.
   blockers mean none.
 - **The template is not exercised by CI.** The reference checker confirms it exists, not
   that it runs, so it can rot undetected.
-- **The four-role parallel model needs agent teams** (ADR-016, still `proposed`). Roles
+- **The four-role parallel model needs agent teams** (ADR-016), which remain behind
+  the `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS` flag. Roles
   are documented as a coordination pattern over shipped skills; no code requires teams.
 - **A stale `.agents/HALT` blocks everything.** Every refusal prints the reason and the
   path, so the cause is never a mystery — but nothing expires it.

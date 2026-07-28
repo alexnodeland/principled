@@ -1,7 +1,8 @@
 ---
 title: "Agent Teams for Parallel Plan Execution"
 number: "016"
-status: proposed
+status: accepted
+updated: 2026-07-28
 author: Alex
 created: 2026-02-23
 originating_proposal: "008"
@@ -12,7 +13,7 @@ superseded_by: null
 
 ## Status
 
-Proposed
+Accepted
 
 <!-- Valid values: proposed, accepted, deprecated, superseded -->
 <!-- Once accepted, this document is IMMUTABLE. -->

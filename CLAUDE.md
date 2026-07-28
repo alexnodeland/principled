@@ -6,7 +6,7 @@ core
 
 ## What This Is
 
-This repo is the **Principled methodology plugin marketplace** (v0.4.0, pre-1.0). It hosts Claude Code plugins for specification-first development, organized as a curated directory with two tiers: first-party plugins in `plugins/` and community plugins in `external_plugins/`. Eight first-party plugins ship today:
+This repo is the **Principled methodology plugin marketplace** (v0.5.0, pre-1.0). It hosts Claude Code plugins for specification-first development, organized as a curated directory with two tiers: first-party plugins in `plugins/` and community plugins in `external_plugins/`. Eight first-party plugins ship today:
 
 - **principled-docs** (v0.3.1) — Scaffold, author, and enforce module documentation structure for monorepos.
 - **principled-implementation** (v0.1.0) — Orchestrate DDD plan execution via worktree-isolated Claude Code agents.
@@ -32,7 +32,7 @@ Eleven layers, top to bottom:
 | **Release: All**        | `plugins/principled-release/`                                      | Skills (6), hooks (1) for release lifecycle: changelogs, readiness, version bumps, tagging                           |
 | **Architecture: All**   | `plugins/principled-architecture/`                                 | Skills (6), hooks (1), agents (1) for architecture governance: mapping, drift detection, auditing, sync              |
 | **Tasks: All**          | `plugins/principled-tasks/`                                        | Skills (7), 1 hook, and `lib/task-db.sh` for the event-log task graph: open, close, update, query, audit, visualize  |
-| **Agent: All**          | `plugins/principled-agent/`                                        | Skills (4), 2 hooks, and `lib/agent-memory.sh` for `.agents/` identity, memory injection, and integrity              |
+| **Agent: All**          | `plugins/principled-agent/`                                        | Skills (7), 3 hooks, `lib/agent-memory.sh` and `lib/agent-governance.sh` for identity, memory, and the dispatch gate |
 | **Dev DX**              | `.claude/`, config files, `.github/workflows/`                     | Project-level Claude Code settings, dev skills, CI pipeline, linting config                                          |
 
 ## Skills
@@ -60,7 +60,7 @@ Eleven layers, top to bottom:
 | `spawn`         | `/spawn <task-id>`                                     | Orchestration |
 | `check-impl`    | `/check-impl [--task <id>] [--all]`                    | Analytical    |
 | `merge-work`    | `/merge-work <task-id> [--force] [--no-cleanup]`       | Orchestration |
-| `orchestrate`   | `/orchestrate <plan-path> [--phase N] [--continue]`    | Orchestration |
+| `orchestrate`   | `/orchestrate <plan-path> [--mode M] [--continue]`     | Orchestration |
 | `resume`        | `/resume [<plan-path>] [--from-checkpoint] [--replan]` | Orchestration |
 
 ### principled-github (9 skills)
@@ -262,9 +262,12 @@ major bump.
 
 The marketplace previously read `1.0.0` while every plugin sat at `0.1.0`. That was
 not a defensible claim: the first automated tests landed in July 2026 and immediately
-surfaced correctness bugs in shipped skills, and two of the governing ADRs (017, 018)
-are still `proposed`. `0.4.0` reflects a catalog of seven plugins that works and is
-still moving.
+surfaced correctness bugs in shipped skills. `0.5.0` reflects a catalog of eight
+plugins that works and is still moving.
+
+Every ADR is now `accepted` — 015, 016 and 019 were ratified once the code they
+describe had shipped and was under test. That removes one of the two barriers to 1.0;
+the interfaces are the other, and they are still changing.
 
 Reach 1.0 per plugin when its interface has stopped changing, it has test coverage,
 and its governing ADRs are `accepted`.
