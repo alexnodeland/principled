@@ -144,6 +144,11 @@ fi
 # record. It is parsed rather than duplicated into a manifest, because a duplicated
 # declaration drifts — the problem ADR-018 solved by deleting copies.
 #
+# The writer is declared as a FILE, not a plugin: a plugin-granular check passes when
+# the implementing script is renamed but stale mentions survive elsewhere in the same
+# plugin, which is the likelier refactor and the one that silently breaks the halt
+# switch (#40).
+#
 # NOTE: this compares literal strings. It proves the declaration matches the code;
 # it does not prove the halt logic works.
 # ===========================================================================
@@ -202,9 +207,16 @@ while IFS="$(printf '\t')" read -r c_path c_writer c_readers; do
   [[ -n "$c_path" ]] || continue
   CONTRACTS_CHECKED=$((CONTRACTS_CHECKED + 1))
 
-  writer_plugin="$(plugins_in_cell "$c_writer" | head -1)"
-  if [[ -z "$writer_plugin" ]]; then
-    echo "  FAIL: ${c_path} — no writing plugin named in the table"
+  # The writer is declared as a plugin-relative FILE, not a plugin. A plugin-granular
+  # check passes when the implementing script is renamed but stale mentions survive
+  # elsewhere in the same plugin — the likelier refactor, and the one that silently
+  # breaks the halt switch (#40).
+  writer_file="$(printf '%s' "$c_writer" | tr -d '`' | tr -d ' ')"
+  writer_plugin="${writer_file%%/*}"
+
+  if [[ -z "$writer_file" || "$writer_file" != */* ]]; then
+    echo "  FAIL: ${c_path} — writer must be a plugin-relative file path"
+    echo "        Got '${c_writer}'. Declaring only a plugin cannot catch a partial rename."
     CONTRACT_FAILURES=$((CONTRACT_FAILURES + 1))
     continue
   fi
@@ -215,9 +227,17 @@ while IFS="$(printf '\t')" read -r c_path c_writer c_readers; do
     continue
   fi
 
-  if ! plugin_references_path "$writer_plugin" "$c_path"; then
-    echo "  FAIL: ${c_path} — declared writer '${writer_plugin}' never references it"
-    echo "        Either the path was renamed, or the declaration is stale."
+  if [[ ! -f "${REPO_ROOT}/plugins/${writer_file}" ]]; then
+    echo "  FAIL: ${c_path} — declared writing file does not exist"
+    echo "        Expected plugins/${writer_file}"
+    CONTRACT_FAILURES=$((CONTRACT_FAILURES + 1))
+    continue
+  fi
+
+  if ! grep -qF -- "$c_path" "${REPO_ROOT}/plugins/${writer_file}" 2> /dev/null; then
+    echo "  FAIL: ${c_path} — declared writer plugins/${writer_file} does not contain it"
+    echo "        The implementing file was renamed away from the declared path, or the"
+    echo "        declaration is stale. Stale mentions elsewhere in the plugin do not count."
     CONTRACT_FAILURES=$((CONTRACT_FAILURES + 1))
     continue
   fi
@@ -225,7 +245,7 @@ while IFS="$(printf '\t')" read -r c_path c_writer c_readers; do
   # "any plugin" is an explicit wildcard: no reader requirement, and undeclared
   # readers are expected rather than a finding.
   if printf '%s' "$c_readers" | grep -qi 'any plugin'; then
-    echo "  OK: ${c_path} — writer ${writer_plugin}, readers unrestricted"
+    echo "  OK: ${c_path} — writer ${writer_file}, readers unrestricted"
     continue
   fi
 
@@ -267,7 +287,7 @@ while IFS="$(printf '\t')" read -r c_path c_writer c_readers; do
   done
 
   if [[ "$row_failed" -eq 0 ]]; then
-    echo "  OK: ${c_path} — writer ${writer_plugin}, readers ${declared_readers% }"
+    echo "  OK: ${c_path} — writer ${writer_file}, readers ${declared_readers% }"
   fi
 done << EOF
 $CONTRACT_ROWS

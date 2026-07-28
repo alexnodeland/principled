@@ -53,15 +53,61 @@ run_contracts() {
 
 # --- The failure this exists to catch ---
 
-@test "renaming the halt switch in the writer fails the check" {
-  # Simulate principled-agent renaming HALT without telling anyone.
+@test "renaming the halt switch everywhere in the writer fails the check" {
+  # A complete rename: principled-agent drops the path entirely.
   grep -rlF '.agents/HALT' "${WORK}/plugins/principled-agent" \
     | while IFS= read -r f; do
       sed 's|\.agents/HALT|.agents/STOP|g' "$f" > "${f}.tmp" && mv "${f}.tmp" "$f"
     done
   run_contracts
   [ "$status" -eq 1 ]
-  echo "$output" | grep -q "declared writer 'principled-agent' never references it"
+  echo "$output" | grep -q "does not contain it"
+}
+
+@test "renaming the halt switch in ONLY the implementing file fails the check" {
+  # The regression from #40, and the more likely refactor: someone edits the
+  # implementation and does not grep for stale mentions. principled-agent references
+  # .agents/HALT in three files, so a plugin-granular check passed here while the
+  # kill switch was genuinely broken — the exact failure RFC-014 targeted.
+  #
+  # The original test suite missed this because it renamed across every file in the
+  # plugin, sharing the check's blind spot.
+  f="${WORK}/plugins/principled-agent/lib/agent-governance.sh"
+  sed 's|\.agents/HALT|.agents/STOPPED|g' "$f" > "${f}.tmp" && mv "${f}.tmp" "$f"
+
+  # Stale references survive elsewhere in the plugin — that is what made it invisible.
+  [ "$(grep -rlF '.agents/HALT' "${WORK}/plugins/principled-agent" | wc -l | tr -d ' ')" -gt 0 ]
+
+  run_contracts
+  [ "$status" -eq 1 ]
+  echo "$output" | grep -q "agent-governance.sh does not contain it"
+}
+
+@test "a writer declared as a bare plugin name is rejected" {
+  # Plugin granularity cannot catch a partial rename, so it is not an accepted
+  # declaration form.
+  python3 - "$DOC" << 'PY'
+import sys, pathlib
+p = pathlib.Path(sys.argv[1]); t = p.read_text()
+t = t.replace("`principled-agent/lib/agent-governance.sh`", "principled-agent")
+p.write_text(t)
+PY
+  run_contracts
+  [ "$status" -eq 1 ]
+  echo "$output" | grep -q "writer must be a plugin-relative file path"
+}
+
+@test "a declared writing file that does not exist fails" {
+  python3 - "$DOC" << 'PY'
+import sys, pathlib
+p = pathlib.Path(sys.argv[1]); t = p.read_text()
+t = t.replace("`principled-agent/lib/agent-governance.sh`",
+              "`principled-agent/lib/does-not-exist.sh`")
+p.write_text(t)
+PY
+  run_contracts
+  [ "$status" -eq 1 ]
+  echo "$output" | grep -q "declared writing file does not exist"
 }
 
 @test "a reader drifting to a different literal fails the check" {
@@ -84,12 +130,11 @@ run_contracts() {
 }
 
 @test "a contract naming a nonexistent plugin fails" {
-  sed 's|^| `.agents/HALT` .*| `.agents/HALT`  | principled-nope |g' "$DOC" > /dev/null 2>&1 || true
   python3 - "$DOC" << 'PY'
 import sys, pathlib
 p = pathlib.Path(sys.argv[1]); t = p.read_text()
-t = t.replace("| `.agents/HALT`            | principled-agent",
-              "| `.agents/HALT`            | principled-nope ")
+t = t.replace("`principled-agent/lib/agent-governance.sh`",
+              "`principled-nope/lib/agent-governance.sh`")
 p.write_text(t)
 PY
   run_contracts
