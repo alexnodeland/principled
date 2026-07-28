@@ -39,7 +39,7 @@ Process open GitHub issues through the principled pipeline. Finds untriaged issu
 1. **Verify prerequisites.** Check that `gh` is available and authenticated:
 
    ```bash
-   bash scripts/check-gh-cli.sh
+   bash "${CLAUDE_PLUGIN_ROOT}/lib/check-gh-cli.sh"
    ```
 
 2. **List untriaged issues.** Find open issues that have not been ingested into the principled pipeline:
@@ -118,7 +118,7 @@ Process open GitHub issues through the principled pipeline. Finds untriaged issu
 
 ## Scripts
 
-- `scripts/check-gh-cli.sh` --- Verify gh CLI availability and auth status (copy from sync-issues)
+- `${CLAUDE_PLUGIN_ROOT}/lib/check-gh-cli.sh` --- Verify gh CLI availability and auth status (copy from sync-issues)
 - `scripts/list-untriaged.sh` --- List open issues not yet in the principled pipeline
 
 ## Reference

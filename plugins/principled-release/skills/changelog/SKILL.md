@@ -35,7 +35,7 @@ Generate changelog entries by mapping commits to proposals, plans, and ADRs merg
 1. **Verify prerequisites.** Check that `gh` is available:
 
    ```bash
-   bash scripts/check-gh-cli.sh
+   bash "${CLAUDE_PLUGIN_ROOT}/lib/check-gh-cli.sh"
    ```
 
    If not available, proceed without PR reference resolution --- rely on commit message and branch name references only.
@@ -98,7 +98,7 @@ Generate changelog entries by mapping commits to proposals, plans, and ADRs merg
 
 ## Scripts
 
-- `scripts/check-gh-cli.sh` --- Verify gh CLI availability and auth status (copy from principled-github canonical)
+- `${CLAUDE_PLUGIN_ROOT}/lib/check-gh-cli.sh` --- Verify gh CLI availability and auth status (copy from principled-github canonical)
 - `scripts/collect-changes.sh` --- Collect changes since a tag and map to pipeline documents
 
 ## Templates

@@ -34,7 +34,7 @@ Assess whether a PR's review comments and checklist state address all generated 
 1. **Verify prerequisites.** Check that `gh` is available and authenticated:
 
    ```bash
-   bash scripts/check-gh-cli.sh
+   bash "${CLAUDE_PLUGIN_ROOT}/lib/check-gh-cli.sh"
    ```
 
 2. **Locate the checklist.** Find the review checklist using the dual storage model (ADR-012):
@@ -105,4 +105,4 @@ Assess whether a PR's review comments and checklist state address all generated 
 
 ## Scripts
 
-- `scripts/check-gh-cli.sh` --- Verify gh CLI availability and auth status (copy from principled-github canonical)
+- `${CLAUDE_PLUGIN_ROOT}/lib/check-gh-cli.sh` --- Verify gh CLI availability and auth status (copy from principled-github canonical)

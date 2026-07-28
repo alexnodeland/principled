@@ -36,7 +36,7 @@ Create and synchronize GitHub labels for the principled workflow lifecycle stage
 1. **Verify prerequisites.** Check that `gh` is available:
 
    ```bash
-   bash scripts/check-gh-cli.sh
+   bash "${CLAUDE_PLUGIN_ROOT}/lib/check-gh-cli.sh"
    ```
 
 2. **Load label definitions.** Read the label taxonomy from `scripts/label-definitions.sh`:
@@ -73,5 +73,5 @@ Create and synchronize GitHub labels for the principled workflow lifecycle stage
 
 ## Scripts
 
-- `scripts/check-gh-cli.sh` --- Verify gh CLI availability and auth status (copy)
+- `${CLAUDE_PLUGIN_ROOT}/lib/check-gh-cli.sh` --- Verify gh CLI availability and auth status (copy)
 - `scripts/label-definitions.sh` --- Canonical label taxonomy definitions

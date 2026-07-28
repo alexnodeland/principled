@@ -59,7 +59,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash ${CLAUDE_PLUGIN_ROOT}/skills/scaffold/scripts/validate-structure.sh --on-write",
+            "command": "bash ${CLAUDE_PLUGIN_ROOT}/lib/validate-structure.sh --on-write",
             "timeout": 15
           }
         ]

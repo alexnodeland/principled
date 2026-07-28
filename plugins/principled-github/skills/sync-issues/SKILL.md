@@ -38,7 +38,7 @@ Create or update GitHub issues from principled proposal and plan documents.
 1. **Verify prerequisites.** Check that `gh` is available and authenticated:
 
    ```bash
-   bash scripts/check-gh-cli.sh
+   bash "${CLAUDE_PLUGIN_ROOT}/lib/check-gh-cli.sh"
    ```
 
    If not available, report: _"The `gh` CLI is required for GitHub sync. Install it from <https://cli.github.com/>."_
@@ -88,7 +88,7 @@ Every synced issue contains a hidden HTML comment: `<!-- principled-sync: <relat
 
 ## Scripts
 
-- `scripts/check-gh-cli.sh` --- Verify gh CLI availability and auth status
+- `${CLAUDE_PLUGIN_ROOT}/lib/check-gh-cli.sh` --- Verify gh CLI availability and auth status
 - `scripts/extract-doc-metadata.sh` --- Extract metadata from a principled document
 - `scripts/find-synced-issue.sh` --- Search for an existing synced GitHub issue
 

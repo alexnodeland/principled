@@ -141,55 +141,46 @@ The `spawn` skill delegates to `impl-worker` via `context: fork` + `agent: impl-
 
 ## Key Conventions
 
-### Template Duplication (principled-docs)
+### Shared Code: `lib/` (ADR-018)
 
-- Canonical templates live in `plugins/principled-docs/skills/scaffold/templates/{core,lib,app}/`.
-- Consuming skills (new-proposal, new-plan, new-adr, new-architecture-doc) keep byte-identical copies.
-- `plugins/principled-docs/skills/scaffold/scripts/check-template-drift.sh` verifies copies match canonical. Drift = CI failure.
-- When updating a template, update the canonical version first, then propagate to all copies.
+Code used by more than one skill in a plugin lives in that plugin's `lib/` and is
+referenced as `${CLAUDE_PLUGIN_ROOT}/lib/<name>`. One copy, no propagation step, no
+drift checker — drift is impossible rather than detected.
 
-### Script Duplication (principled-docs)
+| Plugin                    | `lib/` contents                                                                  |
+| ------------------------- | -------------------------------------------------------------------------------- |
+| principled-docs           | `validate-structure.sh`, `next-number.sh`                                        |
+| principled-implementation | `task-manifest.sh`, `parse-plan.sh`, `run-checks.sh`, `templates/claude-task.md` |
+| principled-github         | `check-gh-cli.sh`                                                                |
+| principled-quality        | `check-gh-cli.sh` (vendored)                                                     |
+| principled-release        | `check-gh-cli.sh` (vendored)                                                     |
+| principled-tasks          | `task-db.sh`                                                                     |
 
-- `next-number.sh` is canonical in `plugins/principled-docs/skills/new-proposal/scripts/`, copied to `new-plan` and `new-adr`.
-- `validate-structure.sh` is canonical in `plugins/principled-docs/skills/scaffold/scripts/`, copied to `plugins/principled-docs/skills/validate/scripts/`.
-- Same drift rules apply — copies must be byte-identical.
+`scripts/check-skill-references.sh` verifies every referenced path resolves. This is
+what the old drift checkers could not do: they compared copies that existed and never
+noticed a referenced file that was missing.
 
-### Shared Code (principled-implementation)
+### What is still duplicated, and why
 
-Migrated to the `lib/` pattern (ADR-018). One copy each, no drift checker:
+Two cases remain, both deliberate:
 
-- `lib/task-manifest.sh` — used by decompose, spawn, check-impl, merge-work, orchestrate
-- `lib/parse-plan.sh` — used by decompose, spawn, orchestrate
-- `lib/run-checks.sh` — used by check-impl, orchestrate
-- `lib/templates/claude-task.md` — used by spawn, orchestrate
+- **Scaffolding templates (principled-docs).** Canonical in
+  `skills/scaffold/templates/{core,lib,app}/`; each generative skill ships the
+  template it writes. Verified by
+  `plugins/principled-docs/skills/scaffold/scripts/check-template-drift.sh`.
+- **`check-gh-cli.sh` across three plugins.** principled-github, principled-quality
+  and principled-release install independently, and `${CLAUDE_PLUGIN_ROOT}` resolves
+  to one plugin, so a genuinely shared script must exist three times. Fifteen copies
+  became three. Verified by `scripts/check-cross-plugin-drift.sh`.
 
-Referenced as `${CLAUDE_PLUGIN_ROOT}/lib/<name>`. `scripts/check-skill-references.sh`
-verifies every referenced path resolves. A missing file = CI failure.
-
-### Script Duplication (principled-github)
-
-- `check-gh-cli.sh` is canonical in `plugins/principled-github/skills/sync-issues/scripts/`, copied to `sync-labels`, `pr-check`, `gh-scaffold`, `ingest-issue`, `triage`, and `pr-describe`.
-- `plugins/principled-github/scripts/check-template-drift.sh` verifies all 6 pairs. Drift = CI failure.
-
-### Cross-Plugin Script Duplication (principled-quality)
-
-- `check-gh-cli.sh` canonical remains in `plugins/principled-github/skills/sync-issues/scripts/`, copied to `review-checklist`, `review-context`, `review-coverage`, and `review-summary` in principled-quality.
-- `plugins/principled-quality/scripts/check-template-drift.sh` verifies all 4 cross-plugin pairs. Drift = CI failure.
-- This is the first cross-plugin copy in the marketplace. The drift checker navigates to the sibling plugin via `$REPO_ROOT`.
-
-### Cross-Plugin Script Duplication (principled-release)
-
-- `check-gh-cli.sh` canonical remains in `plugins/principled-github/skills/sync-issues/scripts/`, copied to `changelog`, `release-ready`, `release-plan`, and `tag-release` in principled-release.
-- `plugins/principled-release/scripts/check-template-drift.sh` verifies all 4 cross-plugin pairs. Drift = CI failure.
-
-### Cross-Plugin Dependencies
-
-- `task-manifest.sh`: Lives at `plugins/principled-implementation/lib/task-manifest.sh`. A read-only subset copy exists in `plugins/principled-github/skills/pr-describe/scripts/` for manifest format compatibility. It is intentionally different (not byte-identical) and is **not drift-checked** — it maintains only the interface contract for reading task manifests. Cross-plugin sharing is an open question in ADR-018.
-- `check-gh-cli.sh`: Canonical in `plugins/principled-github/skills/sync-issues/scripts/`. Byte-identical copies exist in 4 principled-quality skills and 4 principled-release skills. Drift-checked by `plugins/principled-quality/scripts/check-template-drift.sh` and `plugins/principled-release/scripts/check-template-drift.sh`.
+When updating either, edit the canonical version first, then propagate.
 
 ### Canonical Source Convention
 
-The canonical version of a shared script or template lives in the skill most closely associated with its primary purpose. When adding a new shared script, declare the canonical location in the relevant `check-template-drift.sh` and in `/propagate-templates`.
+New shared code goes in the owning plugin's `lib/` — no canonical-plus-copies
+declaration needed. The convention only applies to the two remaining duplicated
+cases above: scaffolding templates (canonical in `skills/scaffold/templates/`) and
+`check-gh-cli.sh` (canonical in `principled-github/lib/`).
 
 ### Naming Patterns
 
@@ -297,16 +288,16 @@ Proposals → Plans → Implementation. Decisions (ADRs) at any point.
 
 Declared in `plugins/principled-docs/hooks/hooks.json`:
 
-| Hook                       | Event                    | Script                                                                             | Timeout |
-| -------------------------- | ------------------------ | ---------------------------------------------------------------------------------- | ------- |
-| ADR Immutability Guard     | PreToolUse (Edit\|Write) | `plugins/principled-docs/hooks/scripts/check-adr-immutability.sh`                  | 10s     |
-| Proposal Lifecycle Guard   | PreToolUse (Edit\|Write) | `plugins/principled-docs/hooks/scripts/check-proposal-lifecycle.sh`                | 10s     |
-| Plan-Proposal Link Guard   | PreToolUse (Write)       | `plugins/principled-docs/hooks/scripts/check-plan-proposal-link.sh`                | 10s     |
-| Required Frontmatter Guard | PreToolUse (Edit\|Write) | `plugins/principled-docs/hooks/scripts/check-required-frontmatter.sh`              | 10s     |
-| Document Numbering Guard   | PreToolUse (Write)       | `plugins/principled-docs/hooks/scripts/check-doc-numbering.sh`                     | 10s     |
-| Structure Nudge            | PostToolUse (Write)      | `plugins/principled-docs/skills/scaffold/scripts/validate-structure.sh --on-write` | 15s     |
-| Async Drift Check          | PostToolUse (Write)      | `plugins/principled-docs/hooks/scripts/async-drift-check.sh`                       | 30s     |
-| ADR Supersession Validator | PostToolUse (Write)      | `plugins/principled-docs/hooks/scripts/check-adr-supersession.sh`                  | 10s     |
+| Hook                       | Event                    | Script                                                                | Timeout |
+| -------------------------- | ------------------------ | --------------------------------------------------------------------- | ------- |
+| ADR Immutability Guard     | PreToolUse (Edit\|Write) | `plugins/principled-docs/hooks/scripts/check-adr-immutability.sh`     | 10s     |
+| Proposal Lifecycle Guard   | PreToolUse (Edit\|Write) | `plugins/principled-docs/hooks/scripts/check-proposal-lifecycle.sh`   | 10s     |
+| Plan-Proposal Link Guard   | PreToolUse (Write)       | `plugins/principled-docs/hooks/scripts/check-plan-proposal-link.sh`   | 10s     |
+| Required Frontmatter Guard | PreToolUse (Edit\|Write) | `plugins/principled-docs/hooks/scripts/check-required-frontmatter.sh` | 10s     |
+| Document Numbering Guard   | PreToolUse (Write)       | `plugins/principled-docs/hooks/scripts/check-doc-numbering.sh`        | 10s     |
+| Structure Nudge            | PostToolUse (Write)      | `plugins/principled-docs/lib/validate-structure.sh --on-write`        | 15s     |
+| Async Drift Check          | PostToolUse (Write)      | `plugins/principled-docs/hooks/scripts/async-drift-check.sh`          | 30s     |
+| ADR Supersession Validator | PostToolUse (Write)      | `plugins/principled-docs/hooks/scripts/check-adr-supersession.sh`     | 10s     |
 
 Guard scripts depend on `plugins/principled-docs/hooks/scripts/parse-frontmatter.sh` for YAML field extraction.
 
@@ -370,14 +361,12 @@ Advisory only — warns when a written source file contains imports violating mo
 ## Testing
 
 - **Template drift (docs):** `plugins/principled-docs/skills/scaffold/scripts/check-template-drift.sh` — exits non-zero if any copy diverges from canonical.
-- **Template drift (github):** `plugins/principled-github/scripts/check-template-drift.sh` — exits non-zero if any of 6 pairs diverge.
-- **Template drift (quality):** `plugins/principled-quality/scripts/check-template-drift.sh` — exits non-zero if any of 4 cross-plugin pairs diverge.
-- **Template drift (release):** `plugins/principled-release/scripts/check-template-drift.sh` — exits non-zero if any of 4 cross-plugin pairs diverge.
-- **Template drift (architecture):** `plugins/principled-architecture/scripts/check-template-drift.sh` — placeholder for future drift pairs (no copies in v0.1.0).
+- **Cross-plugin drift:** `scripts/check-cross-plugin-drift.sh` — exits non-zero if a vendored `check-gh-cli.sh` diverges from canonical.
+- **Pipeline audit:** `scripts/pipeline-audit.sh` — reconciles declared document state against the repository (numbering, plan/proposal links, statuses, supersession chains).
 - **Reference integrity:** `scripts/check-skill-references.sh` — exits non-zero if any script or template referenced by a SKILL.md or hooks.json does not exist.
 - **Tests:** `npx bats tests/` — bats suite covering the task graph library. Also run on macOS bash 3.2 in CI.
-- **Structure validation:** `plugins/principled-docs/skills/scaffold/scripts/validate-structure.sh --module-path <path> [--type <type>] [--strict] [--json]` — checks a module's docs structure.
-- **Root validation:** `plugins/principled-docs/skills/scaffold/scripts/validate-structure.sh --root` — checks repo-level docs structure.
+- **Structure validation:** `plugins/principled-docs/lib/validate-structure.sh --module-path <path> [--type <type>] [--strict] [--json]` — checks a module's docs structure.
+- **Root validation:** `plugins/principled-docs/lib/validate-structure.sh --root` — checks repo-level docs structure.
 - **Hook testing (docs):** Feed JSON with `tool_input.file_path` to guard scripts via stdin. Exit 0 = allow, exit 2 = block.
 - **Hook testing (impl):** Feed JSON with `tool_input.file_path` to `check-manifest-integrity.sh` via stdin. Always exits 0 (advisory).
 - **Hook testing (github):** Feed JSON with `tool_input.command` to `check-pr-references.sh` via stdin. Always exits 0 (advisory).

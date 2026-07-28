@@ -75,6 +75,6 @@ Validate that a pull request follows principled conventions for cross-referencin
 
 ## Scripts
 
-- `scripts/check-gh-cli.sh` --- Verify gh CLI availability (copy)
+- `${CLAUDE_PLUGIN_ROOT}/lib/check-gh-cli.sh` --- Verify gh CLI availability (copy)
 - `scripts/fetch-pr-metadata.sh` --- Fetch PR details from GitHub
 - `scripts/validate-pr.sh` --- Run PR validation checks

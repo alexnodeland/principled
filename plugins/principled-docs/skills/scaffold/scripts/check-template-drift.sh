@@ -4,6 +4,7 @@
 # Usage: check-template-drift.sh [--plugin-root <path>]
 #
 # Compares every template copy against its canonical source in scaffold/templates/.
+# Scripts are not covered: they moved to lib/ under ADR-018 and have one copy each.
 # Also checks script copies. Exits non-zero if any copy has diverged.
 
 set -euo pipefail
@@ -57,18 +58,10 @@ compare \
   "$PLUGIN_ROOT/skills/scaffold/templates/core/architecture.md" \
   "$PLUGIN_ROOT/skills/new-architecture-doc/templates/architecture.md"
 
-# Script copies
-compare \
-  "$PLUGIN_ROOT/skills/scaffold/scripts/validate-structure.sh" \
-  "$PLUGIN_ROOT/skills/validate/scripts/validate-structure.sh"
-
-compare \
-  "$PLUGIN_ROOT/skills/new-proposal/scripts/next-number.sh" \
-  "$PLUGIN_ROOT/skills/new-plan/scripts/next-number.sh"
-
-compare \
-  "$PLUGIN_ROOT/skills/new-proposal/scripts/next-number.sh" \
-  "$PLUGIN_ROOT/skills/new-adr/scripts/next-number.sh"
+# Scripts are no longer duplicated: validate-structure.sh and next-number.sh live in
+# lib/ with a single copy each, referenced via ${CLAUDE_PLUGIN_ROOT} (ADR-018).
+# Only the scaffolding templates below still have copies, because each generative
+# skill ships the template it writes.
 
 echo ""
 echo "Checked $CHECKED file pairs."

@@ -4,7 +4,7 @@ description: >
   Run the full CI pipeline locally, mirroring the checks in
   .github/workflows/ci.yml. Use to verify everything passes before
   pushing.
-allowed-tools: Bash(shfmt *), Bash(shellcheck *), Bash(find *), Bash(npx markdownlint-cli2 *), Bash(npx prettier *), Bash(bash plugins/*), Bash(echo *), Bash(jq *), Bash(python3 *)
+allowed-tools: Bash(shfmt *), Bash(shellcheck *), Bash(find *), Bash(npx *), Bash(bash plugins/*), Bash(bash scripts/*), Bash(echo *), Bash(jq *), Bash(python3 *)
 user-invocable: true
 ---
 
@@ -50,36 +50,16 @@ npx prettier --check '**/*.md'
 
 ```bash
 bash plugins/principled-docs/skills/scaffold/scripts/check-template-drift.sh
-```
-
-### 6. Template Drift — principled-implementation (validate)
-
-```bash
-bash plugins/principled-implementation/scripts/check-template-drift.sh
-```
-
-### 7. Template Drift — principled-github (validate)
-
-```bash
-bash plugins/principled-github/scripts/check-template-drift.sh
-```
-
-### 8. Template Drift — principled-quality (validate)
-
-```bash
-bash plugins/principled-quality/scripts/check-template-drift.sh
-```
-
-### 9. Template Drift — principled-release (validate)
-
-```bash
-bash plugins/principled-release/scripts/check-template-drift.sh
+bash scripts/check-cross-plugin-drift.sh
+bash scripts/check-skill-references.sh
+bash scripts/pipeline-audit.sh
+npx bats tests/
 ```
 
 ### 10. Root Structure Validation (validate)
 
 ```bash
-bash plugins/principled-docs/skills/scaffold/scripts/validate-structure.sh --root
+bash plugins/principled-docs/lib/validate-structure.sh --root
 ```
 
 ### 11. Marketplace Manifest Validation (validate)

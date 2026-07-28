@@ -1,16 +1,20 @@
 ---
 name: propagate-templates
 description: >
-  Propagate canonical templates and scripts to all consuming skills,
-  then verify zero drift. Use after updating any canonical template
-  or script to keep all copies in sync.
-allowed-tools: Bash(cp *), Bash(bash plugins/*)
+  Propagate the two remaining duplicated artifacts — principled-docs scaffolding
+  templates and the cross-plugin check-gh-cli.sh — then verify zero drift. Use
+  after editing either canonical source.
+allowed-tools: Bash(cp *), Bash(bash plugins/*), Bash(bash scripts/*)
 user-invocable: true
 ---
 
 # Propagate Templates — Canonical Copy Sync
 
-Propagate canonical templates and scripts to all consuming skills, then verify zero drift.
+Most shared code no longer needs propagating. ADR-018 moved same-plugin shared scripts
+into each plugin's `lib/`, referenced as `${CLAUDE_PLUGIN_ROOT}/lib/<name>` — one copy,
+so there is nothing to sync and nothing that can drift.
+
+Two cases genuinely still need copies, and this skill covers exactly those.
 
 ## Command
 
@@ -20,75 +24,44 @@ Propagate canonical templates and scripts to all consuming skills, then verify z
 
 ## Workflow
 
-### principled-docs — Template Propagation
+### 1. principled-docs scaffolding templates
 
-Copy each canonical template to its consuming skill:
+Each generative skill ships the template it writes, so the scaffold templates are
+duplicated on purpose. Copy each canonical template to its consuming skill:
 
 1. `plugins/principled-docs/skills/scaffold/templates/core/proposal.md` → `plugins/principled-docs/skills/new-proposal/templates/proposal.md`
 2. `plugins/principled-docs/skills/scaffold/templates/core/plan.md` → `plugins/principled-docs/skills/new-plan/templates/plan.md`
 3. `plugins/principled-docs/skills/scaffold/templates/core/decision.md` → `plugins/principled-docs/skills/new-adr/templates/decision.md`
 4. `plugins/principled-docs/skills/scaffold/templates/core/architecture.md` → `plugins/principled-docs/skills/new-architecture-doc/templates/architecture.md`
 
-### principled-docs — Script Propagation
+### 2. Cross-plugin `check-gh-cli.sh`
 
-Copy each canonical script to its consuming skill:
+principled-github, principled-quality and principled-release install independently, and
+`${CLAUDE_PLUGIN_ROOT}` resolves to a single plugin, so a script all three need has to
+exist three times. Canonical lives in principled-github:
 
-1. `plugins/principled-docs/skills/new-proposal/scripts/next-number.sh` → `plugins/principled-docs/skills/new-plan/scripts/next-number.sh`
-2. `plugins/principled-docs/skills/new-proposal/scripts/next-number.sh` → `plugins/principled-docs/skills/new-adr/scripts/next-number.sh`
-3. `plugins/principled-docs/skills/scaffold/scripts/validate-structure.sh` → `plugins/principled-docs/skills/validate/scripts/validate-structure.sh`
+1. `plugins/principled-github/lib/check-gh-cli.sh` → `plugins/principled-quality/lib/check-gh-cli.sh`
+2. `plugins/principled-github/lib/check-gh-cli.sh` → `plugins/principled-release/lib/check-gh-cli.sh`
 
-### principled-implementation — Script Propagation
+### 3. Verify
 
-Copy each canonical script to its consuming skills:
+```bash
+bash plugins/principled-docs/skills/scaffold/scripts/check-template-drift.sh
+bash scripts/check-cross-plugin-drift.sh
+```
 
-1. `plugins/principled-implementation/skills/decompose/scripts/task-manifest.sh` → `plugins/principled-implementation/skills/spawn/scripts/task-manifest.sh`
-2. `plugins/principled-implementation/skills/decompose/scripts/task-manifest.sh` → `plugins/principled-implementation/skills/check-impl/scripts/task-manifest.sh`
-3. `plugins/principled-implementation/skills/decompose/scripts/task-manifest.sh` → `plugins/principled-implementation/skills/merge-work/scripts/task-manifest.sh`
-4. `plugins/principled-implementation/skills/decompose/scripts/task-manifest.sh` → `plugins/principled-implementation/skills/orchestrate/scripts/task-manifest.sh`
-5. `plugins/principled-implementation/skills/decompose/scripts/parse-plan.sh` → `plugins/principled-implementation/skills/orchestrate/scripts/parse-plan.sh`
-6. `plugins/principled-implementation/skills/check-impl/scripts/run-checks.sh` → `plugins/principled-implementation/skills/orchestrate/scripts/run-checks.sh`
+Both must report `PASS`.
 
-### principled-implementation — Template Propagation
+Then confirm nothing references a path that no longer exists:
 
-1. `plugins/principled-implementation/skills/spawn/templates/claude-task.md` → `plugins/principled-implementation/skills/orchestrate/templates/claude-task.md`
+```bash
+bash scripts/check-skill-references.sh
+```
 
-### principled-github — Script Propagation
+## What this skill does NOT cover
 
-Copy each canonical script to its consuming skills:
-
-1. `plugins/principled-github/skills/sync-issues/scripts/check-gh-cli.sh` → `plugins/principled-github/skills/sync-labels/scripts/check-gh-cli.sh`
-2. `plugins/principled-github/skills/sync-issues/scripts/check-gh-cli.sh` → `plugins/principled-github/skills/pr-check/scripts/check-gh-cli.sh`
-3. `plugins/principled-github/skills/sync-issues/scripts/check-gh-cli.sh` → `plugins/principled-github/skills/gh-scaffold/scripts/check-gh-cli.sh`
-4. `plugins/principled-github/skills/sync-issues/scripts/check-gh-cli.sh` → `plugins/principled-github/skills/ingest-issue/scripts/check-gh-cli.sh`
-5. `plugins/principled-github/skills/sync-issues/scripts/check-gh-cli.sh` → `plugins/principled-github/skills/triage/scripts/check-gh-cli.sh`
-6. `plugins/principled-github/skills/sync-issues/scripts/check-gh-cli.sh` → `plugins/principled-github/skills/pr-describe/scripts/check-gh-cli.sh`
-
-### principled-quality — Cross-Plugin Script Propagation
-
-Copy from the principled-github canonical source to principled-quality skills:
-
-1. `plugins/principled-github/skills/sync-issues/scripts/check-gh-cli.sh` → `plugins/principled-quality/skills/review-checklist/scripts/check-gh-cli.sh`
-2. `plugins/principled-github/skills/sync-issues/scripts/check-gh-cli.sh` → `plugins/principled-quality/skills/review-context/scripts/check-gh-cli.sh`
-3. `plugins/principled-github/skills/sync-issues/scripts/check-gh-cli.sh` → `plugins/principled-quality/skills/review-coverage/scripts/check-gh-cli.sh`
-4. `plugins/principled-github/skills/sync-issues/scripts/check-gh-cli.sh` → `plugins/principled-quality/skills/review-summary/scripts/check-gh-cli.sh`
-
-### principled-release — Cross-Plugin Script Propagation
-
-Copy from the principled-github canonical source to principled-release skills:
-
-1. `plugins/principled-github/skills/sync-issues/scripts/check-gh-cli.sh` → `plugins/principled-release/skills/changelog/scripts/check-gh-cli.sh`
-2. `plugins/principled-github/skills/sync-issues/scripts/check-gh-cli.sh` → `plugins/principled-release/skills/release-ready/scripts/check-gh-cli.sh`
-3. `plugins/principled-github/skills/sync-issues/scripts/check-gh-cli.sh` → `plugins/principled-release/skills/release-plan/scripts/check-gh-cli.sh`
-4. `plugins/principled-github/skills/sync-issues/scripts/check-gh-cli.sh` → `plugins/principled-release/skills/tag-release/scripts/check-gh-cli.sh`
-
-### Verification
-
-Run all five drift checks:
-
-1. `bash plugins/principled-docs/skills/scaffold/scripts/check-template-drift.sh`
-2. `bash plugins/principled-implementation/scripts/check-template-drift.sh`
-3. `bash plugins/principled-github/scripts/check-template-drift.sh`
-4. `bash plugins/principled-quality/scripts/check-template-drift.sh`
-5. `bash plugins/principled-release/scripts/check-template-drift.sh`
-
-Confirm all copies are byte-identical to their canonical sources. Report the result per plugin: PASS (zero drift) or FAIL (list drifted files).
+`lib/` contents in any plugin — `task-manifest.sh`, `parse-plan.sh`, `run-checks.sh`,
+`task-db.sh`, `next-number.sh`, `validate-structure.sh`, `check-gh-cli.sh` within
+principled-github. These have one copy each. Edit them in place; there is nothing to
+propagate. If you find yourself copying one of these into a skill directory, that is a
+regression against ADR-018.

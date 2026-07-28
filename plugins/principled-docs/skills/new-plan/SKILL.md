@@ -44,7 +44,7 @@ Create a domain-driven implementation plan that implements an accepted proposal,
 4. **Get next sequence number.** Run:
 
    ```bash
-   bash scripts/next-number.sh --dir <target-plans-dir>
+   bash "${CLAUDE_PLUGIN_ROOT}/lib/next-number.sh" --dir <target-plans-dir>
    ```
 
 5. **Read DDD guidance.** Before creating the plan, read `reference/ddd-guide.md` to inform the decomposition approach. Use this guidance to help the user structure their bounded contexts, aggregates, and domain events.
@@ -92,4 +92,4 @@ Create a domain-driven implementation plan that implements an accepted proposal,
 
 ## Scripts
 
-- `scripts/next-number.sh` — Determines the next NNN sequence number
+- `${CLAUDE_PLUGIN_ROOT}/lib/next-number.sh` — Determines the next NNN sequence number

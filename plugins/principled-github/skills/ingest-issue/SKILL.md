@@ -38,7 +38,7 @@ Ingest a GitHub issue into the principled documentation pipeline. Automatically 
 1. **Verify prerequisites.** Check that `gh` is available and authenticated:
 
    ```bash
-   bash scripts/check-gh-cli.sh
+   bash "${CLAUDE_PLUGIN_ROOT}/lib/check-gh-cli.sh"
    ```
 
    If not available, report: _"The `gh` CLI is required. Install it from <https://cli.github.com/>."_
@@ -168,7 +168,7 @@ Every ingested document contains: `<!-- principled-ingested-from: #<issue-number
 
 ## Scripts
 
-- `scripts/check-gh-cli.sh` --- Verify gh CLI availability and auth status (copy from sync-issues)
+- `${CLAUDE_PLUGIN_ROOT}/lib/check-gh-cli.sh` --- Verify gh CLI availability and auth status (copy from sync-issues)
 - `scripts/extract-issue-metadata.sh` --- Fetch and parse a GitHub issue
 - `scripts/find-ingested-docs.sh` --- Search for existing docs linked to an issue
 

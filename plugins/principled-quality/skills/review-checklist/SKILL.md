@@ -38,7 +38,7 @@ Generate a review checklist for a pull request by combining plan acceptance crit
 1. **Verify prerequisites.** Check that `gh` is available and authenticated:
 
    ```bash
-   bash scripts/check-gh-cli.sh
+   bash "${CLAUDE_PLUGIN_ROOT}/lib/check-gh-cli.sh"
    ```
 
 2. **Resolve the PR.** Fetch PR metadata including title, body, and changed files:
@@ -140,7 +140,7 @@ Standard checks that apply to all PRs:
 
 ## Scripts
 
-- `scripts/check-gh-cli.sh` --- Verify gh CLI availability and auth status (copy from principled-github canonical)
+- `${CLAUDE_PLUGIN_ROOT}/lib/check-gh-cli.sh` --- Verify gh CLI availability and auth status (copy from principled-github canonical)
 - `scripts/extract-plan-criteria.sh` --- Extract acceptance criteria from a DDD plan file
 - `scripts/find-relevant-adrs.sh` --- Find ADRs relevant to changed files by module scope
 
