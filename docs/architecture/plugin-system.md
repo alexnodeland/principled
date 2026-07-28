@@ -192,21 +192,25 @@ Constraint 3 means two plugins that must cooperate cannot call each other. Where
 cooperation is genuinely required, the coupling is a **committed file at a fixed
 repository-root path**, which both read independently:
 
-| Path                      | Written by                | Read by                                                                         |
-| ------------------------- | ------------------------- | ------------------------------------------------------------------------------- |
-| `.agents/`                | principled-agent          | any plugin; injected at spawn (ADR-020)                                         |
-| `.agents/HALT`            | principled-agent          | principled-implementation at phase boundaries                                   |
-| `.impl/manifest.json`     | principled-implementation | principled-agent, principled-github, principled-tasks — all read-only (ADR-021) |
-| `.principled/tasks.jsonl` | principled-tasks          | any plugin, read-only (ADR-017)                                                 |
+| Path                      | Written by                                       | Read by                                                                         |
+| ------------------------- | ------------------------------------------------ | ------------------------------------------------------------------------------- |
+| `.agents/`                | `principled-agent/lib/agent-memory.sh`           | any plugin; injected at spawn (ADR-020)                                         |
+| `.agents/HALT`            | `principled-agent/lib/agent-governance.sh`       | principled-implementation at phase boundaries                                   |
+| `.impl/manifest.json`     | `principled-implementation/lib/task-manifest.sh` | principled-agent, principled-github, principled-tasks — all read-only (ADR-021) |
+| `.principled/tasks.jsonl` | `principled-tasks/lib/task-db.sh`                | any plugin, read-only (ADR-017)                                                 |
 
 This is the only mechanism available, and for the halt switch it is also the right one:
 the switch must be operable by a human with no running session (ADR-022).
 
 **This table is a declaration of record, not documentation.**
 `scripts/check-skill-references.sh` parses it and verifies, for every row, that the
-named writer references the literal path, that every named reader uses the same string,
-and that no undeclared plugin reads it. A rename that would silently disable the halt
-switch now fails CI (RFC-014).
+**declared writing file** contains the literal path, that every named reader plugin uses
+the same string, and that no undeclared plugin reads it (RFC-014).
+
+The writer is a **file**, not a plugin, and that granularity is the point. A
+plugin-granular check passes when the implementing script is renamed but stale mentions
+survive elsewhere in the same plugin — which is the likelier refactor and the one that
+silently breaks the halt switch (#40).
 
 Two consequences follow. The table's **format is load-bearing** — rows are keyed on the
 backticked path in the first cell, so that cell must stay backticked. And adding a
