@@ -1,7 +1,7 @@
 ---
 title: "Agent Memory and Resumability"
 number: "010"
-status: active
+status: complete
 author: Alex
 created: 2026-07-28
 updated: 2026-07-28
@@ -74,54 +74,54 @@ carry memory live in three different plugins that cannot depend on one another.
 
 ### Phase 1: principled-agent plugin foundation
 
-- [ ] Create plugin skeleton: `.claude-plugin/plugin.json`, `README.md`
-- [ ] Implement `lib/agent-memory.sh` — init, show, update-metrics, reset-metrics,
+- [x] Create plugin skeleton: `.claude-plugin/plugin.json`, `README.md`
+- [x] Implement `lib/agent-memory.sh` — init, show, update-metrics, reset-metrics,
       list, path resolution; bash 3.2 clean, jq-optional
-- [ ] Define the `.agents/` scaffold and `registry.json` schema, seeded with the three
+- [x] Define the `.agents/` scaffold and `registry.json` schema, seeded with the three
       memory-bearing agents (`impl-worker`, `issue-ingester`, `pr-reviewer`)
-- [ ] Add the plugin to `.claude-plugin/marketplace.json`
+- [x] Add the plugin to `.claude-plugin/marketplace.json`
 
 ### Phase 2: principled-agent skills and hooks
 
-- [ ] `agent-strategy` — background knowledge skill (not user-invocable)
-- [ ] `/agent-init` — scaffold `.agents/` in a repository
-- [ ] `/agent-memory` — show, edit, and reset metrics for an agent's memory
-- [ ] `/agent-retro` — write a post-execution retrospective
-- [ ] `hooks/scripts/inject-agent-memory.sh` — surface memory at spawn; advisory,
+- [x] `agent-strategy` — background knowledge skill (not user-invocable)
+- [x] `/agent-init` — scaffold `.agents/` in a repository
+- [x] `/agent-memory` — show, edit, and reset metrics for an agent's memory
+- [x] `/agent-retro` — write a post-execution retrospective
+- [x] `hooks/scripts/inject-agent-memory.sh` — surface memory at spawn; advisory,
       always exits 0, never truncates
-- [ ] `hooks/scripts/check-memory-integrity.sh` — validate frontmatter and enforce the
+- [x] `hooks/scripts/check-memory-integrity.sh` — validate frontmatter and enforce the
       8 KB / 16 KB advisory size budget; always exits 0
-- [ ] `hooks/hooks.json` wiring both hooks
+- [x] `hooks/hooks.json` wiring both hooks
 
 ### Phase 3: manifest checkpoint and acceptance criteria
 
-- [ ] Extend `lib/task-manifest.sh` with `--set-checkpoint` and `--get-checkpoint`,
+- [x] Extend `lib/task-manifest.sh` with `--set-checkpoint` and `--get-checkpoint`,
       including the no-jq fallback
-- [ ] Extend `lib/task-manifest.sh` with `--set-criteria`, `--verify-criterion`, and
+- [x] Extend `lib/task-manifest.sh` with `--set-criteria`, `--verify-criterion`, and
       `--list-criteria`
-- [ ] Confirm `/orchestrate`, `/check-impl`, `/merge-work`, and `/spawn` tolerate both
+- [x] Confirm `/orchestrate`, `/check-impl`, `/merge-work`, and `/spawn` tolerate both
       new fields and unknown fields
-- [ ] Update `skills/impl-strategy/reference/manifest-schema.md`
+- [x] Update `skills/impl-strategy/reference/manifest-schema.md`
 
 ### Phase 4: the /resume skill
 
-- [ ] `/resume [plan-path] [--from-checkpoint] [--replan]`
-- [ ] Divergence report against principled-tasks, degrading silently when the plugin or
+- [x] `/resume [plan-path] [--from-checkpoint] [--replan]`
+- [x] Divergence report against principled-tasks, degrading silently when the plugin or
       `.principled/tasks.jsonl` is absent
-- [ ] Document that the checkpoint is advisory and task state is authoritative
+- [x] Document that the checkpoint is advisory and task state is authoritative
 
 ### Phase 5: tests, docs, and CI
 
-- [ ] `tests/agent-memory.bats` — lib behaviour, frontmatter round-trip, size budget,
+- [x] `tests/agent-memory.bats` — lib behaviour, frontmatter round-trip, size budget,
       metrics reset
-- [ ] Extend `tests/hooks.bats` for both new hooks, including the no-jq path
-- [ ] `tests/manifest-checkpoint.bats` — checkpoint and criteria, with and without jq
-- [ ] `docs/architecture/agent-memory.md` — the `.agents/` contract and injection points
-- [ ] Update `docs/architecture/documentation-pipeline.md` for memory and retrospectives
+- [x] Extend `tests/hooks.bats` for both new hooks, including the no-jq path
+- [x] `tests/manifest-checkpoint.bats` — checkpoint and criteria, with and without jq
+- [x] `docs/architecture/agent-memory.md` — the `.agents/` contract and injection points
+- [x] Update `docs/architecture/documentation-pipeline.md` for memory and retrospectives
       as document types
-- [ ] Update root `CLAUDE.md` and `.claude/CLAUDE.md`; correct the stale claim that the
+- [x] Update root `CLAUDE.md` and `.claude/CLAUDE.md`; correct the stale claim that the
       `lib/` migration is still in progress
-- [ ] `just ci` green
+- [x] `just ci` green
 
 ## Dependencies
 
@@ -136,15 +136,35 @@ No RFC-008 dependency. RFC-012 and RFC-013 depend on this plan, not the reverse.
 
 ## Acceptance Criteria
 
-- [ ] `principled-agent` is installable and listed in the marketplace manifest
-- [ ] `.agents/` scaffolds with a valid registry and memory files for the three
+- [x] `principled-agent` is installable and listed in the marketplace manifest
+- [x] `.agents/` scaffolds with a valid registry and memory files for the three
       memory-bearing agents
-- [ ] Memory files parse with the existing frontmatter tooling
-- [ ] The integrity hook warns past 8 KB and never blocks; injection never truncates
-- [ ] `--reset-metrics` clears counters while leaving the body intact
-- [ ] A manifest with a checkpoint and criteria is readable by every existing consumer,
+- [x] Memory files parse with the existing frontmatter tooling
+- [x] The integrity hook warns past 8 KB and never blocks; injection never truncates
+- [x] `--reset-metrics` clears counters while leaving the body intact
+- [x] A manifest with a checkpoint and criteria is readable by every existing consumer,
       and a manifest without them still works unchanged
-- [ ] `/resume` reports divergence against the task graph and exits 0, including when
+- [x] `/resume` reports divergence against the task graph and exits 0, including when
       principled-tasks is not installed
-- [ ] Every new script passes ShellCheck and shfmt, and runs on bash 3.2
-- [ ] `just ci` passes
+- [x] Every new script passes ShellCheck and shfmt, and runs on bash 3.2
+- [x] `just ci` passes
+
+## Verification
+
+Machine-tested by `just ci` (126 bats tests, each new operation run both with jq and
+with a PATH that genuinely lacks it):
+
+- `lib/agent-memory.sh` — scaffold, metrics arithmetic, reset, size budget, structural
+  integrity, both output formats (`tests/agent-memory.bats`)
+- both principled-agent hooks — injection content, no-truncation, silence for
+  non-memory agents, malformed input, no-jq path (`tests/hooks.bats`)
+- manifest checkpoint and criteria — round-trip, overwrite, clear, range checking, and
+  cross-compatibility between the jq and no-jq writers (`tests/manifest-checkpoint.bats`)
+
+Delivered as skills, and therefore model-executed rather than machine-tested: `/resume`,
+`/agent-init`, `/agent-memory`, `/agent-retro`. Their script dependencies are covered
+above; the workflow prose is not executable and is not claimed to be tested.
+
+Fixed in passing: five `sed -i` calls in `task-manifest.sh`'s no-jq fallback. BSD sed
+reads the following argument as a backup suffix, so adding a second task and every
+status update failed on stock macOS. Replaced with awk, pinned by regression tests.
