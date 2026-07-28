@@ -68,6 +68,11 @@ design — a wrong learned pattern that cannot be deleted compounds on every spa
 Metric fields (`session_count`, `total_tasks`, `success_rate`, `last_updated`) are
 script-owned. Use `agent-memory.sh --update-metrics`; do not hand-edit them.
 
+`specializations` is **reserved and currently unused**. Nothing populates it, so every
+agent's is `[]`. Dispatch routes by `role` from the registry instead — a field that is
+populated for every agent and stable (#37). RFC-013's `/improve` is the intended writer,
+once there is evidence to write from.
+
 ## The context budget
 
 Every byte of memory is injected at spawn and competes with the task description for

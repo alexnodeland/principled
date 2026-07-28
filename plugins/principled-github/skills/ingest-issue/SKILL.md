@@ -87,9 +87,18 @@ Ingest a GitHub issue into the principled documentation pipeline. Automatically 
    - **Mentions of architecture, API changes, or cross-cutting concerns** — suggest an RFC is needed
 
    Classification outcomes:
-   - **RFC + Plan**: The issue describes something that needs design discussion and then implementation. Most features and significant changes fall here.
-   - **Plan only**: The issue describes well-scoped work where the approach is clear and doesn't need design review. Bug fixes with known root cause, small improvements with obvious implementation.
+   - **RFC + Plan**: The issue needs design discussion and then implementation. Most features and significant changes fall here. A plan exists to be executed by `/orchestrate`, `/decompose`, or `/spawn` — if nothing will orchestrate it, it does not need a plan.
+   - **No documents**: The issue is a fix or a chore where the approach is clear and the change is roughly one PR. Implement it directly and reference the issue from the commit. This is how most fixes in this repository have actually shipped.
    - Report the classification to the user and proceed.
+
+   **There is no "Plan only" outcome, and creating a plan without a proposal will be
+   blocked** by `check-plan-proposal-link.sh` (exit 2). That guard is correct: a plan is
+   a DDD decomposition of an accepted design, so a plan with no design behind it is a
+   decomposition of nothing.
+
+   The mistake to avoid is inventing an RFC purely to unlock a plan for work that will
+   never be orchestrated. If the change is one PR's worth, take **No documents** — the
+   pipeline is for work that needs it, not a toll on every issue.
 
 6. **Determine target directory.** Based on arguments:
    - If `--root`: target is `docs/` at the repo root
@@ -140,11 +149,10 @@ Ingest a GitHub issue into the principled documentation pipeline. Automatically 
     gh issue edit <issue-number> --add-label "type:rfc,proposal:draft"
     ```
 
-    **If Plan only was created:**
+    **If no documents were created:**
 
-    ```bash
-    gh issue edit <issue-number> --add-label "type:plan,plan:active"
-    ```
+    No principled lifecycle labels apply. The issue is tracked by its own labels and
+    closed by the implementing PR.
 
 11. **Report results.** Summarize what was created:
     - Document paths and types

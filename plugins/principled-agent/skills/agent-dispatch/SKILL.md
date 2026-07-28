@@ -74,20 +74,36 @@ a refusal. Raising a cap is a human decision made deliberately, not a retry stra
    Confirm it carries `agent-ready`. If not, say so and stop — the label is how a human
    signals that an issue is understood well enough to hand over.
 
-4. **Route to an agent.** Unless `--agent` is given, pick from the registry by matching
-   the issue's labels and content against each agent's `specializations`:
+4. **Route to an agent by role.** Unless `--agent` is given, match the kind of work the
+   issue describes against each agent's `role`:
 
    ```bash
    bash "${CLAUDE_PLUGIN_ROOT}/lib/agent-memory.sh" --list
    ```
 
+   | Role       | Agent            | Takes                              |
+   | ---------- | ---------------- | ---------------------------------- |
+   | `worker`   | `impl-worker`    | Implementation — code, tests, docs |
+   | `triage`   | `issue-ingester` | Classifying and ingesting issues   |
+   | `reviewer` | `pr-reviewer`    | Reviewing an existing change       |
+
    Only agents with `memory: true` are dispatch targets; the deterministic auditors run
-   as hooks and are not assignable. If nothing matches well, default to `impl-worker` and
-   say that the routing was a fallback rather than a match.
+   as hooks and are not assignable. Most issues are implementation work and route to
+   `impl-worker` — say so plainly rather than dressing a default as a match.
+
+   **Do not route by `specializations`.** The field exists in the frontmatter but nothing
+   populates it, so every agent's is `[]` and matching against it silently falls through
+   to a default every time (#37). It is reserved for RFC-013's `/improve` to write once
+   there is evidence to write from. `role` is populated for every agent and stable, which
+   is what makes it usable as a routing key.
 
 5. **Execute.**
 
-   **With `--local`** — run the protocol in this session, no CI, no credentials:
+   **With `--local`** — run the protocol in this session, no CI, no credentials.
+
+   `/ingest-issue` classifies first, and the path depends on what it returns.
+
+   **RFC + Plan** — design work that something will orchestrate:
 
    | Step | Action                                                | Gate               |
    | ---- | ----------------------------------------------------- | ------------------ |
@@ -97,6 +113,19 @@ a refusal. Raising a cap is a human decision made deliberately, not a retry stra
    | 4    | `/review-checklist` self-review                       | —                  |
    | 5    | `/pr-describe` → **draft** PR, `agent-authored` label | **Human reviews**  |
    | 6    | Human merges                                          | **Human merges**   |
+
+   **No documents** — a fix or chore worth roughly one PR:
+
+   | Step | Action                                                | Gate              |
+   | ---- | ----------------------------------------------------- | ----------------- |
+   | 1    | Implement directly, referencing the issue             | —                 |
+   | 2    | `/review-checklist` self-review                       | —                 |
+   | 3    | `/pr-describe` → **draft** PR, `agent-authored` label | **Human reviews** |
+   | 4    | Human merges                                          | **Human merges**  |
+
+   Do not invent an RFC to unlock a plan for work nothing will orchestrate. That puts a
+   fake design on the permanent record purely to satisfy a guard, and the guard is right
+   (#38).
 
    The approval gates are the point. Stop and ask at each one; do not infer approval from
    silence or from the fact that nobody objected last time.
@@ -123,9 +152,10 @@ a refusal. Raising a cap is a human decision made deliberately, not a retry stra
 
 ## Reporting
 
-State the gate result with its numbers, which agent was chosen and whether that was a
-match or a fallback, the execution path taken, and the next human gate. If refused, lead
-with the refusal and its reason — never bury it under what you would have done.
+State the gate result with its numbers, which agent was chosen and on what role, the
+classification `/ingest-issue` returned and therefore which path was taken, and the next
+human gate. If refused, lead with the refusal and its reason — never bury it under what
+you would have done.
 
 ## Scripts
 
