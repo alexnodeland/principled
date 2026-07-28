@@ -35,6 +35,7 @@ Every plugin now uses the `lib/` pattern (ADR-018) — one copy, no propagation:
 - `plugins/principled-implementation/lib/templates/claude-task.md`
 - `plugins/principled-tasks/lib/task-db.sh`
 - `plugins/principled-agent/lib/agent-memory.sh`
+- `plugins/principled-agent/lib/agent-governance.sh`
 
 Edit in place. Skills reference them as `${CLAUDE_PLUGIN_ROOT}/lib/<name>`.
 
@@ -50,12 +51,13 @@ Edit in place. Skills reference them as `${CLAUDE_PLUGIN_ROOT}/lib/<name>`.
 ### Modifying `check-gh-cli.sh` (cross-plugin)
 
 This is the only script still duplicated across plugins. principled-github,
-principled-quality and principled-release install independently, so
+principled-quality, principled-release and principled-agent install independently, so
 `${CLAUDE_PLUGIN_ROOT}` cannot reach across the boundary and each needs its own copy.
-Three copies, down from fifteen.
+Four copies, down from fifteen.
 
 - **Canonical:** `plugins/principled-github/lib/check-gh-cli.sh`
-- Propagate to `plugins/principled-quality/lib/` and `plugins/principled-release/lib/`
+- Propagate to `plugins/principled-quality/lib/`, `plugins/principled-release/lib/`
+  and `plugins/principled-agent/lib/`
   (or run `/propagate-templates`).
 - Verify with `bash scripts/check-cross-plugin-drift.sh`.
 - Forgetting to propagate = CI failure.
@@ -94,6 +96,22 @@ ADR-018.
 - **Never make injection truncate.** An agent handed a silently halved memory file has a
   confidently incomplete picture and no way to notice. Oversized memory is reported by
   the integrity hook; it is never trimmed on the way in.
+
+### Editing Governance Code (principled-agent)
+
+- `agent-governance.sh` uses **exit 3 for a refusal** and exit 1 for an error. Never
+  collapse them: a caller that conflates them either ignores a real refusal or halts on
+  a transient fault.
+- **Unknown budgets must fail closed.** When `gh` is unavailable the counts are unknown,
+  and dispatch refuses. Treating unknown as zero would silently disable the safety layer
+  exactly when the environment is already misbehaving. `tests/agent-governance.bats`
+  asserts that `--status` never prints `0/5` for an unknown count.
+- The halt switch is a **file path contract** (`.agents/HALT`) shared with
+  principled-implementation. Plugins cannot call each other (ADR-018), so this coupling
+  is invisible to `check-skill-references.sh` and must be maintained by convention. If
+  the path changes, `/orchestrate` must change with it.
+- The dispatch workflow is a **template**, not an active workflow. Do not add it to
+  `.github/workflows/` in this repository (ADR-023).
 
 ### Editing the Manifest Schema (principled-implementation)
 

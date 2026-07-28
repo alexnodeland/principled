@@ -5,10 +5,10 @@
 # plugin is now impossible rather than merely detected. Cross-plugin sharing is the
 # one case that idea does not cover: ${CLAUDE_PLUGIN_ROOT} resolves to one plugin, and
 # principled-github, principled-quality and principled-release install independently,
-# so a script all three need genuinely has to exist three times.
+# so a script all four need genuinely has to exist four times.
 #
 # That is the entire remaining surface: check-gh-cli.sh, canonical in
-# principled-github/lib/, vendored into the other two. Fifteen copies became three.
+# principled-github/lib/, vendored into the other three. Fifteen copies became four.
 #
 # This replaces three separate per-plugin drift checkers. Consolidating matters: the
 # old per-plugin checkers each carried a hand-maintained list of copies, and at least
@@ -62,6 +62,7 @@ echo ""
 
 compare "$CANONICAL" "plugins/principled-quality/lib/check-gh-cli.sh"
 compare "$CANONICAL" "plugins/principled-release/lib/check-gh-cli.sh"
+compare "$CANONICAL" "plugins/principled-agent/lib/check-gh-cli.sh"
 
 echo ""
 echo "Checked ${CHECKED} file pair(s)."

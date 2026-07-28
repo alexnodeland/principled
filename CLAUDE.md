@@ -121,7 +121,7 @@ Eleven layers, top to bottom:
 | `task-audit`    | `/task-audit [--all]`                                       | Analytical |
 | `task-graph`    | `/task-graph [--format dot\|text] [--status <status>]`      | Analytical |
 
-### principled-agent (4 skills)
+### principled-agent (7 skills)
 
 | Skill            | Command                                             | Category   |
 | ---------------- | --------------------------------------------------- | ---------- |
@@ -169,7 +169,7 @@ drift checker — drift is impossible rather than detected.
 | principled-release        | `check-gh-cli.sh` (vendored), `collect-changes.sh`, `check-readiness.sh`, `detect-modules.sh` |
 | principled-architecture   | `scan-modules.sh`                                                                             |
 | principled-tasks          | `task-db.sh`                                                                                  |
-| principled-agent          | `agent-memory.sh`                                                                             |
+| principled-agent          | `agent-memory.sh`, `agent-governance.sh`, `check-gh-cli.sh` (vendored)                        |
 
 `scripts/check-skill-references.sh` verifies every referenced path resolves **and**
 that it uses `${CLAUDE_PLUGIN_ROOT}`. Both halves matter. The old drift checkers
@@ -186,10 +186,11 @@ Two cases remain, both deliberate:
   `skills/scaffold/templates/{core,lib,app}/`; each generative skill ships the
   template it writes. Verified by
   `plugins/principled-docs/skills/scaffold/scripts/check-template-drift.sh`.
-- **`check-gh-cli.sh` across three plugins.** principled-github, principled-quality
-  and principled-release install independently, and `${CLAUDE_PLUGIN_ROOT}` resolves
-  to one plugin, so a genuinely shared script must exist three times. Fifteen copies
-  became three. Verified by `scripts/check-cross-plugin-drift.sh`.
+- **`check-gh-cli.sh` across four plugins.** principled-github, principled-quality,
+  principled-release and principled-agent install independently, and
+  `${CLAUDE_PLUGIN_ROOT}` resolves to one plugin, so a genuinely shared script must
+  exist four times. Fifteen copies became four. Verified by
+  `scripts/check-cross-plugin-drift.sh`.
 
 When updating either, edit the canonical version first, then propagate.
 
@@ -242,9 +243,12 @@ This repo uses its own documentation pipeline at the root level (governing the m
   - 019: Bats for shell testing
   - 020: Agent memory as a frontmatter document (not an event log)
   - 021: Manifest checkpoint and criterion-level acceptance tracking
+  - 022: Agent governance constraints for autonomous execution
+  - 023: GitHub Actions as the first dispatch backend, shipped opt-in
 - `docs/architecture/` — Living design docs.
   - plugin-system.md, documentation-pipeline.md, enforcement-system.md,
-    architecture-governance.md, release-system.md, agent-memory.md
+    architecture-governance.md, release-system.md, agent-memory.md,
+    agent-collaboration.md
 
 ## Versioning
 
@@ -278,13 +282,13 @@ See `CONTRIBUTING.md` for the full contributor guide. Key points:
 This repo installs all eight first-party plugins (via `.claude/settings.json`):
 
 - **principled-docs** — All 9 skills, 8 enforcement hooks, and 2 agents are active during development.
-- **principled-implementation** — All 7 skills, the `impl-worker` agent, and 5 hooks (1 advisory + 4 lifecycle) are active during development. Agent teams available when `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1`.
+- **principled-implementation** — All 7 skills (including `/orchestrate --mode`), the `impl-worker` agent, and 5 hooks (1 advisory + 4 lifecycle) are active during development. Agent teams available when `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1`.
 - **principled-github** — All 9 skills, 1 advisory hook, and the `issue-ingester` agent are active during development.
 - **principled-quality** — All 5 skills, 1 advisory hook, and the `pr-reviewer` agent are active during development.
 - **principled-release** — All 6 skills and 1 advisory hook are active during development.
 - **principled-architecture** — All 6 skills, 1 advisory hook, and the `boundary-checker` agent are active during development.
 - **principled-tasks** — All 7 skills and 1 advisory hook are active during development. Shared code lives in `lib/task-db.sh` (ADR-018).
-- **principled-agent** — All 4 skills and 2 hooks (memory injection + integrity advisory) are active during development. Shared code lives in `lib/agent-memory.sh` (ADR-018).
+- **principled-agent** — All 7 skills and 3 hooks are active during development. Shared code lives in `lib/agent-memory.sh` and `lib/agent-governance.sh` (ADR-018). The dispatch workflow is **not** installed: it ships as an opt-in template (ADR-023).
 
 See `.claude/CLAUDE.md` for development-specific context.
 
@@ -406,12 +410,17 @@ Declared in `plugins/principled-agent/hooks/hooks.json`:
 | ------------------------- | ------------------------- | ------------------------------------------------------------------ | ------- |
 | Agent Memory Injection    | SubagentStart             | `plugins/principled-agent/hooks/scripts/inject-agent-memory.sh`    | 10s     |
 | Memory Integrity Advisory | PostToolUse (Edit\|Write) | `plugins/principled-agent/hooks/scripts/check-memory-integrity.sh` | 10s     |
+| Governance Advisory       | PostToolUse (Bash)        | `plugins/principled-agent/hooks/scripts/check-agent-governance.sh` | 10s     |
 
 - Agent Memory Injection: emits global and per-agent memory to stderr at spawn. Only
   agents the registry marks `memory: true` receive anything. Never truncates, always
   exits 0 — a memory problem must not stop an agent running.
 - Memory Integrity Advisory: validates frontmatter and reports against the 8 KB / 16 KB
   context budget on writes under `.agents/`. Always exits 0.
+- Governance Advisory: warns on non-draft agent PRs, self-approval, merge, and
+  ready-for-review promotion, and surfaces an engaged halt switch on dispatch commands.
+  Always exits 0 — PostToolUse fires after the command has run, so the authoritative
+  gate is `agent-governance.sh --can-dispatch` before a run starts (ADR-022).
 
 ## Testing
 
@@ -419,7 +428,7 @@ Declared in `plugins/principled-agent/hooks/hooks.json`:
 - **Cross-plugin drift:** `scripts/check-cross-plugin-drift.sh` — exits non-zero if a vendored `check-gh-cli.sh` diverges from canonical.
 - **Pipeline audit:** `scripts/pipeline-audit.sh` — reconciles declared document state against the repository (numbering, plan/proposal links, statuses, supersession chains).
 - **Reference integrity:** `scripts/check-skill-references.sh` — exits non-zero if any script or template referenced by a SKILL.md or hooks.json does not exist.
-- **Tests:** `npx bats tests/` — bats suite covering the task graph library, agent memory, the manifest checkpoint and criteria, and every hook. Also run on macOS bash 3.2 in CI.
+- **Tests:** `npx bats tests/` — bats suite covering the task graph library, agent memory, agent governance, the manifest checkpoint and criteria, and every hook. Also run on macOS bash 3.2 in CI.
 - **Structure validation:** `plugins/principled-docs/lib/validate-structure.sh --module-path <path> [--type <type>] [--strict] [--json]` — checks a module's docs structure.
 - **Root validation:** `plugins/principled-docs/lib/validate-structure.sh --root` — checks repo-level docs structure.
 - **Hook testing (docs):** Feed JSON with `tool_input.file_path` to guard scripts via stdin. Exit 0 = allow, exit 2 = block.
@@ -430,7 +439,7 @@ Declared in `plugins/principled-agent/hooks/hooks.json`:
 - **Hook testing (architecture):** Feed JSON with `tool_input.file_path` to `check-boundary-violation.sh` via stdin. Always exits 0 (advisory).
 - **Hook testing (tasks):** Feed JSON with `tool_input.file_path` to `check-db-integrity.sh` via stdin. Always exits 0 (advisory).
 - **Hook testing (agent):** Feed JSON with an agent id to `inject-agent-memory.sh`, or `tool_input.file_path` to `check-memory-integrity.sh`, via stdin. Both always exit 0.
-- **Hook testing (all):** `npx bats tests/hooks.bats` — 48 tests covering allow, block, malformed input, and the no-jq fallback path for every hook.
+- **Hook testing (all):** `npx bats tests/hooks.bats` — 57 tests covering allow, block, malformed input, and the no-jq fallback path for every hook.
 - **Shell lint:** `shellcheck --shell=bash` and `shfmt -i 2 -bn -sr -d` on all `.sh` files.
 - **Markdown lint:** `npx markdownlint-cli2 '**/*.md'` and `npx prettier --check '**/*.md'`.
 - **Marketplace validation:** Verify `.claude-plugin/marketplace.json` is valid and all plugin source directories exist.
