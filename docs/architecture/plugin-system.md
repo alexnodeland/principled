@@ -192,17 +192,26 @@ Constraint 3 means two plugins that must cooperate cannot call each other. Where
 cooperation is genuinely required, the coupling is a **committed file at a fixed
 repository-root path**, which both read independently:
 
-| Path                      | Written by                | Read by                                       |
-| ------------------------- | ------------------------- | --------------------------------------------- |
-| `.agents/`                | principled-agent          | any plugin; injected at spawn (ADR-020)       |
-| `.agents/HALT`            | principled-agent          | principled-implementation at phase boundaries |
-| `.impl/manifest.json`     | principled-implementation | principled-agent, read-only (ADR-021)         |
-| `.principled/tasks.jsonl` | principled-tasks          | any plugin, read-only (ADR-017)               |
+| Path                      | Written by                | Read by                                                                         |
+| ------------------------- | ------------------------- | ------------------------------------------------------------------------------- |
+| `.agents/`                | principled-agent          | any plugin; injected at spawn (ADR-020)                                         |
+| `.agents/HALT`            | principled-agent          | principled-implementation at phase boundaries                                   |
+| `.impl/manifest.json`     | principled-implementation | principled-agent, principled-github, principled-tasks — all read-only (ADR-021) |
+| `.principled/tasks.jsonl` | principled-tasks          | any plugin, read-only (ADR-017)                                                 |
 
 This is the only mechanism available, and for the halt switch it is also the right one:
 the switch must be operable by a human with no running session (ADR-022).
 
-The cost is real — **these couplings are invisible to `check-skill-references.sh`**,
-which validates `${CLAUDE_PLUGIN_ROOT}` paths and cannot see a bare path in prose. They
-are maintained by convention, so changing one of these paths means finding every reader
-by hand.
+**This table is a declaration of record, not documentation.**
+`scripts/check-skill-references.sh` parses it and verifies, for every row, that the
+named writer references the literal path, that every named reader uses the same string,
+and that no undeclared plugin reads it. A rename that would silently disable the halt
+switch now fails CI (RFC-014).
+
+Two consequences follow. The table's **format is load-bearing** — rows are keyed on the
+backticked path in the first cell, so that cell must stay backticked. And adding a
+cross-plugin read means adding a row; the check will otherwise fail on the undeclared
+coupling, which is the point.
+
+What it does _not_ prove: the check compares literal strings. A green result means the
+declaration matches the code, not that the halt logic works.

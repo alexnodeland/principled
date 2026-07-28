@@ -127,4 +127,164 @@ if [[ "$WARNINGS" -gt 0 ]]; then
   exit 1
 fi
 
+# ===========================================================================
+# Cross-plugin file-path contracts (RFC-014)
+#
+# Plugins install independently and cannot reference each other's
+# ${CLAUDE_PLUGIN_ROOT} (ADR-018), so where two must cooperate the coupling is a
+# bare path at the repository root. Those paths are invisible to the reference
+# check above: nothing resolves them, and a rename breaks them silently.
+#
+# The halt switch is the case that matters. /orchestrate stops at a phase boundary
+# by testing for .agents/HALT — a path it learns from prose. Rename it and the kill
+# switch stops working with no failing test, which is exactly the scenario ADR-022
+# exists to prevent.
+#
+# The contract table in docs/architecture/plugin-system.md is the declaration of
+# record. It is parsed rather than duplicated into a manifest, because a duplicated
+# declaration drifts — the problem ADR-018 solved by deleting copies.
+#
+# NOTE: this compares literal strings. It proves the declaration matches the code;
+# it does not prove the halt logic works.
+# ===========================================================================
+
+CONTRACT_DOC="${REPO_ROOT}/docs/architecture/plugin-system.md"
+CONTRACT_FAILURES=0
+CONTRACTS_CHECKED=0
+
+echo ""
+echo "Checking cross-plugin file-path contracts..."
+
+if [[ ! -f "$CONTRACT_DOC" ]]; then
+  echo "FAIL: contract declaration not found at docs/architecture/plugin-system.md"
+  exit 1
+fi
+
+# Extract the contract table. Keyed on the backticked path in the first cell rather
+# than on column position, so a formatter reflowing the columns does not break it.
+CONTRACT_ROWS="$(awk '
+  /^## Cross-plugin coupling/ { in_section = 1; next }
+  in_section && /^## / { exit }
+  in_section && /^\|[[:space:]]*`/ {
+    line = $0
+    sub(/^\|[[:space:]]*/, "", line)
+    n = split(line, cell, "|")
+    if (n < 3) next
+    path = cell[1]; writer = cell[2]; readers = cell[3]
+    gsub(/`/, "", path)
+    gsub(/^[ \t]+|[ \t]+$/, "", path)
+    gsub(/^[ \t]+|[ \t]+$/, "", writer)
+    gsub(/^[ \t]+|[ \t]+$/, "", readers)
+    if (path == "" || path == "Path") next
+    print path "\t" writer "\t" readers
+  }
+' "$CONTRACT_DOC")"
+
+if [[ -z "$CONTRACT_ROWS" ]]; then
+  echo "FAIL: no contract rows parsed from docs/architecture/plugin-system.md."
+  echo "      The table under '## Cross-plugin coupling' is the declaration of record;"
+  echo "      a silently empty parse would let every contract go unchecked."
+  exit 1
+fi
+
+# Names of plugins mentioned in a table cell.
+plugins_in_cell() {
+  printf '%s' "$1" | grep -oE 'principled-[a-z]+' | sort -u
+}
+
+# Does a plugin reference this literal path anywhere in its tree?
+# Markdown counts: a SKILL.md instructing the model to read a path IS the read.
+plugin_references_path() {
+  grep -rqF -- "$2" "${REPO_ROOT}/plugins/$1" 2> /dev/null
+}
+
+while IFS="$(printf '\t')" read -r c_path c_writer c_readers; do
+  [[ -n "$c_path" ]] || continue
+  CONTRACTS_CHECKED=$((CONTRACTS_CHECKED + 1))
+
+  writer_plugin="$(plugins_in_cell "$c_writer" | head -1)"
+  if [[ -z "$writer_plugin" ]]; then
+    echo "  FAIL: ${c_path} — no writing plugin named in the table"
+    CONTRACT_FAILURES=$((CONTRACT_FAILURES + 1))
+    continue
+  fi
+
+  if [[ ! -d "${REPO_ROOT}/plugins/${writer_plugin}" ]]; then
+    echo "  FAIL: ${c_path} — declared writer '${writer_plugin}' is not a plugin"
+    CONTRACT_FAILURES=$((CONTRACT_FAILURES + 1))
+    continue
+  fi
+
+  if ! plugin_references_path "$writer_plugin" "$c_path"; then
+    echo "  FAIL: ${c_path} — declared writer '${writer_plugin}' never references it"
+    echo "        Either the path was renamed, or the declaration is stale."
+    CONTRACT_FAILURES=$((CONTRACT_FAILURES + 1))
+    continue
+  fi
+
+  # "any plugin" is an explicit wildcard: no reader requirement, and undeclared
+  # readers are expected rather than a finding.
+  if printf '%s' "$c_readers" | grep -qi 'any plugin'; then
+    echo "  OK: ${c_path} — writer ${writer_plugin}, readers unrestricted"
+    continue
+  fi
+
+  row_failed=0
+  # Space-separated, not newline-separated: the membership test below is a glob
+  # against " $declared_readers ", and a newline separator silently never matches —
+  # which flags every reader on a multi-reader row as undeclared.
+  declared_readers="$(plugins_in_cell "$c_readers" | tr '\n' ' ')"
+
+  for reader in $declared_readers; do
+    if [[ ! -d "${REPO_ROOT}/plugins/${reader}" ]]; then
+      echo "  FAIL: ${c_path} — declared reader '${reader}' is not a plugin"
+      CONTRACT_FAILURES=$((CONTRACT_FAILURES + 1))
+      row_failed=1
+      continue
+    fi
+    if ! plugin_references_path "$reader" "$c_path"; then
+      echo "  FAIL: ${c_path} — declared reader '${reader}' does not use this literal"
+      echo "        A reader looking for a different string is the silent break."
+      CONTRACT_FAILURES=$((CONTRACT_FAILURES + 1))
+      row_failed=1
+    fi
+  done
+
+  # Any plugin using the path that the table does not account for is undeclared
+  # coupling: real, and invisible to review until it breaks.
+  for candidate_dir in "${REPO_ROOT}"/plugins/*/; do
+    candidate="$(basename "$candidate_dir")"
+    [[ "$candidate" == "$writer_plugin" ]] && continue
+    case " $declared_readers " in
+    *" $candidate "*) continue ;;
+    esac
+    if plugin_references_path "$candidate" "$c_path"; then
+      echo "  FAIL: ${c_path} — '${candidate}' references it but is not declared"
+      echo "        Add it to the table, or remove the reference."
+      CONTRACT_FAILURES=$((CONTRACT_FAILURES + 1))
+      row_failed=1
+    fi
+  done
+
+  if [[ "$row_failed" -eq 0 ]]; then
+    echo "  OK: ${c_path} — writer ${writer_plugin}, readers ${declared_readers% }"
+  fi
+done << EOF
+$CONTRACT_ROWS
+EOF
+
+echo ""
+echo "Checked ${CONTRACTS_CHECKED} cross-plugin contract(s)."
+
+if [[ "$CONTRACT_FAILURES" -gt 0 ]]; then
+  echo "FAIL: ${CONTRACT_FAILURES} contract violation(s)."
+  echo ""
+  echo "The table under '## Cross-plugin coupling' in"
+  echo "docs/architecture/plugin-system.md is the declaration of record. Update it,"
+  echo "or fix the code to match."
+  exit 1
+fi
+
+echo ""
 echo "PASS: All ${CHECKED} references resolve and use a portable path."
+echo "PASS: All ${CONTRACTS_CHECKED} declared contracts match the code (literal strings only)."

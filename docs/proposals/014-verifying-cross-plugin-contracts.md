@@ -1,7 +1,7 @@
 ---
 title: "Verifying Cross-Plugin File-Path Contracts"
 number: "014"
-status: draft
+status: accepted
 author: Alex
 created: 2026-07-28
 updated: 2026-07-28
