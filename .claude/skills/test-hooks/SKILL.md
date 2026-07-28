@@ -1,18 +1,17 @@
 ---
 name: test-hooks
 description: >
-  Smoke-test all enforcement hooks by feeding known good and bad inputs
-  and verifying exit codes. Tests the ADR immutability guard, the
-  proposal lifecycle guard, the manifest integrity advisory, the PR
-  reference advisory, the review checklist advisory, and the release
-  readiness advisory.
-allowed-tools: Bash(echo *), Bash(bash plugins/*), Read
+  Run the enforcement hook test suite and interpret failures. Covers all 11 hooks
+  across the seven plugins, including the no-jq fallback path that a naive PATH
+  restriction fails to exercise.
+allowed-tools: Bash(npx bats *), Bash(just *), Bash(echo *), Bash(bash plugins/*), Read
 user-invocable: true
 ---
 
-# Test Hooks — Enforcement Hook Smoke Tests
+# Test Hooks — Enforcement Hook Test Suite
 
-Smoke-test all enforcement hooks by feeding known good and bad inputs and verifying exit codes.
+Hook behaviour is covered by `tests/hooks.bats`. This skill runs it and helps interpret
+what a failure means.
 
 ## Command
 
@@ -22,165 +21,63 @@ Smoke-test all enforcement hooks by feeding known good and bad inputs and verify
 
 ## Workflow
 
-### ADR Immutability Guard (`plugins/principled-docs/hooks/scripts/check-adr-immutability.sh`)
+### 1. Run the suite
 
-Run these test cases:
+```bash
+npx bats tests/hooks.bats
+```
 
-1. **Accepted ADR — should block (exit 2):**
-   For each file in `docs/decisions/` with `status: accepted`, feed its path:
+Or the whole suite (hooks plus the task graph library):
 
-   ```bash
-   echo '{"tool_input":{"file_path":"<path>"}}' | bash plugins/principled-docs/hooks/scripts/check-adr-immutability.sh
-   ```
+```bash
+just test
+```
 
-   Expected: exit code 2.
+### 2. Interpret the result
 
-2. **Non-decision file — should allow (exit 0):**
+The suite has four groups. Which one fails tells you what broke.
 
-   ```bash
-   echo '{"tool_input":{"file_path":"CLAUDE.md"}}' | bash plugins/principled-docs/hooks/scripts/check-adr-immutability.sh
-   ```
+**Guard behaviour** — an accepted ADR must block (exit 2), a non-decision file must
+allow (exit 0). A failure here means the guard's frontmatter parsing or path matching
+regressed.
 
-   Expected: exit code 0.
+**No-jq fallback** — the same assertions with `jq` genuinely absent. A failure here
+means the grep/sed fallback broke while the jq path still works, so it will pass on any
+machine that has jq and fail silently for everyone else.
 
-3. **Non-existent file — should allow (exit 0):**
+> The suite builds a directory of symlinks to the tools hooks need, excluding jq, and
+> points `PATH` at it. Trimming `PATH` to `/usr/bin:/bin` does **not** work — jq lives
+> at `/usr/bin/jq`, so the hook takes the jq branch and the fallback goes untested.
+> That is how PCRE-only `grep -oP` fallbacks survived in five plugins.
 
-   ```bash
-   echo '{"tool_input":{"file_path":"docs/decisions/999-nonexistent.md"}}' | bash plugins/principled-docs/hooks/scripts/check-adr-immutability.sh
-   ```
+**Hostile input** — empty, malformed, and missing-field payloads. Every hook must exit
+0 or 2, never 1. Exit 1 means the script itself errored.
 
-   Expected: exit code 0.
+**Corpus-wide** — every accepted ADR is blocked, every terminal-status proposal is
+blocked, every draft proposal is editable, every pipeline document passes the
+frontmatter guard. A failure here usually means one document has a frontmatter shape
+the guard does not handle, rather than a broken guard.
 
-### Proposal Lifecycle Guard (`plugins/principled-docs/hooks/scripts/check-proposal-lifecycle.sh`)
+### 3. Reproduce a single case by hand
 
-Run these test cases:
+```bash
+echo '{"tool_input":{"file_path":"docs/decisions/001-frontmatter-parsing-strategy.md"}}' \
+  | bash plugins/principled-docs/hooks/scripts/check-adr-immutability.sh
+echo $?   # 0 = allow, 2 = block, 1 = the script errored (always a bug)
+```
 
-1. **Accepted proposal — should block (exit 2):**
-   For each file in `docs/proposals/` with status `accepted`, `rejected`, or `superseded`, feed its path. Expected: exit code 2.
+Advisory hooks take `tool_input.command` instead:
 
-2. **Draft proposal — should allow (exit 0):**
-   For each file in `docs/proposals/` with status `draft`, feed its path. Expected: exit code 0.
+```bash
+echo '{"tool_input":{"command":"gh pr create --title x"}}' \
+  | bash plugins/principled-github/hooks/scripts/check-pr-references.sh
+```
 
-3. **Non-proposal file — should allow (exit 0):**
+## Conventions
 
-   ```bash
-   echo '{"tool_input":{"file_path":"CLAUDE.md"}}' | bash plugins/principled-docs/hooks/scripts/check-proposal-lifecycle.sh
-   ```
-
-   Expected: exit code 0.
-
-### Manifest Integrity Advisory (`plugins/principled-implementation/hooks/scripts/check-manifest-integrity.sh`)
-
-Run these test cases:
-
-1. **Manifest file edit — should warn but allow (exit 0):**
-
-   ```bash
-   echo '{"tool_input":{"file_path":".impl/manifest.json"}}' | bash plugins/principled-implementation/hooks/scripts/check-manifest-integrity.sh
-   ```
-
-   Expected: exit code 0, with advisory message on stderr.
-
-2. **Unrelated file — should pass silently (exit 0):**
-
-   ```bash
-   echo '{"tool_input":{"file_path":"src/index.ts"}}' | bash plugins/principled-implementation/hooks/scripts/check-manifest-integrity.sh
-   ```
-
-   Expected: exit code 0, no output.
-
-3. **Missing JSON input — should allow (exit 0):**
-
-   ```bash
-   echo '{}' | bash plugins/principled-implementation/hooks/scripts/check-manifest-integrity.sh
-   ```
-
-   Expected: exit code 0 (guard scripts default to allow).
-
-### PR Reference Advisory (`plugins/principled-github/hooks/scripts/check-pr-references.sh`)
-
-Run these test cases:
-
-1. **`gh pr create` command — should warn but allow (exit 0):**
-
-   ```bash
-   echo '{"tool_input":{"command":"gh pr create --title \"test\" --body \"test\""}}' | bash plugins/principled-github/hooks/scripts/check-pr-references.sh
-   ```
-
-   Expected: exit code 0, with advisory message on stderr.
-
-2. **Unrelated command — should pass silently (exit 0):**
-
-   ```bash
-   echo '{"tool_input":{"command":"git status"}}' | bash plugins/principled-github/hooks/scripts/check-pr-references.sh
-   ```
-
-   Expected: exit code 0, no output.
-
-3. **Missing JSON input — should allow (exit 0):**
-
-   ```bash
-   echo '{}' | bash plugins/principled-github/hooks/scripts/check-pr-references.sh
-   ```
-
-   Expected: exit code 0 (guard scripts default to allow).
-
-### Review Checklist Advisory (`plugins/principled-quality/hooks/scripts/check-review-checklist.sh`)
-
-Run these test cases:
-
-1. **`gh pr review` command — should warn but allow (exit 0):**
-
-   ```bash
-   echo '{"tool_input":{"command":"gh pr review 42"}}' | bash plugins/principled-quality/hooks/scripts/check-review-checklist.sh
-   ```
-
-   Expected: exit code 0, with advisory message on stderr.
-
-2. **`gh pr merge` command — should warn but allow (exit 0):**
-
-   ```bash
-   echo '{"tool_input":{"command":"gh pr merge 42"}}' | bash plugins/principled-quality/hooks/scripts/check-review-checklist.sh
-   ```
-
-   Expected: exit code 0, with advisory message on stderr.
-
-3. **Unrelated command — should pass silently (exit 0):**
-
-   ```bash
-   echo '{"tool_input":{"command":"git status"}}' | bash plugins/principled-quality/hooks/scripts/check-review-checklist.sh
-   ```
-
-   Expected: exit code 0, no output.
-
-### Release Readiness Advisory (`plugins/principled-release/hooks/scripts/check-release-readiness.sh`)
-
-Run these test cases:
-
-1. **`git tag` command — should warn but allow (exit 0):**
-
-   ```bash
-   echo '{"tool_input":{"command":"git tag v1.0.0"}}' | bash plugins/principled-release/hooks/scripts/check-release-readiness.sh
-   ```
-
-   Expected: exit code 0, with advisory message on stderr.
-
-2. **`git tag -l` command — should pass silently (exit 0):**
-
-   ```bash
-   echo '{"tool_input":{"command":"git tag -l"}}' | bash plugins/principled-release/hooks/scripts/check-release-readiness.sh
-   ```
-
-   Expected: exit code 0, no advisory (listing tags is not a release action).
-
-3. **Unrelated command — should pass silently (exit 0):**
-
-   ```bash
-   echo '{"tool_input":{"command":"git status"}}' | bash plugins/principled-release/hooks/scripts/check-release-readiness.sh
-   ```
-
-   Expected: exit code 0, no output.
-
-### Reporting
-
-For each test case, report PASS or FAIL with the actual vs expected exit code. Provide a summary at the end with total pass/fail counts.
+- **Exit 0 = allow, exit 2 = block. Never exit 1** — that is reserved for script errors.
+- **Guards default to allow.** They block only when they can positively confirm a
+  violation. This is deliberate, and it is why the tests matter: a broken guard fails
+  open and silent, with no symptom until something slips through.
+- **`jq` is optional.** Every hook has a grep/sed fallback, and it must be POSIX —
+  `grep -P` is unavailable on stock macOS.

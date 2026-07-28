@@ -241,3 +241,70 @@ run_without_jq() {
     done
   done
 }
+
+# --- Breadth: every document in the repository, not just a representative one ---
+#
+# The tests above pin behaviour with one ADR and one proposal. These check the whole
+# corpus, which is what catches a guard that works on the file it was developed
+# against and fails on some other frontmatter shape.
+
+@test "every accepted ADR is blocked" {
+  local adr status result checked=0
+  for adr in docs/decisions/*.md; do
+    status=$(bash "${DOCS_HOOKS}/parse-frontmatter.sh" --file "$adr" --field status)
+    [[ "$status" == "accepted" ]] || continue
+    checked=$((checked + 1))
+    result=0
+    echo "{\"tool_input\":{\"file_path\":\"${adr}\"}}" | bash "${DOCS_HOOKS}/check-adr-immutability.sh" > /dev/null 2>&1 || result=$?
+    [ "$result" -eq 2 ] || {
+      echo "expected exit 2 for accepted ADR ${adr}, got ${result}"
+      return 1
+    }
+  done
+  [ "$checked" -gt 0 ]
+}
+
+@test "every terminal-status proposal is blocked" {
+  local doc status result checked=0
+  for doc in docs/proposals/*.md; do
+    status=$(bash "${DOCS_HOOKS}/parse-frontmatter.sh" --file "$doc" --field status)
+    case "$status" in
+      accepted | rejected | superseded) ;;
+      *) continue ;;
+    esac
+    checked=$((checked + 1))
+    result=0
+    echo "{\"tool_input\":{\"file_path\":\"${doc}\"}}" | bash "${DOCS_HOOKS}/check-proposal-lifecycle.sh" > /dev/null 2>&1 || result=$?
+    [ "$result" -eq 2 ] || {
+      echo "expected exit 2 for ${status} proposal ${doc}, got ${result}"
+      return 1
+    }
+  done
+  [ "$checked" -gt 0 ]
+}
+
+@test "every draft proposal is editable" {
+  local doc status result
+  for doc in docs/proposals/*.md; do
+    status=$(bash "${DOCS_HOOKS}/parse-frontmatter.sh" --file "$doc" --field status)
+    [[ "$status" == "draft" || "$status" == "in-review" ]] || continue
+    result=0
+    echo "{\"tool_input\":{\"file_path\":\"${doc}\"}}" | bash "${DOCS_HOOKS}/check-proposal-lifecycle.sh" > /dev/null 2>&1 || result=$?
+    [ "$result" -eq 0 ] || {
+      echo "expected exit 0 for ${status} proposal ${doc}, got ${result}"
+      return 1
+    }
+  done
+}
+
+@test "every pipeline document passes the frontmatter guard" {
+  local doc result
+  for doc in docs/proposals/*.md docs/plans/*.md docs/decisions/*.md; do
+    result=0
+    echo "{\"tool_input\":{\"file_path\":\"${doc}\"}}" | bash "${DOCS_HOOKS}/check-required-frontmatter.sh" > /dev/null 2>&1 || result=$?
+    [ "$result" -eq 0 ] || {
+      echo "frontmatter guard rejected ${doc} (exit ${result})"
+      return 1
+    }
+  done
+}

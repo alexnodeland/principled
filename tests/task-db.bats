@@ -14,6 +14,13 @@ setup() {
   git init -q -b main .
   git config user.email test@example.com
   git config user.name "Test"
+  # Keep git from spawning detached helpers in the test repository. With
+  # core.fsmonitor enabled globally, every `git init` here starts an
+  # `fsmonitor--daemon --detach` that inherits bats' stdout; bats then never sees EOF
+  # and hangs after the final test, despite every test having passed. Auto-gc
+  # daemonizes the same way.
+  git config core.fsmonitor false
+  git config gc.auto 0
   printf '.impl/\n' > .gitignore
   git add -A && git commit -qm init
   bash "$LIB" --init > /dev/null
