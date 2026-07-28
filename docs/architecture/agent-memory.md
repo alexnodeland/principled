@@ -91,6 +91,36 @@ uninitialized repository.
 incomplete picture, and the loss is invisible to it. Oversized memory is reported by
 `check-memory-integrity.sh`, never quietly trimmed.
 
+**It reads `HEAD`, not the working tree.** This is what makes the review gate bind on
+_effect_ rather than only on distribution. Reading the working tree meant an uncommitted
+edit reached the very next spawn: an agent could change what every subsequent agent in
+the same run believed, and produce code under that belief, before any reviewer saw a
+diff. Untracked files fall back to the working tree — so a fresh `--init` still works —
+and the fallback announces itself, because silently injecting unreviewed content is the
+behaviour being removed.
+
+### What this does not close
+
+Reading `HEAD` stops an _uncommitted_ edit from taking effect. It does not stop an agent
+that **commits** a memory change on its own branch: that branch's `HEAD` contains it, so
+it is injected for the rest of that run.
+
+Closing that would mean injecting from the default branch instead, which would make
+memory changes untestable before merge — you could not exercise a memory edit on the
+branch that proposes it. The residual is accepted deliberately, and the protection is the
+same one that covers any other code an agent commits: **it does not reach anyone else
+until a human merges it.**
+
+Two further limits worth stating plainly:
+
+- **No `PreToolUse` guard blocks memory writes.** A blocking hook cannot distinguish an
+  agent editing `global.md` from a maintainer curating it, so blocking would stop the
+  human along with the agent. `check-memory-integrity.sh` warns loudly on `global.md`
+  writes instead, and the mechanical protection is the `HEAD` read above.
+- **Nothing verifies that a memory claim is _true_.** The integrity check validates
+  structure and size. A confidently wrong learning passes every automated check in this
+  repository and is injected on every spawn until a human notices.
+
 **Only memory-bearing agents receive anything**, including global memory. `module-auditor`,
 `decision-auditor`, and `boundary-checker` run deterministic scripts and learn nothing by
 definition, so injecting conventions into them spends context for no benefit.

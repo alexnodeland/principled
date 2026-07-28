@@ -252,3 +252,67 @@ run_without_jq() {
   without_jq="$(run_without_jq --list | awk 'NR > 1 { print $1 }' | sort)"
   [ "$with_jq" = "$without_jq" ]
 }
+
+# --- Injection reads committed state, not the working tree ---
+#
+# ADR-022 says memory changes go through review. That was true of how memory is
+# distributed and false of when it takes effect: injection read the working tree, so an
+# uncommitted edit reached the very next spawn. An agent could change what every
+# subsequent agent believed, and produce code under the changed belief, before any
+# reviewer saw a diff.
+
+@test "an uncommitted memory edit is not injected" {
+  git add -A && git commit -qm "baseline memory"
+  printf -- '- UNCOMMITTED CLAIM\n' >> "$MEM"
+  run bash -c "cd '$WORK' && echo '{\"agent_id\":\"impl-worker\"}' | bash '${REPO_ROOT}/plugins/principled-agent/hooks/scripts/inject-agent-memory.sh' 2>&1"
+  [ "$status" -eq 0 ]
+  # The whole point: the unreviewed line must not reach the agent.
+  ! echo "$output" | grep -q 'UNCOMMITTED CLAIM'
+}
+
+@test "committed memory is still injected" {
+  printf -- '- COMMITTED CLAIM\n' >> "$MEM"
+  git add -A && git commit -qm "add a learning"
+  run bash -c "cd '$WORK' && echo '{\"agent_id\":\"impl-worker\"}' | bash '${REPO_ROOT}/plugins/principled-agent/hooks/scripts/inject-agent-memory.sh' 2>&1"
+  [ "$status" -eq 0 ]
+  echo "$output" | grep -q 'COMMITTED CLAIM'
+}
+
+@test "an untracked memory file still injects, and announces that it is uncommitted" {
+  # A fresh --init must keep working; silence would be the failure mode.
+  run bash -c "cd '$WORK' && echo '{\"agent_id\":\"impl-worker\"}' | bash '${REPO_ROOT}/plugins/principled-agent/hooks/scripts/inject-agent-memory.sh' 2>&1"
+  [ "$status" -eq 0 ]
+  echo "$output" | grep -q 'uncommitted'
+}
+
+# --- Global memory is validated and budgeted ---
+
+@test "check validates global memory, which has no registry entry" {
+  run bash "$LIB" --check
+  [ "$status" -eq 0 ]
+  echo "$output" | grep -q '^OK: global:'
+}
+
+@test "missing global memory is a structural error" {
+  rm .agents/memory/global.md
+  run bash "$LIB" --check
+  [ "$status" -eq 1 ]
+  echo "$output" | grep -q 'ERROR: global:'
+}
+
+@test "the budget counts what injection actually delivers, not the agent file alone" {
+  # Injection sends global + the agent's own file. Budgeting the agent file alone
+  # understated the real payload by the whole size of global.md.
+  run bash "$LIB" --check --agent impl-worker
+  [ "$status" -eq 0 ]
+  echo "$output" | grep -q 'bytes injected'
+  echo "$output" | grep -q 'own + global'
+}
+
+@test "a large global file pushes a small agent over budget" {
+  # An agent file well under budget must still warn when the injected total is not.
+  awk 'BEGIN { for (i = 0; i < 200; i++) print "- a global convention every agent receives." }' >> .agents/memory/global.md
+  run bash "$LIB" --check --agent impl-worker
+  [ "$status" -eq 0 ]
+  echo "$output" | grep -q 'soft budget'
+}

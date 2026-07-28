@@ -60,6 +60,24 @@ case "$file_path" in
 */retrospectives/*) exit 0 ;;
 esac
 
+# Global memory is injected into every memory-bearing agent, so a line here costs a
+# line in every agent's context and changes what all of them believe. Say so loudly.
+#
+# This is advisory, not blocking, and deliberately: a PreToolUse guard cannot tell an
+# agent editing this file from a human curating it, so blocking would stop the
+# maintainer along with the agent. The mechanical protection is elsewhere —
+# inject-agent-memory.sh reads HEAD, so nothing here takes effect until it is
+# committed and reviewed.
+case "$file_path" in
+*/memory/global.md)
+  echo "⚠️  Advisory: writing to global agent memory." >&2
+  echo "   global.md is injected into EVERY memory-bearing agent, so this changes what" >&2
+  echo "   all of them believe. It is the highest-blast-radius file in the repository." >&2
+  echo "   Injection reads HEAD, so this takes effect only once committed and merged —" >&2
+  echo "   make sure the reviewer sees it as its own change, not buried in a larger PR." >&2
+  ;;
+esac
+
 # Only memory markdown files past this point.
 case "$file_path" in
 *.md) ;;
