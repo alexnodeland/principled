@@ -179,8 +179,30 @@ PostToolUse hook fires (after execution)
 
 ## Constraints and Invariants
 
-1. **Skills are self-contained.** Every skill directory contains everything it needs. No cross-skill imports or shared directories.
-2. **Template copies are byte-identical.** The drift checker enforces this. Drift is a CI failure.
-3. **Hooks and skills never overlap.** Skills handle generative workflows. Hooks handle deterministic guardrails.
-4. **Scripts have no shared directory.** If a utility is needed in multiple places, each location maintains its own copy, validated by drift checks.
-5. **Marketplace root contains only infrastructure.** `.claude-plugin/marketplace.json`, `plugins/`, `external_plugins/`, `docs/`, `README.md`. Individual plugins are self-contained under `plugins/`.
+1. **Skills own their prompts and templates.** A skill directory contains what only that skill uses. No cross-skill imports, and no `../sibling/` paths.
+2. **Code used by more than one skill lives in the plugin's `lib/`**, referenced as `${CLAUDE_PLUGIN_ROOT}/lib/<name>` ([ADR-018](../decisions/018-shared-plugin-lib-over-copies.md)). One copy, so drift is impossible rather than detected. This supersedes ADR-009's copy-with-drift-detection scheme.
+3. **Plugins cannot reference each other.** Each installs independently and `${CLAUDE_PLUGIN_ROOT}` resolves to exactly one plugin, so a genuinely cross-plugin script must be vendored — the only remaining case is `check-gh-cli.sh`, in four copies, verified by `scripts/check-cross-plugin-drift.sh`.
+4. **Template copies are byte-identical.** The drift checker enforces this for the scaffolding templates. Drift is a CI failure.
+5. **Hooks and skills never overlap.** Skills handle generative workflows. Hooks handle deterministic guardrails.
+6. **Marketplace root contains only infrastructure.** `.claude-plugin/marketplace.json`, `plugins/`, `external_plugins/`, `docs/`, `README.md`. Individual plugins are self-contained under `plugins/`.
+
+## Cross-plugin coupling: the file-path contract
+
+Constraint 3 means two plugins that must cooperate cannot call each other. Where
+cooperation is genuinely required, the coupling is a **committed file at a fixed
+repository-root path**, which both read independently:
+
+| Path                      | Written by                | Read by                                       |
+| ------------------------- | ------------------------- | --------------------------------------------- |
+| `.agents/`                | principled-agent          | any plugin; injected at spawn (ADR-020)       |
+| `.agents/HALT`            | principled-agent          | principled-implementation at phase boundaries |
+| `.impl/manifest.json`     | principled-implementation | principled-agent, read-only (ADR-021)         |
+| `.principled/tasks.jsonl` | principled-tasks          | any plugin, read-only (ADR-017)               |
+
+This is the only mechanism available, and for the halt switch it is also the right one:
+the switch must be operable by a human with no running session (ADR-022).
+
+The cost is real — **these couplings are invisible to `check-skill-references.sh`**,
+which validates `${CLAUDE_PLUGIN_ROOT}` paths and cannot see a bare path in prose. They
+are maintained by convention, so changing one of these paths means finding every reader
+by hand.
