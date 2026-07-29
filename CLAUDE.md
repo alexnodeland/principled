@@ -152,6 +152,20 @@ Six agents across four plugins:
 
 The `spawn` skill delegates to `impl-worker` via `context: fork` + `agent: impl-worker` frontmatter. The orchestrator invokes `/spawn` from inline context (no fork) to coordinate multiple sub-agent spawns — sequentially by default, or in parallel via agent teams when `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1` is set.
 
+### Two kinds of agent memory
+
+Do not confuse them; they have opposite governance.
+
+- **`memory: project`** (agent frontmatter — `impl-worker` sets it). Claude Code's own
+  per-agent scratch memory, written to `.claude/agent-memory/` and **gitignored**. It is
+  session-local, never reviewed, and never shared. Prune it periodically on long-running
+  projects: nothing expires it, and stale notes are read as current fact.
+- **`.agents/memory/`** (principled-agent). Committed knowledge, injected at spawn by the
+  Agent Memory Injection hook and revised only through a pull request — see
+  [ADR-020](docs/decisions/020-agent-memory-as-document.md) and
+  [ADR-022](docs/decisions/022-agent-governance-constraints.md). This is the durable,
+  reviewed record; the gitignored one is not.
+
 ## Key Conventions
 
 ### Shared Code: `lib/` (ADR-018)

@@ -4,7 +4,7 @@ number: "007"
 status: complete
 author: Alex
 created: 2026-02-22
-updated: 2026-07-28
+updated: 2026-07-29
 originating_proposal: "005"
 related_adrs: [003, 014]
 ---
@@ -102,13 +102,13 @@ Tasks are organized by phase, with each phase mapping to one or more bounded con
 
 **Goal:** Create the plugin manifest, directory structure, and marketplace integration.
 
-- [ ] **1.1** Create `plugins/principled-architecture/.claude-plugin/plugin.json` with name `principled-architecture`, version `0.1.0`, description, author, keywords (`architecture`, `adr`, `governance`, `drift-detection`, `module-boundaries`)
-- [ ] **1.2** Create full directory skeleton:
+- [x] **1.1** Create `plugins/principled-architecture/.claude-plugin/plugin.json` with name `principled-architecture`, version `0.1.0`, description, author, keywords (`architecture`, `adr`, `governance`, `drift-detection`, `module-boundaries`)
+- [x] **1.2** Create full directory skeleton:
   - `skills/arch-strategy/`, `skills/arch-map/`, `skills/arch-drift/`, `skills/arch-audit/`, `skills/arch-sync/`, `skills/arch-query/`
   - `hooks/scripts/`
-  - `scripts/` (plugin-level drift checker)
-- [ ] **1.3** Add plugin entry to `.claude-plugin/marketplace.json` with category `architecture`
-- [ ] **1.4** Add `principled-architecture@principled-marketplace` to `.claude/settings.json` enabled plugins
+  - ~~`scripts/` (plugin-level drift checker)~~ — shipped as `lib/` instead ([ADR-018](../decisions/018-shared-plugin-lib-over-copies.md))
+- [x] **1.3** Add plugin entry to `.claude-plugin/marketplace.json` with category `architecture`
+- [x] **1.4** Add `principled-architecture@principled-marketplace` to `.claude/settings.json` enabled plugins
 
 ### Phase 2: Knowledge Base & Module Scanner (BC-2, BC-3)
 
@@ -116,10 +116,10 @@ Tasks are organized by phase, with each phase mapping to one or more bounded con
 
 **Depends on:** Phase 1
 
-- [ ] **2.1** Write `arch-strategy/reference/governance-rules.md`: module dependency direction rules (app → lib → core), override mechanism via CLAUDE.md declarations, enforcement levels (advisory vs. strict), violation severity classification
-- [ ] **2.2** Write `arch-strategy/reference/mapping-conventions.md`: how ADRs declare scope (explicit `scope` section, module path references, frontmatter hints), how the map is constructed, map format and interpretation
-- [ ] **2.3** Write `arch-strategy/SKILL.md`: background knowledge skill, not user-invocable
-- [ ] **2.4** Implement `arch-map/scripts/scan-modules.sh`: find all CLAUDE.md files recursively, parse `## Module Type` section to extract type (`core`, `lib`, `app`), output module inventory as structured list (path, type, name)
+- [x] **2.1** Write `arch-strategy/reference/governance-rules.md`: module dependency direction rules (app → lib → core), override mechanism via CLAUDE.md declarations, enforcement levels (advisory vs. strict), violation severity classification
+- [x] **2.2** Write `arch-strategy/reference/mapping-conventions.md`: how ADRs declare scope (explicit `scope` section, module path references, frontmatter hints), how the map is constructed, map format and interpretation
+- [x] **2.3** Write `arch-strategy/SKILL.md`: background knowledge skill, not user-invocable
+- [x] **2.4** Implement `scan-modules.sh` (shipped at `lib/scan-modules.sh`, shared by `arch-map` and `arch-drift`): find all CLAUDE.md files recursively, parse `## Module Type` section to extract type (`core`, `lib`, `app`), output module inventory as structured list (path, type, name)
 
 ### Phase 3: Architecture Map Skill (BC-3)
 
@@ -127,8 +127,8 @@ Tasks are organized by phase, with each phase mapping to one or more bounded con
 
 **Depends on:** Phase 2
 
-- [ ] **3.1** Create `arch-map/templates/arch-map.md`: template with `{{MODULES}}` sections, each containing governing ADRs, architecture doc references, and coverage classification
-- [ ] **3.2** Write `arch-map/SKILL.md`: user-invocable, accepts `--module <path>` and `--output <path>`, runs `scan-modules.sh`, reads all ADRs in `docs/decisions/` and scans body for module path references, reads architecture docs in `docs/architecture/` for module references, cross-references to produce the map, renders via template
+- [x] **3.1** Create `arch-map/templates/arch-map.md`: template with `{{MODULES}}` sections, each containing governing ADRs, architecture doc references, and coverage classification
+- [x] **3.2** Write `arch-map/SKILL.md`: user-invocable, accepts `--module <path>` and `--output <path>`, runs `scan-modules.sh`, reads all ADRs in `docs/decisions/` and scans body for module path references, reads architecture docs in `docs/architecture/` for module references, cross-references to produce the map, renders via template
 
 ### Phase 4: Drift Detection Skill (BC-4)
 
@@ -136,8 +136,8 @@ Tasks are organized by phase, with each phase mapping to one or more bounded con
 
 **Depends on:** Phase 3
 
-- [ ] **4.1** Implement `arch-drift/scripts/check-boundaries.sh`: accept `--module <path>` and `--type <module-type>`, scan source files for import/require/from statements via regex, check import paths against dependency direction rules, output violations with severity and governing ADR reference
-- [ ] **4.2** Write `arch-drift/SKILL.md`: user-invocable, accepts `--module <path>` and `--strict`, builds architecture map (or reads cached), for each accepted ADR extracts constraints, runs `check-boundaries.sh` per module, classifies findings (error/warning/info), reports violations with ADR references, `--strict` mode exits non-zero on any error
+- [x] **4.1** Implement `arch-drift/scripts/check-boundaries.sh`: accept `--module <path>` and `--type <module-type>`, scan source files for import/require/from statements via regex, check import paths against dependency direction rules, output violations with severity and governing ADR reference
+- [x] **4.2** Write `arch-drift/SKILL.md`: user-invocable, accepts `--module <path>` and `--strict`, builds architecture map (or reads cached), for each accepted ADR extracts constraints, runs `check-boundaries.sh` per module, classifies findings (error/warning/info), reports violations with ADR references, `--strict` mode exits non-zero on any error
 
 ### Phase 5: Coverage Audit & Architecture Sync Skills (BC-5)
 
@@ -145,10 +145,10 @@ Tasks are organized by phase, with each phase mapping to one or more bounded con
 
 **Depends on:** Phase 3
 
-- [ ] **5.1** Create `arch-audit/templates/audit-report.md`: template with coverage summary table, ungoverned modules list, orphaned ADRs, stale architecture docs, severity classification
-- [ ] **5.2** Write `arch-audit/SKILL.md`: user-invocable, accepts `--module <path>`, uses architecture map to find: modules with no ADRs, modules with no architecture doc mentions, ADRs referencing removed modules, architecture docs referencing removed components, generates audit report via template with severity classification (critical/warning/info)
-- [ ] **5.3** Implement `arch-sync/scripts/detect-changes.sh`: compare architecture doc content against actual codebase state — module list, module types, component inventory — output discrepancies
-- [ ] **5.4** Write `arch-sync/SKILL.md`: user-invocable, accepts `--doc <path>` and `--all`, reads architecture doc, runs `detect-changes.sh`, proposes updates as inline edits for human review, never auto-modifies (architecture docs require approval)
+- [x] **5.1** Create `arch-audit/templates/audit-report.md`: template with coverage summary table, ungoverned modules list, orphaned ADRs, stale architecture docs, severity classification
+- [x] **5.2** Write `arch-audit/SKILL.md`: user-invocable, accepts `--module <path>`, uses architecture map to find: modules with no ADRs, modules with no architecture doc mentions, ADRs referencing removed modules, architecture docs referencing removed components, generates audit report via template with severity classification (critical/warning/info)
+- [x] **5.3** Implement `arch-sync/scripts/detect-changes.sh`: compare architecture doc content against actual codebase state — module list, module types, component inventory — output discrepancies
+- [x] **5.4** Write `arch-sync/SKILL.md`: user-invocable, accepts `--doc <path>` and `--all`, reads architecture doc, runs `detect-changes.sh`, proposes updates as inline edits for human review, never auto-modifies (architecture docs require approval)
 
 ### Phase 6: Query Skill (BC-6)
 
@@ -156,7 +156,7 @@ Tasks are organized by phase, with each phase mapping to one or more bounded con
 
 **Depends on:** Phase 3
 
-- [ ] **6.1** Write `arch-query/SKILL.md`: user-invocable, accepts `"<question>"`, searches ADRs, architecture docs, proposals, and codebase to find relevant information, synthesizes answer with document references, designed for onboarding and architecture exploration
+- [x] **6.1** Write `arch-query/SKILL.md`: user-invocable, accepts `"<question>"`, searches ADRs, architecture docs, proposals, and codebase to find relevant information, synthesizes answer with document references, designed for onboarding and architecture exploration
 
 ### Phase 7: Hook, Drift Detection & Documentation (BC-1, BC-6)
 
@@ -164,14 +164,14 @@ Tasks are organized by phase, with each phase mapping to one or more bounded con
 
 **Depends on:** Phases 3, 4, 5, 6
 
-- [ ] **7.1** Implement `hooks/scripts/check-boundary-violation.sh`: PostToolUse hook for Write, reads stdin JSON `tool_input.file_path`, determines if file is in a module directory (check for CLAUDE.md in parent hierarchy), if in module: read module type, scan written file for imports, check against dependency direction rules, warn on violations, advisory only (always exits 0)
-- [ ] **7.2** Write `hooks/hooks.json`: PostToolUse hook for Write targeting boundary violation check script
-- [ ] **7.3** Copy `check-gh-cli.sh` from principled-github canonical source to skills that need gh CLI access (if any skills require it — `arch-sync` may use `gh` for PR-based updates). If no skills need gh CLI, skip this step.
-- [ ] **7.4** Implement `scripts/check-template-drift.sh`: verify any cross-plugin or intra-plugin script copies match canonical sources
-- [ ] **7.5** Write plugin `README.md`: installation, skills table, hook, dependency direction rules, architecture map format, governance feedback loop, drift detection approach
-- [ ] **7.6** Update `.github/workflows/ci.yml`: add principled-architecture drift check step (if applicable)
-- [ ] **7.7** Update root `CLAUDE.md`: add principled-architecture to architecture table, skills table, conventions, hooks, testing, dogfooding, dependencies
-- [ ] **7.8** Update `.claude/CLAUDE.md`: add principled-architecture dogfooding section and common pitfalls
+- [x] **7.1** Implement `hooks/scripts/check-boundary-violation.sh`: PostToolUse hook for Write, reads stdin JSON `tool_input.file_path`, determines if file is in a module directory (check for CLAUDE.md in parent hierarchy), if in module: read module type, scan written file for imports, check against dependency direction rules, warn on violations, advisory only (always exits 0)
+- [x] **7.2** Write `hooks/hooks.json`: PostToolUse hook for Write targeting boundary violation check script
+- [x] **7.3** Copy `check-gh-cli.sh` from principled-github canonical source to skills that need gh CLI access (if any skills require it — `arch-sync` may use `gh` for PR-based updates). If no skills need gh CLI, skip this step. — **skipped by its own condition:** `arch-sync` proposes edits for human review and never calls `gh`, so no skill in this plugin needs the check.
+- ~~**7.4** Implement `scripts/check-template-drift.sh`: verify any cross-plugin or intra-plugin script copies match canonical sources~~ — **superseded by [ADR-018](../decisions/018-shared-plugin-lib-over-copies.md).** This plugin has no script copies; `scripts/check-skill-references.sh` verifies the `lib/` references instead.
+- [x] **7.5** Write plugin `README.md`: installation, skills table, hook, dependency direction rules, architecture map format, governance feedback loop, drift detection approach
+- [x] **7.6** Update `.github/workflows/ci.yml`: add principled-architecture drift check step (if applicable) — **not applicable:** no copies to drift-check. CI covers this plugin through `check-skill-references.sh` and the structure/manifest validation jobs.
+- [x] **7.7** Update root `CLAUDE.md`: add principled-architecture to architecture table, skills table, conventions, hooks, testing, dogfooding, dependencies
+- [x] **7.8** Update `.claude/CLAUDE.md`: add principled-architecture dogfooding section and common pitfalls
 
 ---
 
@@ -208,20 +208,47 @@ Open decisions to resolve during implementation:
 
 ## Acceptance Criteria
 
-- [ ] `/arch-map` generates a complete map linking every module to its governing ADRs and architecture docs
-- [ ] `/arch-map --module <path>` scopes output to a single module
-- [ ] Architecture map classifies each module's coverage as Full, Partial, or None
-- [ ] `/arch-drift` detects dependency direction violations (e.g., `core` importing from `app`)
-- [ ] `/arch-drift --module <path>` scopes analysis to a single module
-- [ ] `/arch-drift --strict` exits non-zero when any error-severity violation exists
-- [ ] `/arch-drift` references the governing ADR for each reported violation
-- [ ] `/arch-audit` identifies modules with no ADRs and no architecture doc mentions
-- [ ] `/arch-audit` identifies orphaned ADRs (referencing modules no longer present)
-- [ ] `/arch-audit` identifies stale architecture docs (referencing removed components)
-- [ ] `/arch-audit` classifies findings by severity (critical/warning/info)
-- [ ] `/arch-sync --doc <path>` proposes updates to a single architecture doc for human review
-- [ ] `/arch-sync` never auto-modifies architecture docs — always requires approval
-- [ ] `/arch-query "<question>"` answers natural-language architecture questions with document references
-- [ ] `check-boundary-violation.sh` warns when a written file contains imports violating dependency direction (advisory, never blocks)
-- [ ] `scan-modules.sh` correctly discovers modules by CLAUDE.md and parses module type
-- [ ] Plugin README documents all skills, hook, dependency rules, and governance feedback loop
+- [x] `/arch-map` generates a complete map linking every module to its governing ADRs and architecture docs
+- [x] `/arch-map --module <path>` scopes output to a single module
+- [x] Architecture map classifies each module's coverage as Full, Partial, or None
+- [x] `/arch-drift` detects dependency direction violations (e.g., `core` importing from `app`)
+- [x] `/arch-drift --module <path>` scopes analysis to a single module
+- [x] `/arch-drift --strict` exits non-zero when any error-severity violation exists
+- [x] `/arch-drift` references the governing ADR for each reported violation
+- [x] `/arch-audit` identifies modules with no ADRs and no architecture doc mentions
+- [x] `/arch-audit` identifies orphaned ADRs (referencing modules no longer present)
+- [x] `/arch-audit` identifies stale architecture docs (referencing removed components)
+- [x] `/arch-audit` classifies findings by severity (critical/warning/info)
+- [x] `/arch-sync --doc <path>` proposes updates to a single architecture doc for human review
+- [x] `/arch-sync` never auto-modifies architecture docs — always requires approval
+- [x] `/arch-query "<question>"` answers natural-language architecture questions with document references
+- [x] `check-boundary-violation.sh` warns when a written file contains imports violating dependency direction (advisory, never blocks)
+- [x] `scan-modules.sh` correctly discovers modules by CLAUDE.md and parses module type
+- [x] Plugin README documents all skills, hook, dependency rules, and governance feedback loop
+
+---
+
+## Completion Record
+
+Verified 2026-07-29 against the repository. The boxes above were ticked from that
+verification, not from memory of the work.
+
+**Evidence.** All 6 skills present under `plugins/principled-architecture/skills/`, each
+with its `SKILL.md`; `arch-map` and `arch-audit` ship their templates, `arch-drift` ships
+`check-boundaries.sh` and `arch-sync` ships `detect-changes.sh`. `lib/scan-modules.sh`
+runs and correctly reports module paths and types. The advisory hook and `hooks.json`
+exist, the plugin is registered in `marketplace.json` and enabled in `.claude/settings.json`,
+and both `CLAUDE.md` files document it. `tests/hooks.bats` covers the boundary hook.
+
+**Divergences from the plan as written.** Two, both deliberate:
+
+1. **Shared code.** `scan-modules.sh` was planned under `arch-map/scripts/` and shipped
+   in `lib/`, because `arch-drift` needs it too — [ADR-018](../decisions/018-shared-plugin-lib-over-copies.md).
+   Task 7.4's per-plugin drift checker was never written and should not be: with one copy
+   there is nothing to compare.
+2. **Two conditional tasks resolved to "skip."** 7.3 (`check-gh-cli.sh`) and 7.6 (a CI
+   drift step) were both written as "if applicable"; neither applied. They are marked
+   above with the condition that decided them rather than left ambiguous.
+
+The `boundary-checker` agent in this plugin was added later by
+[Plan-008](008-hooks-subagents-agent-teams.md), not by this plan.

@@ -124,6 +124,21 @@ ADR-018.
 - Test both paths. `tests/manifest-checkpoint.bats` runs each operation with jq and with
   a PATH that genuinely lacks it, then validates the result with the real jq.
 
+### Changing `.pre-commit-config.yaml`
+
+Every hook in it mirrors a step in `.github/workflows/ci.yml`. Keep them in step, or the
+local gate stops predicting CI — which is the only reason to run it.
+
+- **Do not use `pre-commit/mirrors-prettier`.** It pins its own prettier, which disagrees
+  with the repo's devDependency on Markdown tables containing `|` inside code spans: the
+  mirror rewrites files that CI's prettier reports as clean. Prettier runs as a `local`
+  hook against `npx prettier` for this reason.
+- **Scope shell hooks with `files: \.sh$`.** CI lints `*.sh` only. Unscoped, pre-commit
+  also lints `.bats` files and fails on style CI never checks.
+- Removing a script means removing the hook that calls it. Four hooks kept invoking
+  per-plugin `check-template-drift.sh` scripts that ADR-018 had deleted; each failed with
+  exit 127, and CI never noticed because CI had already dropped those steps.
+
 ### Changing Frontmatter Schema
 
 - Any changes to frontmatter field names or status values must be reflected in `plugins/principled-docs/hooks/scripts/parse-frontmatter.sh` and the guard scripts that consume it.
