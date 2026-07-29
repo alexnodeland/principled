@@ -4,7 +4,7 @@ number: "009"
 status: complete
 author: Alex
 created: 2026-02-27
-updated: 2026-07-28
+updated: 2026-07-29
 originating_proposal: "009"
 ---
 
@@ -90,20 +90,20 @@ This implementation decomposes into **5 bounded contexts**, each representing a 
 
 **Goal:** Create the complete directory tree, plugin manifest, and canonical task-db.sh script.
 
-- [ ] **1.1** Create `.claude-plugin/plugin.json` with name, version, description, author, homepage, keywords
-- [ ] **1.2** Create the full directory skeleton: all skill directories, hook directory, scripts directory
-- [ ] **1.3** Implement `skills/task-open/scripts/task-db.sh` (canonical):
-  - [ ] `--init` — Create `.impl/tasks.db` with beads and bead_edges tables
-  - [ ] `--open` — Insert a new bead with generated ID, title, status, timestamps
-  - [ ] `--close` — Update bead status to done/abandoned, set closed_at
-  - [ ] `--add-edge` — Insert a typed edge between two beads
-  - [ ] `--get` — Retrieve a single bead by ID
-  - [ ] `--list` — List beads with optional filters (plan, status, agent)
-  - [ ] `--graph` — Output bead graph (optional DOT format)
-  - [ ] `--audit` — Run audit queries (orphans, stale, cycles)
-  - [ ] `--commit` — Git add and commit tasks.db
-- [ ] **1.4** Copy `task-db.sh` to: task-close, task-graph, task-audit, task-query
-- [ ] **1.5** Implement `scripts/check-template-drift.sh` for all 4 copy pairs
+- [x] **1.1** Create `.claude-plugin/plugin.json` with name, version, description, author, homepage, keywords
+- [x] **1.2** Create the full directory skeleton: all skill directories, hook directory, scripts directory
+- [x] **1.3** Implement `task-db.sh` (shipped at `lib/task-db.sh`, not under a skill — see Completion Record):
+  - [x] `--init` — Create `.impl/tasks.db` with beads and bead_edges tables
+  - [x] `--open` — Insert a new bead with generated ID, title, status, timestamps
+  - [x] `--close` — Update bead status to done/abandoned, set closed_at
+  - [x] `--add-edge` — Insert a typed edge between two beads
+  - [x] `--get` — Retrieve a single bead by ID
+  - [x] `--list` — List beads with optional filters (plan, status, agent)
+  - [x] `--graph` — Output bead graph (optional DOT format)
+  - [x] `--audit` — Run audit queries (orphans, stale, cycles)
+  - [x] `--commit` — Git add and commit tasks.db
+- ~~**1.4** Copy `task-db.sh` to: task-close, task-graph, task-audit, task-query~~ — **superseded by [ADR-018](../decisions/018-shared-plugin-lib-over-copies.md).** One copy in `lib/`; nothing to propagate.
+- ~~**1.5** Implement `scripts/check-template-drift.sh` for all 4 copy pairs~~ — **superseded by [ADR-018](../decisions/018-shared-plugin-lib-over-copies.md).** With no copies there is no drift to detect; `scripts/check-skill-references.sh` verifies the `${CLAUDE_PLUGIN_ROOT}/lib/` reference instead.
 
 ### Phase 2: Knowledge System & Hook (BC-3, Hook)
 
@@ -111,23 +111,23 @@ This implementation decomposes into **5 bounded contexts**, each representing a 
 
 **Depends on:** Phase 1 (directory skeleton exists)
 
-- [ ] **2.1** Write `skills/task-strategy/reference/task-model.md`:
-  - [ ] Bead lifecycle: open → in_progress → done/blocked/abandoned
-  - [ ] Edge semantics: blocks, spawned_by, part_of, related_to
-  - [ ] Discovery chains: how discovered_from links tasks
-  - [ ] Integration with principled-implementation manifests
-- [ ] **2.2** Write `skills/task-strategy/reference/schema.md`:
-  - [ ] Complete CREATE TABLE statements with commentary
-  - [ ] Field descriptions, constraints, indexing notes
-  - [ ] Example queries for common operations
-- [ ] **2.3** Write `skills/task-strategy/SKILL.md`:
-  - [ ] Background knowledge skill (not user-invocable)
-  - [ ] When to consult, reference documentation pointers
-- [ ] **2.4** Implement `hooks/scripts/check-db-integrity.sh`:
-  - [ ] Read JSON from stdin (tool_input.file_path)
-  - [ ] Warn if path matches `.impl/tasks.db`
-  - [ ] Advisory only — always exit 0
-- [ ] **2.5** Write `hooks/hooks.json` with PreToolUse advisory hook
+- [x] **2.1** Write `skills/task-strategy/reference/task-model.md`:
+  - [x] Bead lifecycle: open → in_progress → done/blocked/abandoned
+  - [x] Edge semantics: blocks, spawned_by, part_of, related_to
+  - [x] Discovery chains: how discovered_from links tasks
+  - [x] Integration with principled-implementation manifests
+- [x] **2.2** Write `skills/task-strategy/reference/schema.md`:
+  - [x] Complete CREATE TABLE statements with commentary
+  - [x] Field descriptions, constraints, indexing notes
+  - [x] Example queries for common operations
+- [x] **2.3** Write `skills/task-strategy/SKILL.md`:
+  - [x] Background knowledge skill (not user-invocable)
+  - [x] When to consult, reference documentation pointers
+- [x] **2.4** Implement `hooks/scripts/check-db-integrity.sh`:
+  - [x] Read JSON from stdin (tool_input.file_path)
+  - [x] Warn if path matches `.impl/tasks.db`
+  - [x] Advisory only — always exit 0
+- [x] **2.5** Write `hooks/hooks.json` with PreToolUse advisory hook
 
 ### Phase 3: Write Skills (BC-4)
 
@@ -135,17 +135,17 @@ This implementation decomposes into **5 bounded contexts**, each representing a 
 
 **Depends on:** Phase 1 (task-db.sh canonical exists)
 
-- [ ] **3.1** Write `skills/task-open/SKILL.md`:
-  - [ ] Parse arguments: title, --plan, --blocks, --discovered-from
-  - [ ] Initialize DB if needed
-  - [ ] Generate bead ID, insert bead, add edges
-  - [ ] Git commit after write
-  - [ ] Report created bead
-- [ ] **3.2** Write `skills/task-close/SKILL.md`:
-  - [ ] Parse arguments: id, --notes
-  - [ ] Update bead status to done, set closed_at and notes
-  - [ ] Git commit after write
-  - [ ] Report closed bead
+- [x] **3.1** Write `skills/task-open/SKILL.md`:
+  - [x] Parse arguments: title, --plan, --blocks, --discovered-from
+  - [x] Initialize DB if needed
+  - [x] Generate bead ID, insert bead, add edges
+  - [x] Git commit after write
+  - [x] Report created bead
+- [x] **3.2** Write `skills/task-close/SKILL.md`:
+  - [x] Parse arguments: id, --notes
+  - [x] Update bead status to done, set closed_at and notes
+  - [x] Git commit after write
+  - [x] Report closed bead
 
 ### Phase 4: Read Skills (BC-5)
 
@@ -153,18 +153,18 @@ This implementation decomposes into **5 bounded contexts**, each representing a 
 
 **Depends on:** Phase 1 (task-db.sh canonical exists)
 
-- [ ] **4.1** Write `skills/task-graph/SKILL.md`:
-  - [ ] Parse arguments: --plan, --open, --dot
-  - [ ] Query beads and edges, filter as requested
-  - [ ] Render as table or DOT graph
-- [ ] **4.2** Write `skills/task-audit/SKILL.md`:
-  - [ ] Parse arguments: --plan, --agent
-  - [ ] Run audit queries: orphan beads, stale in_progress, blocked chains, agent workload
-  - [ ] Report findings with recommendations
-- [ ] **4.3** Write `skills/task-query/SKILL.md`:
-  - [ ] Parse natural-language question
-  - [ ] Translate to SQL using schema knowledge
-  - [ ] Execute and format results
+- [x] **4.1** Write `skills/task-graph/SKILL.md`:
+  - [x] Parse arguments: --plan, --open, --dot
+  - [x] Query beads and edges, filter as requested
+  - [x] Render as table or DOT graph
+- [x] **4.2** Write `skills/task-audit/SKILL.md`:
+  - [x] Parse arguments: --plan, --agent
+  - [x] Run audit queries: orphan beads, stale in_progress, blocked chains, agent workload
+  - [x] Report findings with recommendations
+- [x] **4.3** Write `skills/task-query/SKILL.md`:
+  - [x] Parse natural-language question
+  - [x] Translate to SQL using schema knowledge
+  - [x] Execute and format results
 
 ### Phase 5: Documentation & Integration (Plugin Docs)
 
@@ -172,8 +172,8 @@ This implementation decomposes into **5 bounded contexts**, each representing a 
 
 **Depends on:** Phases 1–4
 
-- [ ] **5.1** Write plugin `README.md` with badges, quick start, skills table, hook description, architecture
-- [ ] **5.2** Register plugin in `.claude-plugin/marketplace.json`
+- [x] **5.1** Write plugin `README.md` with badges, quick start, skills table, hook description, architecture
+- [x] **5.2** Register plugin in `.claude-plugin/marketplace.json`
 
 ---
 
@@ -197,18 +197,18 @@ This implementation decomposes into **5 bounded contexts**, each representing a 
 
 ## Acceptance Criteria
 
-- [ ] `/task-open "Fix login bug" --plan 003` creates a bead in `.impl/tasks.db` and commits
-- [ ] `/task-open "Refactor auth" --blocks bead-001 --discovered-from bead-002` creates bead with edges
-- [ ] `/task-close bead-001 --notes "Resolved via PR #42"` updates status and commits
-- [ ] `/task-graph` displays all beads and edges as a formatted table
-- [ ] `/task-graph --plan 003 --open --dot` outputs DOT format filtered to plan 003 open beads
-- [ ] `/task-audit` reports orphan beads, stale in_progress, and agent workload
-- [ ] `/task-query "what tasks are blocked?"` translates to SQL and returns results
-- [ ] `check-db-integrity.sh` warns on direct `.impl/tasks.db` edits (exit 0)
-- [ ] `check-template-drift.sh` passes when all task-db.sh copies match canonical
-- [ ] `check-template-drift.sh` fails when a copy diverges
-- [ ] Plugin registered in marketplace.json with correct source path
-- [ ] All skills are self-contained with their own SKILL.md and scripts
+- [x] `/task-open "Fix login bug" --plan 003` creates a bead in `.impl/tasks.db` and commits
+- [x] `/task-open "Refactor auth" --blocks bead-001 --discovered-from bead-002` creates bead with edges
+- [x] `/task-close bead-001 --notes "Resolved via PR #42"` updates status and commits
+- [x] `/task-graph` displays all beads and edges as a formatted table
+- [x] `/task-graph --plan 003 --open --dot` outputs DOT format filtered to plan 003 open beads
+- [x] `/task-audit` reports orphan beads, stale in_progress, and agent workload
+- [x] `/task-query "what tasks are blocked?"` translates to SQL and returns results
+- [x] `check-db-integrity.sh` warns on direct `.impl/tasks.db` edits (exit 0) — and on `.principled/tasks.jsonl`, the record it turned out to matter more to protect
+- ~~`check-template-drift.sh` passes when all task-db.sh copies match canonical~~ — **superseded by [ADR-018](../decisions/018-shared-plugin-lib-over-copies.md).**
+- ~~`check-template-drift.sh` fails when a copy diverges~~ — **superseded by [ADR-018](../decisions/018-shared-plugin-lib-over-copies.md).**
+- [x] Plugin registered in marketplace.json with correct source path
+- ~~All skills are self-contained with their own SKILL.md and scripts~~ — **superseded by [ADR-018](../decisions/018-shared-plugin-lib-over-copies.md).** Every skill has its own SKILL.md; shared code is referenced from `lib/`, not copied into each skill.
 
 ---
 
@@ -225,3 +225,30 @@ This implementation decomposes into **5 bounded contexts**, each representing a 
 | §3 Skills (read)       | Phase 4    | 4.1–4.3   |
 | §6 Git Commitment      | Phase 3, 4 | 3.1, 3.2  |
 | Plugin Docs            | Phase 5    | 5.1, 5.2  |
+
+---
+
+## Completion Record
+
+Verified 2026-07-29 against the repository. The boxes above were ticked from that
+verification, not from memory of the work.
+
+**Evidence.** All 7 skills present under `plugins/principled-tasks/skills/` (the plan
+scoped 6; `task-update` was added during implementation). `lib/task-db.sh` implements
+every operation the plan listed — `--init`, `--open`, `--close`, `--add-edge`, `--get`,
+`--list`, `--graph`, `--audit`, `--commit` — plus `--update` and `--sync`. Reference docs,
+`hooks/hooks.json`, `hooks/scripts/check-db-integrity.sh`, the plugin README, and the
+`marketplace.json` entry all exist. `tests/task-db.bats` covers the library end to end and
+passes.
+
+**Divergences from the plan as written.** Three, all deliberate:
+
+1. **Storage.** The plan says "bead in `.impl/tasks.db`". [ADR-017](../decisions/017-event-log-task-graph.md)
+   made `.principled/tasks.jsonl` the record and SQLite a derived cache, so writes append
+   to the log and commit it; the cache is rebuilt and gitignored. The plan's "bead"
+   vocabulary became "task" throughout.
+2. **Shared code.** Tasks 1.4, 1.5 and two acceptance criteria described a canonical
+   script copied into four skills with a drift checker. [ADR-018](../decisions/018-shared-plugin-lib-over-copies.md)
+   replaced that with a single `lib/task-db.sh`. Those items are struck through above
+   rather than ticked: the work was not done, and should not have been.
+3. **Skill count.** 7 shipped against 6 planned.

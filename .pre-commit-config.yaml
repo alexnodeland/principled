@@ -1,53 +1,72 @@
+# Local commit gate. Every hook here mirrors a step in .github/workflows/ci.yml,
+# so a clean `pre-commit run --all-files` means CI will not fail on lint or drift.
+# The bats suite is the deliberate exception — it runs in CI and via `just test`,
+# not on every commit.
 repos:
   - repo: https://github.com/scop/pre-commit-shfmt
     rev: v3.10.0-1
     hooks:
       - id: shfmt
         args: ["-i", "2", "-bn", "-sr", "-d"]
+        # CI lints `*.sh` only. Without this, pre-commit also picks up `.bats`
+        # files, which shfmt formats differently and CI never sees.
+        files: \.sh$
 
   - repo: https://github.com/shellcheck-py/shellcheck-py
     rev: v0.10.0.1
     hooks:
       - id: shellcheck
         args: ["--shell=bash"]
+        files: \.sh$
 
   - repo: https://github.com/DavidAnson/markdownlint-cli2
     rev: v0.17.0
     hooks:
       - id: markdownlint-cli2
 
-  - repo: https://github.com/pre-commit/mirrors-prettier
-    rev: v4.0.0-alpha.8
-    hooks:
-      - id: prettier
-        types_or: [markdown]
-
   - repo: local
     hooks:
+      # Prettier runs from this repo's pinned devDependency rather than
+      # pre-commit/mirrors-prettier. The mirror pins its own (older) prettier,
+      # and the two disagree on Markdown tables containing `|` inside code
+      # spans: the mirror rewrites files that CI's prettier considers clean.
+      - id: prettier
+        name: prettier (repo devDependency, matches CI)
+        entry: npx prettier --check
+        language: system
+        types_or: [markdown]
+
       - id: template-drift
-        name: template drift check
+        name: principled-docs template drift check
         entry: bash plugins/principled-docs/skills/scaffold/scripts/check-template-drift.sh
         language: system
         pass_filenames: false
         always_run: true
 
-      - id: impl-template-drift
-        name: implementation plugin template drift check
-        entry: bash plugins/principled-implementation/scripts/check-template-drift.sh
+      - id: cross-plugin-drift
+        name: cross-plugin script drift check (check-gh-cli.sh)
+        entry: bash scripts/check-cross-plugin-drift.sh
         language: system
         pass_filenames: false
         always_run: true
 
-      - id: github-template-drift
-        name: github plugin template drift check
-        entry: bash plugins/principled-github/scripts/check-template-drift.sh
+      - id: skill-references
+        name: skill and hook reference integrity
+        entry: bash scripts/check-skill-references.sh
         language: system
         pass_filenames: false
         always_run: true
 
-      - id: quality-template-drift
-        name: quality plugin template drift check
-        entry: bash plugins/principled-quality/scripts/check-template-drift.sh
+      - id: pipeline-audit
+        name: pipeline audit (numbering, linkage, statuses, supersession)
+        entry: bash scripts/pipeline-audit.sh
+        language: system
+        pass_filenames: false
+        always_run: true
+
+      - id: validate-root
+        name: root documentation structure
+        entry: bash plugins/principled-docs/lib/validate-structure.sh --root
         language: system
         pass_filenames: false
         always_run: true

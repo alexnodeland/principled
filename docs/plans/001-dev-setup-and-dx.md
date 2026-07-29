@@ -4,7 +4,7 @@ number: "001"
 status: complete
 author: Alex Nodeland
 created: 2026-02-04
-updated: 2026-02-04
+updated: 2026-07-29
 originating_proposal: "001"
 ---
 
@@ -296,7 +296,7 @@ Architectural decisions that may need to become ADRs during implementation:
 - [x] `prettier --check` passes on all `.md` files
 - [x] `.pre-commit-config.yaml` exists and `pre-commit run --all-files` passes
 - [x] `.github/workflows/ci.yml` exists with `lint-shell`, `lint-markdown`, and `validate` jobs
-- [ ] CI pipeline passes on a clean branch (all three jobs green)
+- [x] CI pipeline passes on a clean branch (all three jobs green — since grown to five: Shell Lint, Markdown Lint, Validate, Tests, Bash 3.2 Compatibility)
 - [x] `.claude/settings.json` exists, is committed, and includes `"plugins": [{"path": "."}]`
 - [x] `.claude/skills/` contains 4 dev skills: `lint`, `test-hooks`, `propagate-templates`, `check-ci` (each with `SKILL.md`)
 - [x] `.claude/CLAUDE.md` exists with development-specific guidance
