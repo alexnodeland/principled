@@ -72,7 +72,7 @@ jobs:
 
     steps:
       - name: Check out the repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           fetch-depth: 0 # worktree isolation and changelog generation need history
 
@@ -89,9 +89,9 @@ jobs:
           echo "No halt in effect."
 
       - name: Set up Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v7
         with:
-          node-version: "20"
+          node-version: "22"
 
       - name: Install the Claude Code CLI
         run: npm install -g @anthropic-ai/claude-code
